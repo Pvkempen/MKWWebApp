@@ -1,12 +1,583 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>My Web App</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MKW Tools | Webapp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #111827;
+      --card: #0b1224;
+      --muted: #9ca3af;
+      --primary: #38bdf8;
+      --primary-strong: #0ea5e9;
+      --accent: #a78bfa;
+      --success: #34d399;
+      --danger: #f87171;
+      --border: rgba(255, 255, 255, 0.08);
+      --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.14), transparent 30%),
+                  radial-gradient(circle at 80% 0%, rgba(167, 139, 250, 0.18), transparent 26%),
+                  linear-gradient(135deg, #0f172a 0%, #0b1021 50%, #0b1327 100%);
+      font-family: "Space Grotesk", "Segoe UI", sans-serif;
+      color: #f8fafc;
+      padding: 24px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .card {
+      background: linear-gradient(145deg, rgba(17, 24, 39, 0.8), rgba(11, 18, 36, 0.9));
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      backdrop-filter: blur(8px);
+    }
+    header.hero {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      align-items: center;
+    }
+    .hero-top {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.4), rgba(167, 139, 250, 0.4));
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      color: #0b1327;
+      box-shadow: 0 12px 30px rgba(56, 189, 248, 0.35);
+    }
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: -0.5px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.08);
+      color: var(--primary);
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+    .search-area {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .search {
+      position: relative;
+      width: 100%;
+    }
+    .search input {
+      width: 100%;
+      padding: 14px 16px 14px 44px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.04);
+      color: #f1f5f9;
+      font-size: 15px;
+      transition: border 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+    }
+    .search input:focus {
+      outline: none;
+      border-color: rgba(56, 189, 248, 0.7);
+      box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
+      transform: translateY(-1px);
+    }
+    .search .icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0.6;
+    }
+    .filter-chips {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.03);
+      color: #e5e7eb;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+    .chip.active {
+      border-color: rgba(56, 189, 248, 0.6);
+      background: rgba(56, 189, 248, 0.15);
+      color: #e0f2fe;
+      box-shadow: 0 10px 25px rgba(56, 189, 248, 0.25);
+    }
+    .commands-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .command-card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: linear-gradient(160deg, rgba(14, 165, 233, 0.06), rgba(17, 24, 39, 0.88));
+      box-shadow: var(--shadow);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: transform 0.18s ease, border 0.2s ease;
+    }
+    .command-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+    .command-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .tag {
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      color: #cbd5e1;
+      font-weight: 600;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      background: linear-gradient(120deg, rgba(56, 189, 248, 0.2), rgba(14, 165, 233, 0.35));
+      color: #e0f2fe;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(56, 189, 248, 0.25);
+      transition: all 0.2s ease;
+    }
+    .btn.secondary {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow: none;
+    }
+    .btn:active { transform: translateY(1px); }
+    .hidden { display: none !important; }
+    .details {
+      margin-top: 6px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.02);
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+    }
+    .section-title {
+      margin: 0;
+      font-size: 15px;
+      letter-spacing: -0.2px;
+    }
+    .calc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+    }
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .input-group label {
+      font-weight: 600;
+      color: #e5e7eb;
+      font-size: 14px;
+    }
+    .input-group input {
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(0, 0, 0, 0.25);
+      color: #e5e7eb;
+      font-size: 15px;
+      transition: border 0.2s ease, box-shadow 0.2s ease;
+    }
+    .input-group input:focus {
+      outline: none;
+      border-color: rgba(56, 189, 248, 0.5);
+      box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.08);
+    }
+    .input-group .helper {
+      color: #94a3b8;
+      font-size: 12px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(52, 211, 153, 0.14);
+      color: #bbf7d0;
+      border: 1px solid rgba(52, 211, 153, 0.4);
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      font-size: 12px;
+    }
+    .computed {
+      border-color: rgba(52, 211, 153, 0.8) !important;
+      background: rgba(52, 211, 153, 0.08) !important;
+    }
+    .formula-block {
+      display: grid;
+      gap: 6px;
+      color: #e2e8f0;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .formula-block strong {
+      color: #c7d2fe;
+    }
+    footer {
+      color: var(--muted);
+      text-align: center;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+    @media (max-width: 720px) {
+      body { padding: 16px; }
+      h1 { font-size: 24px; }
+      .search-area { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
-  <h1>Hello from my web app hihi 👋</h1>
-  <p>This runs on iPhone and PC via the browser!</p>
+  <main class="page">
+    <header class="card hero">
+      <div class="hero-top">
+        <div class="brand">
+          <div class="logo">M</div>
+          <div>
+            <div class="pill">MKW Tools</div>
+            <h1>Berekeningen & Utilities</h1>
+          </div>
+        </div>
+        <button class="btn secondary" type="button">Feedback versturen</button>
+      </div>
+      <div class="search-area">
+        <div class="search">
+          <span class="icon">🔍</span>
+          <input id="commandSearch" type="search" placeholder="Zoek op naam, categorie of trefwoord..." autocomplete="off" />
+        </div>
+        <div class="filter-chips" id="categoryChips">
+          <button class="chip active" data-category="all" type="button">Alle</button>
+          <button class="chip" data-category="hvac" type="button">HVAC</button>
+          <button class="chip" data-category="elektra" type="button">Elektra</button>
+          <button class="chip" data-category="constructie" type="button">Constructie</button>
+          <button class="chip" data-category="planning" type="button">Planning</button>
+        </div>
+      </div>
+    </header>
+
+    <section class="commands-grid" id="commandGrid">
+      <article class="command-card" data-category="hvac" data-search="luchtkanaal kanaal berekening ventilatie duct hvac">
+        <div class="command-meta">
+          <div>
+            <p class="section-title">Luchtkanaal Calculator</p>
+            <p style="margin:6px 0 0;color:var(--muted);">Bereken snel ronde of rechthoekige kanaaldimensies, snelheden en luchthoeveelheid.</p>
+          </div>
+          <div class="tags">
+            <span class="tag">HVAC</span>
+            <span class="tag">Ventilatie</span>
+            <span class="tag">Realtime</span>
+          </div>
+        </div>
+        <div class="details">
+          <div class="formula-block">
+            <strong>Ronde kanalen</strong>
+            <span>Q (m3/h) = v (m/s) × [π × (d/2)^2] × 3600</span>
+            <span>v (m/s) = (Q/3600) / [π × (d/2)^2]</span>
+            <span>d (mm) = 1000 × [2 × √((Q/3600)/(π·v))]</span>
+          </div>
+          <div class="formula-block">
+            <strong>Rechthoekige kanalen</strong>
+            <span>Q (m3/h) = v (m/s) × [(w/1000) × (h/1000)] × 3600</span>
+            <span>v (m/s) = (Q/3600) / [(w/1000) × (h/1000)]</span>
+            <span>w (mm) = [ (Q/(3600×v))×10^6 ] / h &nbsp;&nbsp; | &nbsp;&nbsp; h (mm) = [ (Q/(3600×v))×10^6 ] / w</span>
+          </div>
+          <div class="calc-grid">
+            <div class="card" style="padding:14px;">
+              <div class="command-meta" style="margin-bottom:8px;">
+                <p class="section-title">Rond kanaal</p>
+                <span class="badge" id="roundStatus">wacht op invoer</span>
+              </div>
+              <div class="input-group">
+                <label for="roundDiameter">Diameter (mm)</label>
+                <input id="roundDiameter" type="text" inputmode="decimal" placeholder="Bijv. 315" />
+                <div class="helper">Laat leeg om automatisch te berekenen</div>
+              </div>
+              <div class="input-group">
+                <label for="roundVelocity">Luchtsnelheid (m/s)</label>
+                <input id="roundVelocity" type="text" inputmode="decimal" placeholder="Bijv. 6.5" />
+              </div>
+              <div class="input-group">
+                <label for="roundFlow">Luchthoeveelheid (m³/h)</label>
+                <input id="roundFlow" type="text" inputmode="decimal" placeholder="Bijv. 2200" />
+              </div>
+            </div>
+            <div class="card" style="padding:14px;">
+              <div class="command-meta" style="margin-bottom:8px;">
+                <p class="section-title">Rechthoekig kanaal</p>
+                <span class="badge" id="rectStatus">wacht op invoer</span>
+              </div>
+              <div class="input-group">
+                <label for="rectWidth">Breedte (mm)</label>
+                <input id="rectWidth" type="text" inputmode="decimal" placeholder="Bijv. 400" />
+                <div class="helper">Laat leeg om automatisch te berekenen</div>
+              </div>
+              <div class="input-group">
+                <label for="rectHeight">Hoogte (mm)</label>
+                <input id="rectHeight" type="text" inputmode="decimal" placeholder="Bijv. 200" />
+              </div>
+              <div class="input-group">
+                <label for="rectVelocity">Luchtsnelheid (m/s)</label>
+                <input id="rectVelocity" type="text" inputmode="decimal" placeholder="Bijv. 5.5" />
+              </div>
+              <div class="input-group">
+                <label for="rectFlow">Luchthoeveelheid (m³/h)</label>
+                <input id="rectFlow" type="text" inputmode="decimal" placeholder="Bijv. 1600" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="command-card" data-category="elektra" data-search="elektra vermogen kabel energie">
+        <div class="command-meta">
+          <div>
+            <p class="section-title">Vermogenscheck (binnenkort)</p>
+            <p style="margin:6px 0 0;color:var(--muted);">Snel kabeldiktes en maximale belasting bepalen.</p>
+          </div>
+          <div class="tags">
+            <span class="tag">Elektra</span>
+            <span class="tag">Planning</span>
+          </div>
+        </div>
+        <div class="details">
+          <p style="margin:0;color:var(--muted);">Werk in uitvoering. Dit wordt een set tools voor kabelkeuze en spanningsval.</p>
+          <button class="btn secondary" type="button">Meld interesse</button>
+        </div>
+      </article>
+
+      <article class="command-card" data-category="planning" data-search="planning voortgang checklist project">
+        <div class="command-meta">
+          <div>
+            <p class="section-title">Project checklist (binnenkort)</p>
+            <p style="margin:6px 0 0;color:var(--muted);">Gestandaardiseerde stappenlijsten voor opleveringen.</p>
+          </div>
+          <div class="tags">
+            <span class="tag">Planning</span>
+            <span class="tag">Workflow</span>
+          </div>
+        </div>
+        <div class="details">
+          <p style="margin:0;color:var(--muted);">Binnenkort beschikbaar zodat teams dezelfde flow volgen.</p>
+          <button class="btn secondary" type="button">Meld interesse</button>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer>Past zich automatisch aan schermgrootte aan. Voeg meer commands toe via de lijst boven.</footer>
+
+  <script>
+    (function setupFilters() {
+      const searchInput = document.getElementById("commandSearch");
+      const chips = Array.from(document.querySelectorAll(".chip"));
+      const cards = Array.from(document.querySelectorAll(".command-card"));
+      let activeCategory = "all";
+
+      function applyFilters() {
+        const query = searchInput.value.trim().toLowerCase();
+        cards.forEach(card => {
+          const cardCategory = card.dataset.category;
+          const haystack = card.dataset.search.toLowerCase();
+          const matchesCategory = activeCategory === "all" || cardCategory === activeCategory;
+          const matchesQuery = haystack.includes(query);
+          card.classList.toggle("hidden", !(matchesCategory && matchesQuery));
+        });
+      }
+
+      chips.forEach(chip => {
+        chip.addEventListener("click", () => {
+          chips.forEach(c => c.classList.remove("active"));
+          chip.classList.add("active");
+          activeCategory = chip.dataset.category;
+          applyFilters();
+        });
+      });
+
+      searchInput.addEventListener("input", applyFilters);
+    })();
+
+    (function setupCalculators() {
+      const roundDiameter = document.getElementById("roundDiameter");
+      const roundVelocity = document.getElementById("roundVelocity");
+      const roundFlow = document.getElementById("roundFlow");
+      const rectWidth = document.getElementById("rectWidth");
+      const rectHeight = document.getElementById("rectHeight");
+      const rectVelocity = document.getElementById("rectVelocity");
+      const rectFlow = document.getElementById("rectFlow");
+      const roundStatus = document.getElementById("roundStatus");
+      const rectStatus = document.getElementById("rectStatus");
+
+      const clean = (val) => {
+        if (typeof val !== "string") return NaN;
+        const match = val.replace(",", ".").match(/[-+]?\\d*\\.?\\d+/);
+        return match ? parseFloat(match[0]) : NaN;
+      };
+
+      const markComputed = (target, group) => {
+        group.forEach(el => el.classList.remove("computed"));
+        if (target) target.classList.add("computed");
+      };
+
+      const format = (num) => Number.isFinite(num) ? Number(num).toFixed(2) : "";
+
+      const updateRound = () => {
+        const d = clean(roundDiameter.value);
+        const v = clean(roundVelocity.value);
+        const q = clean(roundFlow.value);
+        const inputs = [roundDiameter, roundVelocity, roundFlow];
+        let computed = null;
+
+        if (isNaN(d) && Number.isFinite(v) && Number.isFinite(q) && v !== 0) {
+          const area = (q / 3600) / v;
+          const diameter = 2 * Math.sqrt(area / Math.PI) * 1000;
+          roundDiameter.value = format(diameter);
+          computed = roundDiameter;
+          roundStatus.textContent = "diameter berekend";
+        } else if (isNaN(v) && Number.isFinite(d) && Number.isFinite(q) && d !== 0) {
+          const area = Math.PI * Math.pow((d / 1000) / 2, 2);
+          const velocity = (q / 3600) / area;
+          roundVelocity.value = format(velocity);
+          computed = roundVelocity;
+          roundStatus.textContent = "snelheid berekend";
+        } else if (isNaN(q) && Number.isFinite(d) && Number.isFinite(v)) {
+          const area = Math.PI * Math.pow((d / 1000) / 2, 2);
+          const flow = area * v * 3600;
+          roundFlow.value = format(flow);
+          computed = roundFlow;
+          roundStatus.textContent = "debiet berekend";
+        } else if ([d, v, q].every(Number.isFinite)) {
+          roundStatus.textContent = "alles ingevuld";
+        } else {
+          roundStatus.textContent = "wacht op invoer";
+        }
+        markComputed(computed, inputs);
+      };
+
+      const updateRect = () => {
+        const w = clean(rectWidth.value);
+        const h = clean(rectHeight.value);
+        const v = clean(rectVelocity.value);
+        const q = clean(rectFlow.value);
+        const inputs = [rectWidth, rectHeight, rectVelocity, rectFlow];
+        let computed = null;
+
+        if (isNaN(w) && Number.isFinite(h) && Number.isFinite(v) && Number.isFinite(q) && h !== 0 && v !== 0) {
+          const width = ((q / (3600 * v)) * 1e6) / h;
+          rectWidth.value = format(width);
+          computed = rectWidth;
+          rectStatus.textContent = "breedte berekend";
+        } else if (isNaN(h) && Number.isFinite(w) && Number.isFinite(v) && Number.isFinite(q) && w !== 0 && v !== 0) {
+          const height = ((q / (3600 * v)) * 1e6) / w;
+          rectHeight.value = format(height);
+          computed = rectHeight;
+          rectStatus.textContent = "hoogte berekend";
+        } else if (isNaN(v) && Number.isFinite(w) && Number.isFinite(h) && Number.isFinite(q) && w !== 0 && h !== 0) {
+          const area = (w / 1000) * (h / 1000);
+          const velocity = (q / 3600) / area;
+          rectVelocity.value = format(velocity);
+          computed = rectVelocity;
+          rectStatus.textContent = "snelheid berekend";
+        } else if (isNaN(q) && Number.isFinite(w) && Number.isFinite(h) && Number.isFinite(v)) {
+          const area = (w / 1000) * (h / 1000);
+          const flow = v * area * 3600;
+          rectFlow.value = format(flow);
+          computed = rectFlow;
+          rectStatus.textContent = "debiet berekend";
+        } else if ([w, h, v, q].every(Number.isFinite)) {
+          rectStatus.textContent = "alles ingevuld";
+        } else {
+          rectStatus.textContent = "wacht op invoer";
+        }
+        markComputed(computed, inputs);
+      };
+
+      [roundDiameter, roundVelocity, roundFlow].forEach(input => {
+        input.addEventListener("input", updateRound);
+      });
+      [rectWidth, rectHeight, rectVelocity, rectFlow].forEach(input => {
+        input.addEventListener("input", updateRect);
+      });
+    })();
+  </script>
 </body>
 </html>
