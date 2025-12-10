@@ -308,9 +308,77 @@
     }
     .desktop-only { display: block; }
     .mobile-only { display: none; }
+    .menu-variant {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .compact-menu .menu-btn {
+      padding: 12px 14px;
+      font-size: 14px;
+      box-shadow: none;
+      background: linear-gradient(150deg, rgba(56, 189, 248, 0.14), rgba(11, 18, 36, 0.9));
+    }
+    .compact-menu .tag { display: none; }
+    .table-scroll {
+      width: 100%;
+      overflow-x: auto;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.02);
+    }
+    table.cv-table {
+      width: 100%;
+      min-width: 960px;
+      border-collapse: collapse;
+      color: #e5e7eb;
+      font-size: 13px;
+    }
+    table.cv-table th,
+    table.cv-table td {
+      padding: 10px 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      text-align: left;
+    }
+    table.cv-table th {
+      font-size: 12px;
+      color: #cbd5e1;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+    table.cv-table input,
+    table.cv-table select {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.25);
+      color: #e5e7eb;
+      font-size: 13px;
+    }
+    table.cv-table input:focus,
+    table.cv-table select:focus {
+      outline: none;
+      border-color: rgba(56, 189, 248, 0.6);
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.08);
+    }
+    table.cv-table .readonly {
+      color: #a5b4fc;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .table-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      margin-top: 10px;
+    }
     @media (max-width: 900px) {
       .desktop-only { display: none; }
       .mobile-only { display: block; }
+      .search-area { margin-top: 4px; }
+      .menu-grid { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
     }
     footer {
       color: var(--muted);
@@ -353,22 +421,47 @@
           <span class="chip" data-category="planning">Planning</span>
         </div>
       </div>
-      <div class="menu-grid">
-        <button class="menu-btn" type="button" data-open-calc="duct" data-category="hvac" data-search="luchtkanaal ventilatie hvac kanaal">
-          <span>Luchtkanaal Calculator</span>
-          <span class="tags">
-            <span class="tag">HVAC</span>
-            <span class="tag">Ventilatie</span>
-          </span>
-        </button>
-        <button class="menu-btn" type="button" data-open-calc="elektra" data-category="elektra" data-search="elektra vermogen kabel belasting">
-          <span>Vermogenscheck (binnenkort)</span>
-          <span class="tag">Elektra</span>
-        </button>
-        <button class="menu-btn" type="button" data-open-calc="planning" data-category="planning" data-search="planning checklist project">
-          <span>Project checklist (binnenkort)</span>
-          <span class="tag">Planning</span>
-        </button>
+      <div class="menu-variant desktop-only">
+        <div class="menu-grid">
+          <button class="menu-btn" type="button" data-open-calc="duct" data-category="hvac" data-search="luchtkanaal ventilatie hvac kanaal rond rechthoek">
+            <span>Luchtkanaal Calculator</span>
+            <span class="tags">
+              <span class="tag">HVAC</span>
+              <span class="tag">Ventilatie</span>
+            </span>
+          </button>
+          <button class="menu-btn" type="button" data-open-calc="cvdiameter" data-category="hvac" data-search="cv diameter leiding pa kW delta t water">
+            <span>CV Diameter Berekening</span>
+            <span class="tags">
+              <span class="tag">HVAC</span>
+              <span class="tag">Leidingen</span>
+            </span>
+          </button>
+          <button class="menu-btn" type="button" data-open-calc="elektra" data-category="elektra" data-search="elektra vermogen kabel belasting">
+            <span>Vermogenscheck (binnenkort)</span>
+            <span class="tag">Elektra</span>
+          </button>
+          <button class="menu-btn" type="button" data-open-calc="planning" data-category="planning" data-search="planning checklist project">
+            <span>Project checklist (binnenkort)</span>
+            <span class="tag">Planning</span>
+          </button>
+        </div>
+      </div>
+      <div class="menu-variant mobile-only">
+        <div class="menu-grid compact-menu">
+          <button class="menu-btn" type="button" data-open-calc="duct" data-category="hvac" data-search="lucht kanaal rond rechthoek hvac">
+            <span>Kanaal (lucht)</span>
+          </button>
+          <button class="menu-btn" type="button" data-open-calc="cvdiameter" data-category="hvac" data-search="cv diameter leiding pa kw">
+            <span>CV diameter</span>
+          </button>
+          <button class="menu-btn" type="button" data-open-calc="elektra" data-category="elektra" data-search="elektra">
+            <span>Vermogen (binnenkort)</span>
+          </button>
+          <button class="menu-btn" type="button" data-open-calc="planning" data-category="planning" data-search="planning checklist">
+            <span>Checklist (binnenkort)</span>
+          </button>
+        </div>
       </div>
     </section>
 
@@ -381,7 +474,7 @@
         <button id="backBtn" class="btn secondary" type="button">Terug naar overzicht</button>
       </div>
 
-      <div id="ductCalculator" class="details" style="margin-top:12px;">
+      <div id="ductCalculator" class="details calc-panel" style="margin-top:12px;">
         <div class="desktop-only" style="display:grid;gap:10px;">
           <div class="formula-block">
             <strong>Ronde kanalen</strong>
@@ -441,6 +534,55 @@
         </div>
       </div>
 
+      <div id="cvCalculator" class="details calc-panel hidden" style="margin-top:12px;">
+        <div class="desktop-only" style="display:grid;gap:10px;">
+          <div class="formula-block">
+            <strong>Watergegevens</strong>
+            <span>ΔT = T<sub>aanvoer</sub> - T<sub>retour</sub></span>
+            <span>k (m²/s) en ρ (kg/m³) worden bepaald op gemiddelde temperatuur.</span>
+          </div>
+          <div class="formula-block">
+            <strong>Dimensioneren</strong>
+            <span>Controleer per diameter of kW voldoet bij gekozen Pa per meter.</span>
+            <span>Qm (m³/h) = v<sub>massa</sub> * 3600 · kW = Qm · c<sub>p</sub> · ΔT</span>
+          </div>
+        </div>
+        <p class="note mobile-only">Tabel scrollt horizontaal op mobiel. Formule-detail alleen op desktop.</p>
+
+        <div class="card" style="padding:14px;">
+          <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <span>CV Diameter Berekening</span>
+            <span class="badge">kW → diameter</span>
+          </div>
+          <p class="note" style="margin-top:6px;">Vul minimaal aanvoer, retour, benodigd kW en kies Pa/m + materiaal. Kolommen rechts vullen automatisch.</p>
+          <div class="table-scroll" style="margin-top:12px;">
+            <table class="cv-table">
+              <thead>
+                <tr>
+                  <th>Sectie</th>
+                  <th>Aanvoer °C</th>
+                  <th>Retour °C</th>
+                  <th>Benodigd kW</th>
+                  <th>Max Pa</th>
+                  <th>Materiaal</th>
+                  <th>ν (10⁻⁶ m²/s)</th>
+                  <th>ρ (kg/m³)</th>
+                  <th>Qm (m³/h)</th>
+                  <th>kW gehaald</th>
+                  <th>Diameter</th>
+                  <th>Pa</th>
+                </tr>
+              </thead>
+              <tbody id="cvTableBody"></tbody>
+            </table>
+          </div>
+          <div class="table-actions">
+            <button id="cvAddRow" class="btn" type="button">Rij toevoegen</button>
+            <button id="cvDeleteRow" class="btn secondary" type="button">Laatste rij verwijderen</button>
+          </div>
+        </div>
+      </div>
+
       <div id="comingSoon" class="details hidden" style="margin-top:12px;">
         <p id="comingSoonTitle" style="margin:0;font-weight:700;">Nieuw gereedschap</p>
         <p style="margin:0;color:var(--muted);">Deze berekening is onderweg. Laat weten wat je nodig hebt via de feedback-knop.</p>
@@ -451,12 +593,13 @@
   <footer>Past zich automatisch aan schermgrootte aan. Voeg meer berekeningen toe via het overzicht.</footer>
 
   <script>
+    window.calcResetters = window.calcResetters || {};
     (function setupNavigation() {
       const homeScreen = document.getElementById("homeScreen");
       const calcScreen = document.getElementById("calcScreen");
       const calcTitle = document.getElementById("calcTitle");
       const calcSubtitle = document.getElementById("calcSubtitle");
-      const calculatorCard = document.getElementById("ductCalculator");
+      const panels = Array.from(document.querySelectorAll(".calc-panel"));
       const comingSoon = document.getElementById("comingSoon");
       const comingTitle = document.getElementById("comingSoonTitle");
       const backBtn = document.getElementById("backBtn");
@@ -466,21 +609,10 @@
       let activeCategory = "all";
 
       const calculators = {
-        duct: { name: "Luchtkanaal Calculator", subtitle: "Kanaaldiameter, snelheid of debiet", implemented: true },
-        elektra: { name: "Vermogenscheck", subtitle: "Kabeldiktes en belasting", implemented: false },
-        planning: { name: "Project checklist", subtitle: "Gestandaardiseerde stappen", implemented: false }
-      };
-
-      const resetCalculator = () => {
-        const ids = ["roundDiameter","roundVelocity","roundFlow","rectWidth","rectHeight","rectVelocity","rectFlow"];
-        ids.forEach(id => {
-          const el = document.getElementById(id);
-          el.value = "";
-          el.classList.remove("computed");
-          el.readOnly = false;
-        });
-        roundComputedField = null;
-        rectComputedField = null;
+        duct: { name: "Luchtkanaal Calculator", subtitle: "Kanaaldiameter, snelheid of debiet", implemented: true, panelId: "ductCalculator" },
+        cvdiameter: { name: "CV Diameter Berekening", subtitle: "Leidingdiameter op basis van kW en ΔT", implemented: true, panelId: "cvCalculator" },
+        elektra: { name: "Vermogenscheck", subtitle: "Kabeldiktes en belasting", implemented: false, panelId: null },
+        planning: { name: "Project checklist", subtitle: "Gestandaardiseerde stappen", implemented: false, panelId: null }
       };
 
       const openCalc = (key) => {
@@ -491,11 +623,15 @@
         homeScreen.classList.add("hidden");
         calcScreen.classList.remove("hidden");
         if (cfg.implemented) {
-          calculatorCard.classList.remove("hidden");
+          panels.forEach(panel => {
+            panel.classList.toggle("hidden", panel.id !== cfg.panelId);
+          });
           comingSoon.classList.add("hidden");
-          resetCalculator();
+          const resetters = window.calcResetters || {};
+          const reset = resetters[cfg.panelId];
+          if (typeof reset === "function") reset();
         } else {
-          calculatorCard.classList.add("hidden");
+          panels.forEach(panel => panel.classList.add("hidden"));
           comingSoon.classList.remove("hidden");
           comingTitle.textContent = cfg.name + " (binnenkort)";
         }
@@ -650,6 +786,276 @@
           updateRect();
         });
       });
+
+      const resetDuct = () => {
+        const ids = ["roundDiameter","roundVelocity","roundFlow","rectWidth","rectHeight","rectVelocity","rectFlow"];
+        ids.forEach(id => {
+          const el = document.getElementById(id);
+          el.value = "";
+          el.classList.remove("computed");
+          el.readOnly = false;
+        });
+        roundComputedField = null;
+        rectComputedField = null;
+      };
+
+      window.calcResetters.ductCalculator = resetDuct;
+    })();
+
+    (function setupCvCalculator() {
+      const body = document.getElementById("cvTableBody");
+      const btnAdd = document.getElementById("cvAddRow");
+      const btnDelete = document.getElementById("cvDeleteRow");
+
+      const viscosityTable = {
+        0: 1.792e-6, 10: 1.308e-6, 20: 1.004e-6, 30: 0.801e-6,
+        40: 0.654e-6, 50: 0.554e-6, 60: 0.475e-6, 70: 0.414e-6,
+        80: 0.365e-6, 90: 0.326e-6, 100: 0.294e-6, 110: 0.268e-6, 120: 0.246e-6
+      };
+      const densityTable = {
+        0: 0.9998, 10: 0.9997, 20: 0.9983, 30: 0.9957,
+        40: 0.9922, 50: 0.9880, 60: 0.9831, 70: 0.9777,
+        80: 0.9716, 90: 0.9651, 100: 0.9581, 110: 0.9507, 120: 0.9428
+      };
+      const paOptions = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 250];
+      const paSweep = [10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160];
+
+      const materials = {
+        vlampijp: {
+          label: "Vlampijp",
+          k: 0.05,
+          diameters: { DN15:17.3, DN20:22.3, DN25:28.5, DN32:37.2, DN40:43.1, DN50:54.5, DN65:70.3, DN80:82.5, DN100:107.1, DN125:131.7, DN150:159.3, DN200:206.5, DN250:260.4, DN300:309.7 }
+        },
+        draadbuis: {
+          label: "Draadbuis",
+          k: 0.05,
+          diameters: { '3/8"':12.5, '1/2"':16, '3/4"':21.6, '1"':27.2, '1¼"':35.9, '1½"':41.8, '2"':53 }
+        },
+        dunwandig: {
+          label: "Dunwandig",
+          k: 0.01,
+          diameters: { "Ø12":10, "Ø15":12.5, "Ø18":15.5, "Ø22":19.5, "Ø28":25.5, "Ø35":32, "Ø62":39, "Ø54":51 }
+        },
+        koper: {
+          label: "Koper",
+          k: 0.01,
+          diameters: { "Ø12":10, "Ø15":13, "Ø22":19.8, "Ø28":25.6, "Ø35":32.4, "Ø42":39, "Ø54":51 }
+        },
+        pvc: {
+          label: "PVC",
+          k: 0.05,
+          diameters: { "Ø20":18, "Ø25":22.6, "Ø32":28.8, "Ø40":36.2, "Ø50":45.2, "Ø63":58.2, "Ø72":69.2, "Ø90":83, "Ø110":101.6, "Ø125":115.4, "Ø160":147.6, "Ø200":184.6, "Ø250":230.8, "Ø315":290.8 }
+        },
+        fallback: {
+          label: "Overig",
+          k: 0.05,
+          diameters: { "Ø15":17.3, "Ø20":22.3, "Ø25":28.5, "Ø32":37.2, "Ø40":43.1, "Ø50":54.5, "Ø65":70.3 }
+        }
+      };
+
+      const parseNum = (value) => {
+        if (typeof value !== "string") return NaN;
+        const n = value.replace(",", ".").match(/[-+]?\d*\.?\d+/);
+        return n ? parseFloat(n[0]) : NaN;
+      };
+
+      const avgKey = (avg) => {
+        const floored = Math.floor(avg / 10) * 10;
+        return Math.min(120, Math.max(0, floored));
+      };
+
+      const makeInput = (placeholder = "") => {
+        const input = document.createElement("input");
+        input.type = "text";
+        input.inputMode = "decimal";
+        input.placeholder = placeholder;
+        input.className = "cv-input";
+        return input;
+      };
+
+      const makeSelect = (options, defaultVal) => {
+        const select = document.createElement("select");
+        options.forEach(opt => {
+          const el = document.createElement("option");
+          const value = typeof opt === "object" ? opt.value : opt;
+          const label = typeof opt === "object" ? opt.label : opt;
+          el.value = value;
+          el.textContent = label;
+          if (defaultVal !== undefined && value === defaultVal) el.selected = true;
+          select.appendChild(el);
+        });
+        return select;
+      };
+
+      const makeCell = (content) => {
+        const td = document.createElement("td");
+        if (content instanceof HTMLElement) {
+          td.appendChild(content);
+        } else {
+          td.textContent = content;
+        }
+        return td;
+      };
+
+      const createRow = (idx) => {
+        const tr = document.createElement("tr");
+        tr.dataset.row = idx;
+
+        const section = makeInput(`Sectie ${idx + 1}`);
+        const tSupply = makeInput("75");
+        const tReturn = makeInput("60");
+        const kwNeed = makeInput("20");
+
+        const paSelect = makeSelect(paOptions, 150);
+        const materialSelect = makeSelect(
+          Object.values(materials).filter(m => m !== materials.fallback).map(m => ({ value: m.label.toLowerCase(), label: m.label })),
+          "vlampijp"
+        );
+
+        const viscosityCell = document.createElement("span");
+        viscosityCell.className = "readonly";
+        const densityCell = document.createElement("span");
+        densityCell.className = "readonly";
+        const qmCell = document.createElement("span");
+        qmCell.className = "readonly";
+        const kwCell = document.createElement("span");
+        kwCell.className = "readonly";
+        const dnCell = document.createElement("span");
+        dnCell.className = "readonly";
+        const paCell = document.createElement("span");
+        paCell.className = "readonly";
+
+        tr.append(
+          makeCell(section),
+          makeCell(tSupply),
+          makeCell(tReturn),
+          makeCell(kwNeed),
+          makeCell(paSelect),
+          makeCell(materialSelect),
+          makeCell(viscosityCell),
+          makeCell(densityCell),
+          makeCell(qmCell),
+          makeCell(kwCell),
+          makeCell(dnCell),
+          makeCell(paCell)
+        );
+
+        const inputs = [section, tSupply, tReturn, kwNeed, paSelect, materialSelect];
+        inputs.forEach(el => {
+          el.addEventListener("input", () => updateRow(tr));
+          el.addEventListener("change", () => updateRow(tr));
+        });
+
+        updateRow(tr);
+        return tr;
+      };
+
+      const updateRow = (row) => {
+        const cells = row.querySelectorAll("td");
+        const tSupply = parseNum(cells[1].querySelector("input").value);
+        const tReturn = parseNum(cells[2].querySelector("input").value);
+        const kwNeed = parseNum(cells[3].querySelector("input").value);
+        const maxPa = parseNum(cells[4].querySelector("select").value);
+        const materialKey = cells[5].querySelector("select").value || "vlampijp";
+        const material = materials[materialKey] || materials.fallback;
+        const deltaT = tSupply - tReturn;
+
+        const visCell = cells[6].querySelector(".readonly");
+        const rhoCell = cells[7].querySelector(".readonly");
+        const qmCell = cells[8].querySelector(".readonly");
+        const kwCell = cells[9].querySelector(".readonly");
+        const dnCell = cells[10].querySelector(".readonly");
+        const paCell = cells[11].querySelector(".readonly");
+
+        const clear = () => {
+          [visCell, rhoCell, qmCell, kwCell, dnCell, paCell].forEach(c => c.textContent = "");
+        };
+
+        if (!Number.isFinite(deltaT) || deltaT <= 0 || !Number.isFinite(kwNeed)) {
+          clear();
+          return;
+        }
+
+        const avg = (tSupply + tReturn) / 2;
+        const key = avgKey(avg);
+        const vVal = viscosityTable[key] ?? viscosityTable[120];
+        const cVal = densityTable[key] ?? densityTable[120];
+        const rho = cVal * 1000;
+        const cp = 4.18;
+
+        visCell.textContent = (vVal * 1e6).toFixed(3);
+        rhoCell.textContent = rho.toFixed(1);
+
+        const deltaPMax = maxPa / 1000;
+        let result = null;
+
+        Object.entries(material.diameters).some(([dnLabel, dMm]) => {
+          const D = dMm / 1000;
+          if (D === 0 || deltaPMax <= 0) return false;
+          const sqrtTermMax = Math.sqrt(2 * D * deltaPMax);
+          const logInput = (material.k / 1000) / (3.7 * D) + (2.51 * vVal) / (D * sqrtTermMax);
+          if (logInput <= 0) return false;
+          const logTerm = Math.log10(logInput);
+          const areaTerm = Math.PI * 0.25 * cVal * (D ** 2);
+          const qmAtMax = -2 * sqrtTermMax * logTerm * areaTerm * 1000;
+          const kwAtMax = qmAtMax * cp * deltaT;
+          if (kwAtMax < kwNeed) return false;
+
+          for (const pa of paSweep) {
+            if (pa > maxPa) break;
+            const deltaP = pa / 1000;
+            const sqrtTerm = Math.sqrt(2 * D * deltaP);
+            if (D * sqrtTerm === 0) continue;
+            const logInputPa = (material.k / 1000) / (3.7 * D) + (2.51 * vVal) / (D * sqrtTerm);
+            if (logInputPa <= 0) continue;
+            const logTermPa = Math.log10(logInputPa);
+            const areaTermPa = Math.PI * 0.25 * cVal * (D ** 2);
+            const qm = -2 * sqrtTerm * logTermPa * areaTermPa * 1000;
+            const kwCalc = qm * cp * deltaT;
+            if (kwCalc >= kwNeed) {
+              result = { dnLabel, pa, qm, kwCalc };
+              return true;
+            }
+          }
+          return false;
+        });
+
+        if (result) {
+          qmCell.textContent = result.qm.toFixed(3);
+          kwCell.textContent = result.kwCalc.toFixed(3);
+          dnCell.textContent = result.dnLabel;
+          paCell.textContent = result.pa.toFixed(1);
+        } else {
+          clear();
+        }
+      };
+
+      const resetTable = () => {
+        body.innerHTML = "";
+        for (let i = 0; i < 3; i++) {
+          body.appendChild(createRow(i));
+        }
+      };
+
+      btnAdd.addEventListener("click", () => {
+        body.appendChild(createRow(body.children.length));
+      });
+
+      btnDelete.addEventListener("click", () => {
+        if (body.children.length > 1) {
+          body.removeChild(body.lastElementChild);
+        } else {
+          const inputs = body.querySelectorAll("input");
+          inputs.forEach(input => input.value = "");
+          body.querySelectorAll("select").forEach(sel => {
+            if (sel.options.length) sel.selectedIndex = 0;
+          });
+          body.querySelectorAll(".readonly").forEach(span => span.textContent = "");
+        }
+      });
+
+      resetTable();
+      window.calcResetters.cvCalculator = resetTable;
     })();
   </script>
 </body>
