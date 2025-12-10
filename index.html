@@ -323,9 +323,39 @@
     .table-scroll {
       width: 100%;
       overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
       border-radius: var(--radius-md);
       border: 1px solid var(--border);
       background: rgba(255, 255, 255, 0.02);
+    }
+    .form-table-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table.input-table {
+      width: 100%;
+      min-width: 440px;
+      border-collapse: collapse;
+      color: #e5e7eb;
+    }
+    table.input-table th,
+    table.input-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      text-align: left;
+    }
+    table.input-table th { font-size: 13px; color: #cbd5e1; font-weight: 600; }
+    table.input-table td .helper { margin: 0; color: #94a3b8; font-size: 12px; }
+    table.input-table input {
+      width: 100%;
+      padding: 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(0, 0, 0, 0.25);
+      color: #e5e7eb;
+      font-size: 14px;
+    }
+    table.input-table input:focus {
+      outline: none;
+      border-color: rgba(56, 189, 248, 0.5);
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.08);
     }
     table.cv-table {
       width: 100%;
@@ -379,6 +409,9 @@
       .mobile-only { display: block; }
       .search-area { margin-top: 4px; }
       .menu-grid { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+      table.cv-table { min-width: 760px; font-size: 12px; }
+      table.cv-table th, table.cv-table td { padding: 8px 6px; }
+      table.input-table { min-width: 360px; font-size: 13px; }
     }
     footer {
       color: var(--muted);
@@ -411,7 +444,7 @@
       <p style="margin:0;color:var(--muted);">Klik op een berekening om te starten. Werkt op desktop en mobiel.</p>
       <div class="search-area">
         <div class="search">
-          <span class="icon">🔍</span>
+          <span class="icon">&#128269;</span>
           <input id="commandSearch" type="search" placeholder="Zoek op naam of categorie..." autocomplete="off" />
         </div>
         <div class="filter-chips" id="categoryChips">
@@ -495,40 +528,63 @@
             <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
               <span>Rond kanaal</span>
             </div>
-            <div class="input-group">
-              <label for="roundDiameter">Diameter (mm)</label>
-              <input id="roundDiameter" type="text" inputmode="decimal" placeholder="Bijv. 315" />
-              <div class="helper">Laat leeg om automatisch te berekenen</div>
-            </div>
-            <div class="input-group">
-              <label for="roundVelocity">Luchtsnelheid (m/s)</label>
-              <input id="roundVelocity" type="text" inputmode="decimal" placeholder="Bijv. 6.5" />
-            </div>
-            <div class="input-group">
-              <label for="roundFlow">Luchthoeveelheid (m3/h)</label>
-              <input id="roundFlow" type="text" inputmode="decimal" placeholder="Bijv. 2200" />
+            <div class="form-table-scroll">
+              <table class="input-table">
+                <thead>
+                  <tr><th>Grootheid</th><th>Waarde</th><th>Opmerking</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Diameter (mm)</td>
+                    <td><input id="roundDiameter" type="text" inputmode="decimal" placeholder="Bijv. 315" /></td>
+                    <td><p class="helper">Laat leeg om automatisch te berekenen</p></td>
+                  </tr>
+                  <tr>
+                    <td>Luchtsnelheid (m/s)</td>
+                    <td><input id="roundVelocity" type="text" inputmode="decimal" placeholder="Bijv. 6.5" /></td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>Luchthoeveelheid (m3/h)</td>
+                    <td><input id="roundFlow" type="text" inputmode="decimal" placeholder="Bijv. 2200" /></td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
           <div class="card" style="padding:14px;">
             <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
               <span>Rechthoekig kanaal</span>
             </div>
-            <div class="input-group">
-              <label for="rectWidth">Breedte (mm)</label>
-              <input id="rectWidth" type="text" inputmode="decimal" placeholder="Bijv. 400" />
-              <div class="helper">Laat leeg om automatisch te berekenen</div>
-            </div>
-            <div class="input-group">
-              <label for="rectHeight">Hoogte (mm)</label>
-              <input id="rectHeight" type="text" inputmode="decimal" placeholder="Bijv. 200" />
-            </div>
-            <div class="input-group">
-              <label for="rectVelocity">Luchtsnelheid (m/s)</label>
-              <input id="rectVelocity" type="text" inputmode="decimal" placeholder="Bijv. 5.5" />
-            </div>
-            <div class="input-group">
-              <label for="rectFlow">Luchthoeveelheid (m3/h)</label>
-              <input id="rectFlow" type="text" inputmode="decimal" placeholder="Bijv. 1600" />
+            <div class="form-table-scroll">
+              <table class="input-table">
+                <thead>
+                  <tr><th>Grootheid</th><th>Waarde</th><th>Opmerking</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Breedte (mm)</td>
+                    <td><input id="rectWidth" type="text" inputmode="decimal" placeholder="Bijv. 400" /></td>
+                    <td><p class="helper">Laat leeg om automatisch te berekenen</p></td>
+                  </tr>
+                  <tr>
+                    <td>Hoogte (mm)</td>
+                    <td><input id="rectHeight" type="text" inputmode="decimal" placeholder="Bijv. 200" /></td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>Luchtsnelheid (m/s)</td>
+                    <td><input id="rectVelocity" type="text" inputmode="decimal" placeholder="Bijv. 5.5" /></td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>Luchthoeveelheid (m3/h)</td>
+                    <td><input id="rectFlow" type="text" inputmode="decimal" placeholder="Bijv. 1600" /></td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -538,13 +594,13 @@
         <div class="desktop-only" style="display:grid;gap:10px;">
           <div class="formula-block">
             <strong>Watergegevens</strong>
-            <span>ΔT = T<sub>aanvoer</sub> - T<sub>retour</sub></span>
-            <span>k (m²/s) en ρ (kg/m³) worden bepaald op gemiddelde temperatuur.</span>
+            <span>Delta T = T_aanvoer - T_retour</span>
+            <span>nu (m2/s) en rho (kg/m3) bepaald op gemiddelde temperatuur.</span>
           </div>
           <div class="formula-block">
             <strong>Dimensioneren</strong>
             <span>Controleer per diameter of kW voldoet bij gekozen Pa per meter.</span>
-            <span>Qm (m³/h) = v<sub>massa</sub> * 3600 · kW = Qm · c<sub>p</sub> · ΔT</span>
+            <span>Qm (m3/h) = v_massa * 3600 | kW = Qm * c_p * Delta T</span>
           </div>
         </div>
         <p class="note mobile-only">Tabel scrollt horizontaal op mobiel. Formule-detail alleen op desktop.</p>
@@ -552,7 +608,7 @@
         <div class="card" style="padding:14px;">
           <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
             <span>CV Diameter Berekening</span>
-            <span class="badge">kW → diameter</span>
+            <span class="badge">kW -> diameter</span>
           </div>
           <p class="note" style="margin-top:6px;">Vul minimaal aanvoer, retour, benodigd kW en kies Pa/m + materiaal. Kolommen rechts vullen automatisch.</p>
           <div class="table-scroll" style="margin-top:12px;">
@@ -560,14 +616,14 @@
               <thead>
                 <tr>
                   <th>Sectie</th>
-                  <th>Aanvoer °C</th>
-                  <th>Retour °C</th>
+                  <th>Aanvoer C</th>
+                  <th>Retour C</th>
                   <th>Benodigd kW</th>
                   <th>Max Pa</th>
                   <th>Materiaal</th>
-                  <th>ν (10⁻⁶ m²/s)</th>
-                  <th>ρ (kg/m³)</th>
-                  <th>Qm (m³/h)</th>
+                  <th>nu (10^-6 m2/s)</th>
+                  <th>rho (kg/m3)</th>
+                  <th>Qm (m3/h)</th>
                   <th>kW gehaald</th>
                   <th>Diameter</th>
                   <th>Pa</th>
@@ -582,7 +638,6 @@
           </div>
         </div>
       </div>
-
       <div id="comingSoon" class="details hidden" style="margin-top:12px;">
         <p id="comingSoonTitle" style="margin:0;font-weight:700;">Nieuw gereedschap</p>
         <p style="margin:0;color:var(--muted);">Deze berekening is onderweg. Laat weten wat je nodig hebt via de feedback-knop.</p>
@@ -610,7 +665,7 @@
 
       const calculators = {
         duct: { name: "Luchtkanaal Calculator", subtitle: "Kanaaldiameter, snelheid of debiet", implemented: true, panelId: "ductCalculator" },
-        cvdiameter: { name: "CV Diameter Berekening", subtitle: "Leidingdiameter op basis van kW en ΔT", implemented: true, panelId: "cvCalculator" },
+        cvdiameter: { name: "CV Diameter Berekening", subtitle: "Leidingdiameter op basis van kW en Delta T", implemented: true, panelId: "cvCalculator" },
         elektra: { name: "Vermogenscheck", subtitle: "Kabeldiktes en belasting", implemented: false, panelId: null },
         planning: { name: "Project checklist", subtitle: "Gestandaardiseerde stappen", implemented: false, panelId: null }
       };
@@ -829,27 +884,27 @@
         draadbuis: {
           label: "Draadbuis",
           k: 0.05,
-          diameters: { '3/8"':12.5, '1/2"':16, '3/4"':21.6, '1"':27.2, '1¼"':35.9, '1½"':41.8, '2"':53 }
+          diameters: { '3/8"':12.5, '1/2"':16, '3/4"':21.6, '1"':27.2, '1-1/4"':35.9, '1-1/2"':41.8, '2"':53 }
         },
         dunwandig: {
           label: "Dunwandig",
           k: 0.01,
-          diameters: { "Ø12":10, "Ø15":12.5, "Ø18":15.5, "Ø22":19.5, "Ø28":25.5, "Ø35":32, "Ø62":39, "Ø54":51 }
+          diameters: { "O12":10, "O15":12.5, "O18":15.5, "O22":19.5, "O28":25.5, "O35":32, "O62":39, "O54":51 }
         },
         koper: {
           label: "Koper",
           k: 0.01,
-          diameters: { "Ø12":10, "Ø15":13, "Ø22":19.8, "Ø28":25.6, "Ø35":32.4, "Ø42":39, "Ø54":51 }
+          diameters: { "O12":10, "O15":13, "O22":19.8, "O28":25.6, "O35":32.4, "O42":39, "O54":51 }
         },
         pvc: {
           label: "PVC",
           k: 0.05,
-          diameters: { "Ø20":18, "Ø25":22.6, "Ø32":28.8, "Ø40":36.2, "Ø50":45.2, "Ø63":58.2, "Ø72":69.2, "Ø90":83, "Ø110":101.6, "Ø125":115.4, "Ø160":147.6, "Ø200":184.6, "Ø250":230.8, "Ø315":290.8 }
+          diameters: { "O20":18, "O25":22.6, "O32":28.8, "O40":36.2, "O50":45.2, "O63":58.2, "O72":69.2, "O90":83, "O110":101.6, "O125":115.4, "O160":147.6, "O200":184.6, "O250":230.8, "O315":290.8 }
         },
         fallback: {
           label: "Overig",
           k: 0.05,
-          diameters: { "Ø15":17.3, "Ø20":22.3, "Ø25":28.5, "Ø32":37.2, "Ø40":43.1, "Ø50":54.5, "Ø65":70.3 }
+          diameters: { "O15":17.3, "O20":22.3, "O25":28.5, "O32":37.2, "O40":43.1, "O50":54.5, "O65":70.3 }
         }
       };
 
@@ -1060,3 +1115,11 @@
   </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
