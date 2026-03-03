@@ -504,14 +504,6 @@
     }
     table td{ vertical-align: middle; }
 
-    /* Remove combined outer outline on calc panels (keep inner cards) */
-    #calcScreen .card.details.calc-panel{
-      border: none !important;
-      background: transparent !important;
-      box-shadow: none !important;
-      padding: 0 !important;
-    }
-
     /* Uniform result styling */
     .result, .computed-box, .blue-result, .result-box{
       border: 1px solid rgba(167, 139, 250, 0.28) !important;
@@ -536,6 +528,43 @@
     /* Inline-field fixes (tapwater max snelheid / type tabel) */
     .inline-field .v input{ min-width: 120px; }
     .inline-field .v select{ min-width: 220px; }
+
+  
+    /* Panels: keep a single outer outline per calculation, but avoid double nested outlines */
+    #calcScreen .card.details.calc-panel{
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.02);
+      box-shadow: none;
+      padding: 16px;
+      border-radius: var(--radius-lg);
+    }
+
+  
+    .check-row.checked, .checklist-item.checked, li.checked{
+      background: rgba(56,189,248,0.10) !important;
+      border-color: rgba(56,189,248,0.22) !important;
+    }
+
+  
+    /* Auto-filled / computed fields */
+    input.computed, .readonly, .computed-value{
+      border-color: rgba(167, 139, 250, 0.35) !important;
+      background: rgba(167, 139, 250, 0.08) !important;
+      color: #f1f5f9 !important;
+      font-weight: 700;
+    }
+    .computed-hint{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      font-size:12px;
+      color:#cbd5e1;
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid rgba(167,139,250,0.20);
+      background: rgba(167,139,250,0.06);
+      margin-top:10px;
+    }
 
   </style>
 
@@ -662,6 +691,74 @@
       window.calcResetters.pdfEditor = () => {};
     })();
 
+  
+    (function setupInputTooltips(){
+      const isTouch = () => window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+      const tip = document.getElementById("thTip"); // reuse bubble if available
+      const showBubble = (el) => {
+        if(!tip) return;
+        const msg = el.dataset.tip || el.title;
+        if(!msg) return;
+        const rect = el.getBoundingClientRect();
+        tip.textContent = msg;
+        tip.style.display = "block";
+        const pad = 10;
+        const r = tip.getBoundingClientRect();
+        const left = Math.min(window.innerWidth - r.width - pad, Math.max(pad, rect.left));
+        const top  = Math.min(window.innerHeight - r.height - pad, Math.max(pad, rect.bottom + 8));
+        tip.style.left = left + "px";
+        tip.style.top  = top + "px";
+      };
+      const hideBubble = () => { if(tip) tip.style.display = "none"; };
+
+      document.querySelectorAll("input, select, textarea").forEach(el=>{
+        const msg = el.dataset.tip;
+        if(msg && !el.title) el.title = msg;
+
+        el.addEventListener("focus", ()=>{ if(isTouch()) showBubble(el); });
+        el.addEventListener("blur",  ()=>{ if(isTouch()) hideBubble(); });
+        el.addEventListener("mouseenter", ()=>{ if(!isTouch() && msg) {/* native title tooltip */} });
+      });
+
+      document.addEventListener("scroll", ()=>{ if(isTouch()) hideBubble(); }, { passive:true });
+      document.addEventListener("click", (e)=>{ if(isTouch() && tip && !e.target.closest("input,select,textarea")) hideBubble(); });
+    })();
+
+  
+    (function setupHwa(){
+      const A = document.getElementById("hwaArea");
+      const I = document.getElementById("hwaIntensity");
+      const out = document.getElementById("hwaResult");
+      if(!A || !I || !out) return;
+
+      const num = (v) => {
+        if(typeof v !== "string") return NaN;
+        const m = v.replace(",", ".").match(/[-+]?\d*\.?\d+/);
+        return m ? parseFloat(m[0]) : NaN;
+      };
+
+      const update = () => {
+        const a = num(A.value);
+        const i = num(I.value);
+        if(!Number.isFinite(a) || !Number.isFinite(i) || a < 0 || i < 0){
+          out.textContent = "—";
+          return;
+        }
+        const q = (a * i) / 10000;
+        out.textContent = q.toFixed(3);
+      };
+
+      A.addEventListener("input", update);
+      I.addEventListener("input", update);
+      update();
+    })();
+
+  
+    (function disableBeforeUnload(){
+      // Prevent "Do you want to leave / undo changes" popups
+      window.onbeforeunload = null;
+    })();
+
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js">
     
@@ -786,10 +883,78 @@
       window.calcResetters.pdfEditor = () => {};
     })();
 
+  
+    (function setupInputTooltips(){
+      const isTouch = () => window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+      const tip = document.getElementById("thTip"); // reuse bubble if available
+      const showBubble = (el) => {
+        if(!tip) return;
+        const msg = el.dataset.tip || el.title;
+        if(!msg) return;
+        const rect = el.getBoundingClientRect();
+        tip.textContent = msg;
+        tip.style.display = "block";
+        const pad = 10;
+        const r = tip.getBoundingClientRect();
+        const left = Math.min(window.innerWidth - r.width - pad, Math.max(pad, rect.left));
+        const top  = Math.min(window.innerHeight - r.height - pad, Math.max(pad, rect.bottom + 8));
+        tip.style.left = left + "px";
+        tip.style.top  = top + "px";
+      };
+      const hideBubble = () => { if(tip) tip.style.display = "none"; };
+
+      document.querySelectorAll("input, select, textarea").forEach(el=>{
+        const msg = el.dataset.tip;
+        if(msg && !el.title) el.title = msg;
+
+        el.addEventListener("focus", ()=>{ if(isTouch()) showBubble(el); });
+        el.addEventListener("blur",  ()=>{ if(isTouch()) hideBubble(); });
+        el.addEventListener("mouseenter", ()=>{ if(!isTouch() && msg) {/* native title tooltip */} });
+      });
+
+      document.addEventListener("scroll", ()=>{ if(isTouch()) hideBubble(); }, { passive:true });
+      document.addEventListener("click", (e)=>{ if(isTouch() && tip && !e.target.closest("input,select,textarea")) hideBubble(); });
+    })();
+
+  
+    (function setupHwa(){
+      const A = document.getElementById("hwaArea");
+      const I = document.getElementById("hwaIntensity");
+      const out = document.getElementById("hwaResult");
+      if(!A || !I || !out) return;
+
+      const num = (v) => {
+        if(typeof v !== "string") return NaN;
+        const m = v.replace(",", ".").match(/[-+]?\d*\.?\d+/);
+        return m ? parseFloat(m[0]) : NaN;
+      };
+
+      const update = () => {
+        const a = num(A.value);
+        const i = num(I.value);
+        if(!Number.isFinite(a) || !Number.isFinite(i) || a < 0 || i < 0){
+          out.textContent = "—";
+          return;
+        }
+        const q = (a * i) / 10000;
+        out.textContent = q.toFixed(3);
+      };
+
+      A.addEventListener("input", update);
+      I.addEventListener("input", update);
+      update();
+    })();
+
+  
+    (function disableBeforeUnload(){
+      // Prevent "Do you want to leave / undo changes" popups
+      window.onbeforeunload = null;
+    })();
+
   </script>
 </head>
 <body>
-  <div class="version-badge">v1.0.3</div>
+  <div class="version-badge">v1.0.4</div>
   <main class="page">
     <!-- HOME -->
     <section id="homeScreen" class="card menu-card">
@@ -838,16 +1003,16 @@
             </div>
             <div class="input-group">
               <label>Diameter (mm)</label>
-              <input id="roundDiameter" type="text" inputmode="decimal" placeholder="Bijv. 315 (leeg = auto)" />
+              <input id="roundDiameter" type="text" inputmode="decimal" placeholder="Bijv. 315 (leeg = auto)" / data-tip="Diameter van het ronde kanaal (mm). Laat leeg om te berekenen.">
               <p class="helper">Laat 1 veld leeg: dat veld wordt berekend en tijdelijk “vastgezet”.</p>
             </div>
             <div class="input-group">
               <label>Luchtsnelheid (m/s)</label>
-              <input id="roundVelocity" type="text" inputmode="decimal" placeholder="Bijv. 6.5" />
+              <input id="roundVelocity" type="text" inputmode="decimal" placeholder="Bijv. 6.5" / data-tip="Luchtsnelheid in het kanaal (m/s).">
             </div>
             <div class="input-group">
               <label>Luchthoeveelheid (m³/h)</label>
-              <input id="roundFlow" type="text" inputmode="decimal" placeholder="Bijv. 2200" />
+              <input id="roundFlow" type="text" inputmode="decimal" placeholder="Bijv. 2200" / data-tip="Luchthoeveelheid (m³/h).">
             </div>
           </div>
 
@@ -858,20 +1023,20 @@
             </div>
             <div class="input-group">
               <label>Breedte (mm)</label>
-              <input id="rectWidth" type="text" inputmode="decimal" placeholder="Bijv. 400 (leeg = auto)" />
+              <input id="rectWidth" type="text" inputmode="decimal" placeholder="Bijv. 400 (leeg = auto)" / data-tip="Breedte van het kanaal (mm). Laat leeg om te berekenen.">
               <p class="helper">Laat 1 veld leeg: dat veld wordt berekend en tijdelijk “vastgezet”.</p>
             </div>
             <div class="input-group">
               <label>Hoogte (mm)</label>
-              <input id="rectHeight" type="text" inputmode="decimal" placeholder="Bijv. 200" />
+              <input id="rectHeight" type="text" inputmode="decimal" placeholder="Bijv. 200" / data-tip="Hoogte van het kanaal (mm).">
             </div>
             <div class="input-group">
               <label>Luchtsnelheid (m/s)</label>
-              <input id="rectVelocity" type="text" inputmode="decimal" placeholder="Bijv. 5.5" />
+              <input id="rectVelocity" type="text" inputmode="decimal" placeholder="Bijv. 5.5" / data-tip="Luchtsnelheid (m/s).">
             </div>
             <div class="input-group">
               <label>Luchthoeveelheid (m³/h)</label>
-              <input id="rectFlow" type="text" inputmode="decimal" placeholder="Bijv. 1600" />
+              <input id="rectFlow" type="text" inputmode="decimal" placeholder="Bijv. 1600" / data-tip="Luchthoeveelheid (m³/h).">
             </div>
           </div>
         </div>
@@ -1765,7 +1930,7 @@
   <script>
     // ===== MKW Tools Webapp Version =====
     // Change this value when you publish a new version:
-    const APP_VERSION = "v1.0.3";
+    const APP_VERSION = "v1.0.4";
     (function(){ const b=document.querySelector('.version-badge'); if(b) b.textContent = APP_VERSION; })();
 
     (function(){ const b=document.querySelector('.version-badge'); if(b) b.textContent = APP_VERSION; })();
@@ -1813,7 +1978,7 @@
         koelleiding: { name:"Koelleiding Berekening", subtitle:"P + ΔT → Qv → diameter", category:"hvac", tags:["HVAC"], implemented:true, panelId:"koelleidingCalculator", search:"koelleiding berekening qv diameter leidingtype" },
         expansie:    { name:"Expansievat CV", subtitle:"Inhoud installatie → advies expansievat", category:"hvac", tags:["HVAC"], implemented:true, panelId:"expansieCalculator", search:"expansievat cv advies vep vn vtt" },
         buffervat:   { name:"Buffervat Koeling", subtitle:"kW + taps → inhoud buffervat", category:"hvac", tags:["HVAC"], implemented:true, panelId:"buffervatCalculator", search:"buffervat koeling inhoud taps glycol" },
-        deur:        { name:"Deur Sleuf Berekening", subtitle:"Q en v → minimale sleufhoogte", category:"hvac", tags:["HVAC"], implemented:true, panelId:"deurSleufCalculator", search:"deur sleuf berekening luchtdoorlaat hoogte" },
+
 
         pdfeditor:  { name:"PDF Editor", subtitle:"PDF openen & annoteren (tekst/lijnen/pijlen)", category:"util", tags:["Tools","PDF"], implemented:true, panelId:"pdfEditor", search:"pdf editor annoteren tekenen pijl tekst" },
         planning:   { name:"Project checklist", subtitle:"Snelle checklist", category:"planning", tags:["Planning","Checklist"], implemented:true, panelId:"planningCalculator", search:"planning checklist project" }
@@ -3362,7 +3527,7 @@ const VUILWATER_TABLE = {"4":{"0.3":44,"0.35":50,"0.4":50,"0.45":50,"0.5":50,"0.
       const clearBtn = document.getElementById("plClear");
       const newIn = document.getElementById("plNew");
 
-      const defaultItems = [];
+      const defaultItems = ["Kick-off gehouden","Scope & deliverables bevestigd","Planning afgestemd","Risico’s vastgelegd","Werkvoorbereiding compleet","Materialen besteld","Veiligheidscheck uitgevoerd","Opleverchecklist afgerond","As-built verwerkt","Nazorg gepland"];
 
       const load = () => {
         try {
@@ -3568,6 +3733,74 @@ const VUILWATER_TABLE = {"4":{"0.3":44,"0.35":50,"0.4":50,"0.45":50,"0.5":50,"0.
 
       window.calcResetters = window.calcResetters || {};
       window.calcResetters.pdfEditor = () => {};
+    })();
+
+  
+    (function setupInputTooltips(){
+      const isTouch = () => window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+      const tip = document.getElementById("thTip"); // reuse bubble if available
+      const showBubble = (el) => {
+        if(!tip) return;
+        const msg = el.dataset.tip || el.title;
+        if(!msg) return;
+        const rect = el.getBoundingClientRect();
+        tip.textContent = msg;
+        tip.style.display = "block";
+        const pad = 10;
+        const r = tip.getBoundingClientRect();
+        const left = Math.min(window.innerWidth - r.width - pad, Math.max(pad, rect.left));
+        const top  = Math.min(window.innerHeight - r.height - pad, Math.max(pad, rect.bottom + 8));
+        tip.style.left = left + "px";
+        tip.style.top  = top + "px";
+      };
+      const hideBubble = () => { if(tip) tip.style.display = "none"; };
+
+      document.querySelectorAll("input, select, textarea").forEach(el=>{
+        const msg = el.dataset.tip;
+        if(msg && !el.title) el.title = msg;
+
+        el.addEventListener("focus", ()=>{ if(isTouch()) showBubble(el); });
+        el.addEventListener("blur",  ()=>{ if(isTouch()) hideBubble(); });
+        el.addEventListener("mouseenter", ()=>{ if(!isTouch() && msg) {/* native title tooltip */} });
+      });
+
+      document.addEventListener("scroll", ()=>{ if(isTouch()) hideBubble(); }, { passive:true });
+      document.addEventListener("click", (e)=>{ if(isTouch() && tip && !e.target.closest("input,select,textarea")) hideBubble(); });
+    })();
+
+  
+    (function setupHwa(){
+      const A = document.getElementById("hwaArea");
+      const I = document.getElementById("hwaIntensity");
+      const out = document.getElementById("hwaResult");
+      if(!A || !I || !out) return;
+
+      const num = (v) => {
+        if(typeof v !== "string") return NaN;
+        const m = v.replace(",", ".").match(/[-+]?\d*\.?\d+/);
+        return m ? parseFloat(m[0]) : NaN;
+      };
+
+      const update = () => {
+        const a = num(A.value);
+        const i = num(I.value);
+        if(!Number.isFinite(a) || !Number.isFinite(i) || a < 0 || i < 0){
+          out.textContent = "—";
+          return;
+        }
+        const q = (a * i) / 10000;
+        out.textContent = q.toFixed(3);
+      };
+
+      A.addEventListener("input", update);
+      I.addEventListener("input", update);
+      update();
+    })();
+
+  
+    (function disableBeforeUnload(){
+      // Prevent "Do you want to leave / undo changes" popups
+      window.onbeforeunload = null;
     })();
 
   </script>
