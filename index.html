@@ -464,32 +464,37 @@
     }
 
   
-    /* Ensure consistent font everywhere */
-    input, select, button, textarea { font-family: inherit; }
+    /* Table headers: allow multi-line wrapping so narrow columns stay narrow */
+    table th{
+      white-space: normal !important;
+      line-height: 1.25;
+    }
+    table td{ white-space: nowrap; }
+    table input, table select{ min-width: 0 !important; }
 
-    /* Remove the "combined" outer outline for calc panels (keep inner cards). */
-    #calcScreen .card.details.calc-panel{
-      border: none;
-      background: transparent;
-      box-shadow: none;
-      padding: 0;
+  
+    /* Checklist highlight */
+    .check-row.checked,
+    .checklist-item.checked{
+      background: rgba(56,189,248,0.10) !important;
+      border-color: rgba(56,189,248,0.22) !important;
     }
 
-    /* Prevent child elements from overflowing cards on small screens */
-    .card { max-width: 100%; }
-    .calc-grid, .details { max-width: 100%; }
-    canvas { max-width: 100%; height: auto; display:block; }
-
-    /* PDF editor layering so you can draw on top */
-    #pdfStage { touch-action: pan-x pan-y; }
-    #pdfCanvas { position: relative; z-index: 1; pointer-events: none; }
-    #annCanvas { position: absolute; left: 0; top: 0; z-index: 2; pointer-events: auto; }
+  
+    /* Consistent calc layout across all tabs */
+    .calc-panel .calc-grid{
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    @media (min-width: 1100px){
+      .calc-panel .calc-grid{
+        grid-template-columns: repeat(2, minmax(320px, 1fr));
+      }
+    }
 
   </style>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js">
-    
-  
     (function setupPdfEditor(){
       const fileInput = document.getElementById("pdfFile");
       const pdfCanvas = document.getElementById("pdfCanvas");
@@ -498,12 +503,8 @@
       const lbl = document.getElementById("pdfPageLabel");
       const prev = document.getElementById("pdfPrev");
       const next = document.getElementById("pdfNext");
-      const zoomInBtn = document.getElementById("pdfZoomIn");
-      const zoomOutBtn = document.getElementById("pdfZoomOut");
-      const fitBtn = document.getElementById("pdfFit");
 
-      // If CDN blocked/offline, editor won't work.
-      if(!fileInput || !pdfCanvas || !annCanvasEl || !stage || !window.pdfjsLib || !window.fabric) return;
+      if(!fileInput || !pdfCanvas || !annCanvasEl || !window.pdfjsLib || !window.fabric) return;
 
       // PDF.js worker
       try{
@@ -512,39 +513,28 @@
 
       let pdfDoc = null;
       let pageNum = 1;
-
-      // current scale
-      let scale = 1.0;     // current render scale relative to "fit"
-      let fitScale = 1.0;  // the scale that fits the container
+      let viewportScale = 1.2;
 
       // Fabric overlay
-      const fabricCanvas = new fabric.Canvas("annCanvas", {
-        selection: true,
-        preserveObjectStacking: true
-      });
+      const fabricCanvas = new fabric.Canvas("annCanvas", { selection: true });
+      fabricCanvas.setBackgroundColor(null, fabricCanvas.renderAll.bind(fabricCanvas));
 
-      // Make sure canvas accepts pointer events
-      annCanvasEl.style.pointerEvents = "auto";
-      pdfCanvas.style.pointerEvents = "none";
-
-      // History (simple undo)
       const history = [];
       const pushState = () => {
         history.push(JSON.stringify(fabricCanvas.toJSON()));
-        if(history.length > 60) history.shift();
+        if(history.length > 50) history.shift();
       };
 
       const setToolActive = (id) => {
         ["toolSelect","toolPen","toolLine","toolArrow","toolText"].forEach(x=>{
           const b=document.getElementById(x);
-          if(!b) return;
-          b.style.borderColor = (x===id) ? "rgba(56,189,248,0.55)" : "rgba(255,255,255,0.08)";
+          if(b) b.style.borderColor = (x===id) ? "rgba(56,189,248,0.55)" : "rgba(255,255,255,0.08)";
         });
       };
 
       let currentTool = "select";
       let drawingLine = null;
-      let arrowHead = null;
+      let drawingArrow = null;
 
       const enableSelect = () => {
         currentTool = "select";
@@ -557,9 +547,7 @@
       const enablePen = () => {
         currentTool = "pen";
         fabricCanvas.isDrawingMode = true;
-        const brush = fabricCanvas.freeDrawingBrush;
-        brush.width = 2;
-        brush.color = "#e2e8f0";
+        fabricCanvas.freeDrawingBrush.width = 2;
         setToolActive("toolPen");
       };
 
@@ -567,7 +555,6 @@
         currentTool = "line";
         fabricCanvas.isDrawingMode = false;
         fabricCanvas.selection = false;
-        fabricCanvas.discardActiveObject();
         fabricCanvas.forEachObject(o => o.selectable = false);
         setToolActive("toolLine");
       };
@@ -576,7 +563,6 @@
         currentTool = "arrow";
         fabricCanvas.isDrawingMode = false;
         fabricCanvas.selection = false;
-        fabricCanvas.discardActiveObject();
         fabricCanvas.forEachObject(o => o.selectable = false);
         setToolActive("toolArrow");
       };
@@ -585,26 +571,8 @@
         currentTool = "text";
         fabricCanvas.isDrawingMode = false;
         fabricCanvas.selection = false;
-        fabricCanvas.discardActiveObject();
         fabricCanvas.forEachObject(o => o.selectable = false);
         setToolActive("toolText");
-      };
-
-      // Resize and keep annotation objects scaled when rerendering
-      const scaleObjects = (factor) => {
-        if(!Number.isFinite(factor) || factor <= 0) return;
-        fabricCanvas.getObjects().forEach(obj => {
-          obj.scaleX *= factor;
-          obj.scaleY *= factor;
-          obj.left *= factor;
-          obj.top *= factor;
-          if(obj.type === "line"){
-            obj.x1 *= factor; obj.y1 *= factor;
-            obj.x2 *= factor; obj.y2 *= factor;
-          }
-          if(obj.strokeWidth) obj.strokeWidth *= factor;
-          obj.setCoords();
-        });
       };
 
       const resizeOverlayToPdf = (w,h) => {
@@ -618,54 +586,37 @@
         fabricCanvas.setWidth(w);
         fabricCanvas.setHeight(h);
         fabricCanvas.calcOffset();
-        fabricCanvas.requestRenderAll();
+        fabricCanvas.renderAll();
       };
 
-      const computeFitScale = async (page) => {
-        const containerWidth = stage.clientWidth ? stage.clientWidth : 900;
-        const unscaled = page.getViewport({ scale: 1.0 });
-        return Math.max(0.6, Math.min(3.0, containerWidth / unscaled.width));
-      };
-
-      const renderPage = async (num, keepAnnotations=true) => {
+      const renderPage = async (num) => {
         if(!pdfDoc) return;
         const page = await pdfDoc.getPage(num);
 
-        fitScale = await computeFitScale(page);
-        const targetScale = fitScale * scale;
+        // Fit width to container
+        const containerWidth = stage.clientWidth ? stage.clientWidth : 900;
+        const unscaled = page.getViewport({ scale: 1.0 });
+        const scale = Math.max(0.6, Math.min(2.5, containerWidth / unscaled.width));
+        viewportScale = scale;
 
-        const viewport = page.getViewport({ scale: targetScale });
-        const newW = Math.floor(viewport.width);
-        const newH = Math.floor(viewport.height);
-
-        // If keeping annotations, scale them with size change
-        const oldW = fabricCanvas.getWidth() || newW;
-        const factor = newW / oldW;
-
-        resizeOverlayToPdf(newW, newH);
+        const viewport = page.getViewport({ scale });
+        resizeOverlayToPdf(Math.floor(viewport.width), Math.floor(viewport.height));
 
         const ctx = pdfCanvas.getContext("2d");
-        ctx.setTransform(1,0,0,1,0,0);
-        ctx.clearRect(0,0,newW,newH);
-
         await page.render({ canvasContext: ctx, viewport }).promise;
 
-        if(!keepAnnotations){
-          fabricCanvas.clear();
-        } else if (Math.abs(factor - 1) > 0.0001){
-          scaleObjects(factor);
-        }
-
+        // Clear annotations on page change (simple version)
+        fabricCanvas.clear();
         pushState();
-        lbl.textContent = `Pagina ${num} / ${pdfDoc.numPages}  •  Zoom ${(scale*100).toFixed(0)}%`;
+
+        lbl.textContent = `Pagina ${num} / ${pdfDoc.numPages}`;
       };
 
       const loadPdf = async (file) => {
         const buf = await file.arrayBuffer();
         pdfDoc = await pdfjsLib.getDocument({ data: buf }).promise;
         pageNum = 1;
-        scale = 1.0;
-        await renderPage(pageNum, false);
+        await renderPage(pageNum);
       };
 
       fileInput.addEventListener("change", async (e) => {
@@ -677,93 +628,33 @@
       prev && prev.addEventListener("click", async () => {
         if(!pdfDoc) return;
         pageNum = Math.max(1, pageNum - 1);
-        // clear annotations per page for now (simple); can be extended to per-page storage
-        await renderPage(pageNum, false);
+        await renderPage(pageNum);
       });
-
       next && next.addEventListener("click", async () => {
         if(!pdfDoc) return;
         pageNum = Math.min(pdfDoc.numPages, pageNum + 1);
-        await renderPage(pageNum, false);
+        await renderPage(pageNum);
       });
 
-      const applyZoom = async (newScale) => {
-        if(!pdfDoc) return;
-        const clamped = Math.max(0.5, Math.min(3.0, newScale));
-        const oldScale = scale;
-        scale = clamped;
-        // keep annotations and scale with render
-        await renderPage(pageNum, true);
-      };
-
-      zoomInBtn && zoomInBtn.addEventListener("click", () => applyZoom(scale + 0.1));
-      zoomOutBtn && zoomOutBtn.addEventListener("click", () => applyZoom(scale - 0.1));
-      fitBtn && fitBtn.addEventListener("click", () => applyZoom(1.0));
-
-      // mouse wheel zoom (Ctrl/trackpad pinch on desktop)
-      stage.addEventListener("wheel", (e) => {
-        if(!pdfDoc) return;
-        if(e.ctrlKey){
-          e.preventDefault();
-          const delta = e.deltaY > 0 ? -0.08 : 0.08;
-          applyZoom(scale + delta);
-        }
-      }, { passive:false });
-
-      // Pan by dragging (desktop): hold space OR middle mouse
-      let isPanning = false;
-      let panStart = { x:0, y:0, sl:0, st:0 };
-
-      const startPan = (e) => {
-        isPanning = true;
-        const pt = (e.touches && e.touches[0]) ? e.touches[0] : e;
-        panStart = { x: pt.clientX, y: pt.clientY, sl: stage.scrollLeft, st: stage.scrollTop };
-        stage.style.cursor = "grabbing";
-      };
-      const movePan = (e) => {
-        if(!isPanning) return;
-        const pt = (e.touches && e.touches[0]) ? e.touches[0] : e;
-        const dx = pt.clientX - panStart.x;
-        const dy = pt.clientY - panStart.y;
-        stage.scrollLeft = panStart.sl - dx;
-        stage.scrollTop  = panStart.st - dy;
-      };
-      const endPan = () => {
-        isPanning = false;
-        stage.style.cursor = "";
-      };
-
-      // Only pan when space is held or middle mouse pressed
-      let spaceDown = false;
-      window.addEventListener("keydown", (e)=>{ if(e.code==="Space") spaceDown=true; });
-      window.addEventListener("keyup", (e)=>{ if(e.code==="Space") spaceDown=false; });
-
-      stage.addEventListener("mousedown", (e)=>{
-        if(e.button === 1 || spaceDown){
-          e.preventDefault();
-          startPan(e);
-        }
-      });
-      window.addEventListener("mousemove", movePan);
-      window.addEventListener("mouseup", endPan);
-
-      // Tools: drawing
+      // Drawing tools
       fabricCanvas.on("mouse:down", (opt) => {
         const p = fabricCanvas.getPointer(opt.e);
         if(currentTool === "line"){
-          drawingLine = new fabric.Line([p.x,p.y,p.x,p.y], { stroke: "#e2e8f0", strokeWidth: 2, selectable:false, evented:false });
+          drawingLine = new fabric.Line([p.x,p.y,p.x,p.y], { stroke: "#e2e8f0", strokeWidth: 2, selectable:false });
           fabricCanvas.add(drawingLine);
         } else if(currentTool === "arrow"){
-          drawingLine = new fabric.Line([p.x,p.y,p.x,p.y], { stroke:"#e2e8f0", strokeWidth:2, selectable:false, evented:false });
-          drawingLine._isArrow = true;
-          fabricCanvas.add(drawingLine);
+          drawingArrow = { x1:p.x, y1:p.y, x2:p.x, y2:p.y };
+          const line = new fabric.Line([p.x,p.y,p.x,p.y], { stroke:"#e2e8f0", strokeWidth:2, selectable:false });
+          line._isArrow = true;
+          fabricCanvas.add(line);
+          drawingLine = line;
         } else if(currentTool === "text"){
           const tb = new fabric.Textbox("Tekst", { left:p.x, top:p.y, fill:"#e2e8f0", fontSize:16, width: 220 });
           tb.selectable = true;
           fabricCanvas.add(tb);
           enableSelect();
           fabricCanvas.setActiveObject(tb);
-          fabricCanvas.requestRenderAll();
+          fabricCanvas.renderAll();
           pushState();
         }
       });
@@ -772,23 +663,28 @@
         if(!drawingLine) return;
         const p = fabricCanvas.getPointer(opt.e);
         drawingLine.set({ x2:p.x, y2:p.y });
-        fabricCanvas.requestRenderAll();
+        fabricCanvas.renderAll();
       });
 
       fabricCanvas.on("mouse:up", () => {
         if(drawingLine){
           if(drawingLine._isArrow){
+            // add arrow head (simple triangle)
             const { x1,y1,x2,y2 } = drawingLine;
             const angle = Math.atan2(y2 - y1, x2 - x1);
+            const headLen = 12;
+            const hx = x2 - headLen * Math.cos(angle);
+            const hy = y2 - headLen * Math.sin(angle);
             const tri = new fabric.Triangle({
               left: x2, top: y2, originX:"center", originY:"center",
               angle: angle * 180/Math.PI + 90,
               width: 14, height: 14,
               fill: "#e2e8f0",
-              selectable:false, evented:false
+              selectable:false
             });
             fabricCanvas.add(tri);
           }
+          drawingLine.selectable = false;
           drawingLine = null;
           pushState();
         }
@@ -805,14 +701,15 @@
         if(history.length <= 1) return;
         history.pop();
         const prevState = history[history.length - 1];
-        fabricCanvas.loadFromJSON(prevState, () => fabricCanvas.requestRenderAll());
+        fabricCanvas.loadFromJSON(prevState, () => fabricCanvas.renderAll());
       });
 
       fabricCanvas.on("path:created", pushState);
       fabricCanvas.on("object:modified", pushState);
+      fabricCanvas.on("object:added", () => { /* handled in places */ });
 
       document.getElementById("toolExport")?.addEventListener("click", () => {
-        if(!pdfDoc) return;
+        // merge pdfCanvas + fabric overlay into one PNG
         const out = document.createElement("canvas");
         out.width = pdfCanvas.width; out.height = pdfCanvas.height;
         const ctx = out.getContext("2d");
@@ -823,13 +720,6 @@
         a.href = out.toDataURL("image/png");
         a.click();
       });
-
-      // Reset per open
-      window.calcResetters.pdfEditor = () => {
-        // keep file selection; just reset tools
-        enableSelect();
-        pushState();
-      };
 
       enableSelect();
       pushState();
@@ -837,8 +727,6 @@
 
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js">
-    
-  
     (function setupPdfEditor(){
       const fileInput = document.getElementById("pdfFile");
       const pdfCanvas = document.getElementById("pdfCanvas");
@@ -847,12 +735,8 @@
       const lbl = document.getElementById("pdfPageLabel");
       const prev = document.getElementById("pdfPrev");
       const next = document.getElementById("pdfNext");
-      const zoomInBtn = document.getElementById("pdfZoomIn");
-      const zoomOutBtn = document.getElementById("pdfZoomOut");
-      const fitBtn = document.getElementById("pdfFit");
 
-      // If CDN blocked/offline, editor won't work.
-      if(!fileInput || !pdfCanvas || !annCanvasEl || !stage || !window.pdfjsLib || !window.fabric) return;
+      if(!fileInput || !pdfCanvas || !annCanvasEl || !window.pdfjsLib || !window.fabric) return;
 
       // PDF.js worker
       try{
@@ -861,39 +745,28 @@
 
       let pdfDoc = null;
       let pageNum = 1;
-
-      // current scale
-      let scale = 1.0;     // current render scale relative to "fit"
-      let fitScale = 1.0;  // the scale that fits the container
+      let viewportScale = 1.2;
 
       // Fabric overlay
-      const fabricCanvas = new fabric.Canvas("annCanvas", {
-        selection: true,
-        preserveObjectStacking: true
-      });
+      const fabricCanvas = new fabric.Canvas("annCanvas", { selection: true });
+      fabricCanvas.setBackgroundColor(null, fabricCanvas.renderAll.bind(fabricCanvas));
 
-      // Make sure canvas accepts pointer events
-      annCanvasEl.style.pointerEvents = "auto";
-      pdfCanvas.style.pointerEvents = "none";
-
-      // History (simple undo)
       const history = [];
       const pushState = () => {
         history.push(JSON.stringify(fabricCanvas.toJSON()));
-        if(history.length > 60) history.shift();
+        if(history.length > 50) history.shift();
       };
 
       const setToolActive = (id) => {
         ["toolSelect","toolPen","toolLine","toolArrow","toolText"].forEach(x=>{
           const b=document.getElementById(x);
-          if(!b) return;
-          b.style.borderColor = (x===id) ? "rgba(56,189,248,0.55)" : "rgba(255,255,255,0.08)";
+          if(b) b.style.borderColor = (x===id) ? "rgba(56,189,248,0.55)" : "rgba(255,255,255,0.08)";
         });
       };
 
       let currentTool = "select";
       let drawingLine = null;
-      let arrowHead = null;
+      let drawingArrow = null;
 
       const enableSelect = () => {
         currentTool = "select";
@@ -906,9 +779,7 @@
       const enablePen = () => {
         currentTool = "pen";
         fabricCanvas.isDrawingMode = true;
-        const brush = fabricCanvas.freeDrawingBrush;
-        brush.width = 2;
-        brush.color = "#e2e8f0";
+        fabricCanvas.freeDrawingBrush.width = 2;
         setToolActive("toolPen");
       };
 
@@ -916,7 +787,6 @@
         currentTool = "line";
         fabricCanvas.isDrawingMode = false;
         fabricCanvas.selection = false;
-        fabricCanvas.discardActiveObject();
         fabricCanvas.forEachObject(o => o.selectable = false);
         setToolActive("toolLine");
       };
@@ -925,7 +795,6 @@
         currentTool = "arrow";
         fabricCanvas.isDrawingMode = false;
         fabricCanvas.selection = false;
-        fabricCanvas.discardActiveObject();
         fabricCanvas.forEachObject(o => o.selectable = false);
         setToolActive("toolArrow");
       };
@@ -934,26 +803,8 @@
         currentTool = "text";
         fabricCanvas.isDrawingMode = false;
         fabricCanvas.selection = false;
-        fabricCanvas.discardActiveObject();
         fabricCanvas.forEachObject(o => o.selectable = false);
         setToolActive("toolText");
-      };
-
-      // Resize and keep annotation objects scaled when rerendering
-      const scaleObjects = (factor) => {
-        if(!Number.isFinite(factor) || factor <= 0) return;
-        fabricCanvas.getObjects().forEach(obj => {
-          obj.scaleX *= factor;
-          obj.scaleY *= factor;
-          obj.left *= factor;
-          obj.top *= factor;
-          if(obj.type === "line"){
-            obj.x1 *= factor; obj.y1 *= factor;
-            obj.x2 *= factor; obj.y2 *= factor;
-          }
-          if(obj.strokeWidth) obj.strokeWidth *= factor;
-          obj.setCoords();
-        });
       };
 
       const resizeOverlayToPdf = (w,h) => {
@@ -967,54 +818,37 @@
         fabricCanvas.setWidth(w);
         fabricCanvas.setHeight(h);
         fabricCanvas.calcOffset();
-        fabricCanvas.requestRenderAll();
+        fabricCanvas.renderAll();
       };
 
-      const computeFitScale = async (page) => {
-        const containerWidth = stage.clientWidth ? stage.clientWidth : 900;
-        const unscaled = page.getViewport({ scale: 1.0 });
-        return Math.max(0.6, Math.min(3.0, containerWidth / unscaled.width));
-      };
-
-      const renderPage = async (num, keepAnnotations=true) => {
+      const renderPage = async (num) => {
         if(!pdfDoc) return;
         const page = await pdfDoc.getPage(num);
 
-        fitScale = await computeFitScale(page);
-        const targetScale = fitScale * scale;
+        // Fit width to container
+        const containerWidth = stage.clientWidth ? stage.clientWidth : 900;
+        const unscaled = page.getViewport({ scale: 1.0 });
+        const scale = Math.max(0.6, Math.min(2.5, containerWidth / unscaled.width));
+        viewportScale = scale;
 
-        const viewport = page.getViewport({ scale: targetScale });
-        const newW = Math.floor(viewport.width);
-        const newH = Math.floor(viewport.height);
-
-        // If keeping annotations, scale them with size change
-        const oldW = fabricCanvas.getWidth() || newW;
-        const factor = newW / oldW;
-
-        resizeOverlayToPdf(newW, newH);
+        const viewport = page.getViewport({ scale });
+        resizeOverlayToPdf(Math.floor(viewport.width), Math.floor(viewport.height));
 
         const ctx = pdfCanvas.getContext("2d");
-        ctx.setTransform(1,0,0,1,0,0);
-        ctx.clearRect(0,0,newW,newH);
-
         await page.render({ canvasContext: ctx, viewport }).promise;
 
-        if(!keepAnnotations){
-          fabricCanvas.clear();
-        } else if (Math.abs(factor - 1) > 0.0001){
-          scaleObjects(factor);
-        }
-
+        // Clear annotations on page change (simple version)
+        fabricCanvas.clear();
         pushState();
-        lbl.textContent = `Pagina ${num} / ${pdfDoc.numPages}  •  Zoom ${(scale*100).toFixed(0)}%`;
+
+        lbl.textContent = `Pagina ${num} / ${pdfDoc.numPages}`;
       };
 
       const loadPdf = async (file) => {
         const buf = await file.arrayBuffer();
         pdfDoc = await pdfjsLib.getDocument({ data: buf }).promise;
         pageNum = 1;
-        scale = 1.0;
-        await renderPage(pageNum, false);
+        await renderPage(pageNum);
       };
 
       fileInput.addEventListener("change", async (e) => {
@@ -1026,93 +860,33 @@
       prev && prev.addEventListener("click", async () => {
         if(!pdfDoc) return;
         pageNum = Math.max(1, pageNum - 1);
-        // clear annotations per page for now (simple); can be extended to per-page storage
-        await renderPage(pageNum, false);
+        await renderPage(pageNum);
       });
-
       next && next.addEventListener("click", async () => {
         if(!pdfDoc) return;
         pageNum = Math.min(pdfDoc.numPages, pageNum + 1);
-        await renderPage(pageNum, false);
+        await renderPage(pageNum);
       });
 
-      const applyZoom = async (newScale) => {
-        if(!pdfDoc) return;
-        const clamped = Math.max(0.5, Math.min(3.0, newScale));
-        const oldScale = scale;
-        scale = clamped;
-        // keep annotations and scale with render
-        await renderPage(pageNum, true);
-      };
-
-      zoomInBtn && zoomInBtn.addEventListener("click", () => applyZoom(scale + 0.1));
-      zoomOutBtn && zoomOutBtn.addEventListener("click", () => applyZoom(scale - 0.1));
-      fitBtn && fitBtn.addEventListener("click", () => applyZoom(1.0));
-
-      // mouse wheel zoom (Ctrl/trackpad pinch on desktop)
-      stage.addEventListener("wheel", (e) => {
-        if(!pdfDoc) return;
-        if(e.ctrlKey){
-          e.preventDefault();
-          const delta = e.deltaY > 0 ? -0.08 : 0.08;
-          applyZoom(scale + delta);
-        }
-      }, { passive:false });
-
-      // Pan by dragging (desktop): hold space OR middle mouse
-      let isPanning = false;
-      let panStart = { x:0, y:0, sl:0, st:0 };
-
-      const startPan = (e) => {
-        isPanning = true;
-        const pt = (e.touches && e.touches[0]) ? e.touches[0] : e;
-        panStart = { x: pt.clientX, y: pt.clientY, sl: stage.scrollLeft, st: stage.scrollTop };
-        stage.style.cursor = "grabbing";
-      };
-      const movePan = (e) => {
-        if(!isPanning) return;
-        const pt = (e.touches && e.touches[0]) ? e.touches[0] : e;
-        const dx = pt.clientX - panStart.x;
-        const dy = pt.clientY - panStart.y;
-        stage.scrollLeft = panStart.sl - dx;
-        stage.scrollTop  = panStart.st - dy;
-      };
-      const endPan = () => {
-        isPanning = false;
-        stage.style.cursor = "";
-      };
-
-      // Only pan when space is held or middle mouse pressed
-      let spaceDown = false;
-      window.addEventListener("keydown", (e)=>{ if(e.code==="Space") spaceDown=true; });
-      window.addEventListener("keyup", (e)=>{ if(e.code==="Space") spaceDown=false; });
-
-      stage.addEventListener("mousedown", (e)=>{
-        if(e.button === 1 || spaceDown){
-          e.preventDefault();
-          startPan(e);
-        }
-      });
-      window.addEventListener("mousemove", movePan);
-      window.addEventListener("mouseup", endPan);
-
-      // Tools: drawing
+      // Drawing tools
       fabricCanvas.on("mouse:down", (opt) => {
         const p = fabricCanvas.getPointer(opt.e);
         if(currentTool === "line"){
-          drawingLine = new fabric.Line([p.x,p.y,p.x,p.y], { stroke: "#e2e8f0", strokeWidth: 2, selectable:false, evented:false });
+          drawingLine = new fabric.Line([p.x,p.y,p.x,p.y], { stroke: "#e2e8f0", strokeWidth: 2, selectable:false });
           fabricCanvas.add(drawingLine);
         } else if(currentTool === "arrow"){
-          drawingLine = new fabric.Line([p.x,p.y,p.x,p.y], { stroke:"#e2e8f0", strokeWidth:2, selectable:false, evented:false });
-          drawingLine._isArrow = true;
-          fabricCanvas.add(drawingLine);
+          drawingArrow = { x1:p.x, y1:p.y, x2:p.x, y2:p.y };
+          const line = new fabric.Line([p.x,p.y,p.x,p.y], { stroke:"#e2e8f0", strokeWidth:2, selectable:false });
+          line._isArrow = true;
+          fabricCanvas.add(line);
+          drawingLine = line;
         } else if(currentTool === "text"){
           const tb = new fabric.Textbox("Tekst", { left:p.x, top:p.y, fill:"#e2e8f0", fontSize:16, width: 220 });
           tb.selectable = true;
           fabricCanvas.add(tb);
           enableSelect();
           fabricCanvas.setActiveObject(tb);
-          fabricCanvas.requestRenderAll();
+          fabricCanvas.renderAll();
           pushState();
         }
       });
@@ -1121,23 +895,28 @@
         if(!drawingLine) return;
         const p = fabricCanvas.getPointer(opt.e);
         drawingLine.set({ x2:p.x, y2:p.y });
-        fabricCanvas.requestRenderAll();
+        fabricCanvas.renderAll();
       });
 
       fabricCanvas.on("mouse:up", () => {
         if(drawingLine){
           if(drawingLine._isArrow){
+            // add arrow head (simple triangle)
             const { x1,y1,x2,y2 } = drawingLine;
             const angle = Math.atan2(y2 - y1, x2 - x1);
+            const headLen = 12;
+            const hx = x2 - headLen * Math.cos(angle);
+            const hy = y2 - headLen * Math.sin(angle);
             const tri = new fabric.Triangle({
               left: x2, top: y2, originX:"center", originY:"center",
               angle: angle * 180/Math.PI + 90,
               width: 14, height: 14,
               fill: "#e2e8f0",
-              selectable:false, evented:false
+              selectable:false
             });
             fabricCanvas.add(tri);
           }
+          drawingLine.selectable = false;
           drawingLine = null;
           pushState();
         }
@@ -1154,14 +933,15 @@
         if(history.length <= 1) return;
         history.pop();
         const prevState = history[history.length - 1];
-        fabricCanvas.loadFromJSON(prevState, () => fabricCanvas.requestRenderAll());
+        fabricCanvas.loadFromJSON(prevState, () => fabricCanvas.renderAll());
       });
 
       fabricCanvas.on("path:created", pushState);
       fabricCanvas.on("object:modified", pushState);
+      fabricCanvas.on("object:added", () => { /* handled in places */ });
 
       document.getElementById("toolExport")?.addEventListener("click", () => {
-        if(!pdfDoc) return;
+        // merge pdfCanvas + fabric overlay into one PNG
         const out = document.createElement("canvas");
         out.width = pdfCanvas.width; out.height = pdfCanvas.height;
         const ctx = out.getContext("2d");
@@ -1172,13 +952,6 @@
         a.href = out.toDataURL("image/png");
         a.click();
       });
-
-      // Reset per open
-      window.calcResetters.pdfEditor = () => {
-        // keep file selection; just reset tools
-        enableSelect();
-        pushState();
-      };
 
       enableSelect();
       pushState();
@@ -1966,9 +1739,6 @@
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
               <button class="btn secondary" type="button" id="pdfPrev">◀︎</button>
               <button class="btn secondary" type="button" id="pdfNext">▶︎</button>
-              <button class="btn secondary" type="button" id="pdfZoomOut">−</button>
-              <button class="btn secondary" type="button" id="pdfZoomIn">+</button>
-              <button class="btn secondary" type="button" id="pdfFit">Fit</button>
               <span class="tag" id="pdfPageLabel">Pagina —</span>
             </div>
 
@@ -1988,7 +1758,7 @@
                 <canvas id="annCanvas" style="position:absolute;left:0;top:0;"></canvas>
               </div>
             </div>
-            <p class="helper" style="margin-top:10px;">Pan/zoom: scroll of sleep om te pannen. Gebruik +/− of pinch-zoom op mobiel (Fit zet pagina weer passend).</p>
+            <p class="helper" style="margin-top:10px;">Tip: gebruik ‘Select’ om objecten te verplaatsen/verwijderen. Export is per pagina (PNG) met je annotaties.</p>
           </div>
 
           <div class="card" style="padding:14px;">
@@ -2166,6 +1936,9 @@
   <footer></footer>
 
   <script>
+    const APP_VERSION = "v1.0.2";
+    (function(){ const b=document.querySelector('.version-badge'); if(b) b.textContent = APP_VERSION; })();
+
     window.calcResetters = window.calcResetters || {};
 
     (function setupNavigationAndMenu() {
@@ -3914,8 +3687,6 @@ const VUILWATER_TABLE = {"4":{"0.3":44,"0.35":50,"0.4":50,"0.45":50,"0.5":50,"0.
     })();
 
   
-    
-  
     (function setupPdfEditor(){
       const fileInput = document.getElementById("pdfFile");
       const pdfCanvas = document.getElementById("pdfCanvas");
@@ -3924,12 +3695,8 @@ const VUILWATER_TABLE = {"4":{"0.3":44,"0.35":50,"0.4":50,"0.45":50,"0.5":50,"0.
       const lbl = document.getElementById("pdfPageLabel");
       const prev = document.getElementById("pdfPrev");
       const next = document.getElementById("pdfNext");
-      const zoomInBtn = document.getElementById("pdfZoomIn");
-      const zoomOutBtn = document.getElementById("pdfZoomOut");
-      const fitBtn = document.getElementById("pdfFit");
 
-      // If CDN blocked/offline, editor won't work.
-      if(!fileInput || !pdfCanvas || !annCanvasEl || !stage || !window.pdfjsLib || !window.fabric) return;
+      if(!fileInput || !pdfCanvas || !annCanvasEl || !window.pdfjsLib || !window.fabric) return;
 
       // PDF.js worker
       try{
@@ -3938,39 +3705,28 @@ const VUILWATER_TABLE = {"4":{"0.3":44,"0.35":50,"0.4":50,"0.45":50,"0.5":50,"0.
 
       let pdfDoc = null;
       let pageNum = 1;
-
-      // current scale
-      let scale = 1.0;     // current render scale relative to "fit"
-      let fitScale = 1.0;  // the scale that fits the container
+      let viewportScale = 1.2;
 
       // Fabric overlay
-      const fabricCanvas = new fabric.Canvas("annCanvas", {
-        selection: true,
-        preserveObjectStacking: true
-      });
+      const fabricCanvas = new fabric.Canvas("annCanvas", { selection: true });
+      fabricCanvas.setBackgroundColor(null, fabricCanvas.renderAll.bind(fabricCanvas));
 
-      // Make sure canvas accepts pointer events
-      annCanvasEl.style.pointerEvents = "auto";
-      pdfCanvas.style.pointerEvents = "none";
-
-      // History (simple undo)
       const history = [];
       const pushState = () => {
         history.push(JSON.stringify(fabricCanvas.toJSON()));
-        if(history.length > 60) history.shift();
+        if(history.length > 50) history.shift();
       };
 
       const setToolActive = (id) => {
         ["toolSelect","toolPen","toolLine","toolArrow","toolText"].forEach(x=>{
           const b=document.getElementById(x);
-          if(!b) return;
-          b.style.borderColor = (x===id) ? "rgba(56,189,248,0.55)" : "rgba(255,255,255,0.08)";
+          if(b) b.style.borderColor = (x===id) ? "rgba(56,189,248,0.55)" : "rgba(255,255,255,0.08)";
         });
       };
 
       let currentTool = "select";
       let drawingLine = null;
-      let arrowHead = null;
+      let drawingArrow = null;
 
       const enableSelect = () => {
         currentTool = "select";
@@ -3983,9 +3739,7 @@ const VUILWATER_TABLE = {"4":{"0.3":44,"0.35":50,"0.4":50,"0.45":50,"0.5":50,"0.
       const enablePen = () => {
         currentTool = "pen";
         fabricCanvas.isDrawingMode = true;
-        const brush = fabricCanvas.freeDrawingBrush;
-        brush.width = 2;
-        brush.color = "#e2e8f0";
+        fabricCanvas.freeDrawingBrush.width = 2;
         setToolActive("toolPen");
       };
 
@@ -3993,7 +3747,6 @@ const VUILWATER_TABLE = {"4":{"0.3":44,"0.35":50,"0.4":50,"0.45":50,"0.5":50,"0.
         currentTool = "line";
         fabricCanvas.isDrawingMode = false;
         fabricCanvas.selection = false;
-        fabricCanvas.discardActiveObject();
         fabricCanvas.forEachObject(o => o.selectable = false);
         setToolActive("toolLine");
       };
@@ -4002,7 +3755,6 @@ const VUILWATER_TABLE = {"4":{"0.3":44,"0.35":50,"0.4":50,"0.45":50,"0.5":50,"0.
         currentTool = "arrow";
         fabricCanvas.isDrawingMode = false;
         fabricCanvas.selection = false;
-        fabricCanvas.discardActiveObject();
         fabricCanvas.forEachObject(o => o.selectable = false);
         setToolActive("toolArrow");
       };
@@ -4011,26 +3763,8 @@ const VUILWATER_TABLE = {"4":{"0.3":44,"0.35":50,"0.4":50,"0.45":50,"0.5":50,"0.
         currentTool = "text";
         fabricCanvas.isDrawingMode = false;
         fabricCanvas.selection = false;
-        fabricCanvas.discardActiveObject();
         fabricCanvas.forEachObject(o => o.selectable = false);
         setToolActive("toolText");
-      };
-
-      // Resize and keep annotation objects scaled when rerendering
-      const scaleObjects = (factor) => {
-        if(!Number.isFinite(factor) || factor <= 0) return;
-        fabricCanvas.getObjects().forEach(obj => {
-          obj.scaleX *= factor;
-          obj.scaleY *= factor;
-          obj.left *= factor;
-          obj.top *= factor;
-          if(obj.type === "line"){
-            obj.x1 *= factor; obj.y1 *= factor;
-            obj.x2 *= factor; obj.y2 *= factor;
-          }
-          if(obj.strokeWidth) obj.strokeWidth *= factor;
-          obj.setCoords();
-        });
       };
 
       const resizeOverlayToPdf = (w,h) => {
@@ -4044,54 +3778,37 @@ const VUILWATER_TABLE = {"4":{"0.3":44,"0.35":50,"0.4":50,"0.45":50,"0.5":50,"0.
         fabricCanvas.setWidth(w);
         fabricCanvas.setHeight(h);
         fabricCanvas.calcOffset();
-        fabricCanvas.requestRenderAll();
+        fabricCanvas.renderAll();
       };
 
-      const computeFitScale = async (page) => {
-        const containerWidth = stage.clientWidth ? stage.clientWidth : 900;
-        const unscaled = page.getViewport({ scale: 1.0 });
-        return Math.max(0.6, Math.min(3.0, containerWidth / unscaled.width));
-      };
-
-      const renderPage = async (num, keepAnnotations=true) => {
+      const renderPage = async (num) => {
         if(!pdfDoc) return;
         const page = await pdfDoc.getPage(num);
 
-        fitScale = await computeFitScale(page);
-        const targetScale = fitScale * scale;
+        // Fit width to container
+        const containerWidth = stage.clientWidth ? stage.clientWidth : 900;
+        const unscaled = page.getViewport({ scale: 1.0 });
+        const scale = Math.max(0.6, Math.min(2.5, containerWidth / unscaled.width));
+        viewportScale = scale;
 
-        const viewport = page.getViewport({ scale: targetScale });
-        const newW = Math.floor(viewport.width);
-        const newH = Math.floor(viewport.height);
-
-        // If keeping annotations, scale them with size change
-        const oldW = fabricCanvas.getWidth() || newW;
-        const factor = newW / oldW;
-
-        resizeOverlayToPdf(newW, newH);
+        const viewport = page.getViewport({ scale });
+        resizeOverlayToPdf(Math.floor(viewport.width), Math.floor(viewport.height));
 
         const ctx = pdfCanvas.getContext("2d");
-        ctx.setTransform(1,0,0,1,0,0);
-        ctx.clearRect(0,0,newW,newH);
-
         await page.render({ canvasContext: ctx, viewport }).promise;
 
-        if(!keepAnnotations){
-          fabricCanvas.clear();
-        } else if (Math.abs(factor - 1) > 0.0001){
-          scaleObjects(factor);
-        }
-
+        // Clear annotations on page change (simple version)
+        fabricCanvas.clear();
         pushState();
-        lbl.textContent = `Pagina ${num} / ${pdfDoc.numPages}  •  Zoom ${(scale*100).toFixed(0)}%`;
+
+        lbl.textContent = `Pagina ${num} / ${pdfDoc.numPages}`;
       };
 
       const loadPdf = async (file) => {
         const buf = await file.arrayBuffer();
         pdfDoc = await pdfjsLib.getDocument({ data: buf }).promise;
         pageNum = 1;
-        scale = 1.0;
-        await renderPage(pageNum, false);
+        await renderPage(pageNum);
       };
 
       fileInput.addEventListener("change", async (e) => {
@@ -4103,93 +3820,33 @@ const VUILWATER_TABLE = {"4":{"0.3":44,"0.35":50,"0.4":50,"0.45":50,"0.5":50,"0.
       prev && prev.addEventListener("click", async () => {
         if(!pdfDoc) return;
         pageNum = Math.max(1, pageNum - 1);
-        // clear annotations per page for now (simple); can be extended to per-page storage
-        await renderPage(pageNum, false);
+        await renderPage(pageNum);
       });
-
       next && next.addEventListener("click", async () => {
         if(!pdfDoc) return;
         pageNum = Math.min(pdfDoc.numPages, pageNum + 1);
-        await renderPage(pageNum, false);
+        await renderPage(pageNum);
       });
 
-      const applyZoom = async (newScale) => {
-        if(!pdfDoc) return;
-        const clamped = Math.max(0.5, Math.min(3.0, newScale));
-        const oldScale = scale;
-        scale = clamped;
-        // keep annotations and scale with render
-        await renderPage(pageNum, true);
-      };
-
-      zoomInBtn && zoomInBtn.addEventListener("click", () => applyZoom(scale + 0.1));
-      zoomOutBtn && zoomOutBtn.addEventListener("click", () => applyZoom(scale - 0.1));
-      fitBtn && fitBtn.addEventListener("click", () => applyZoom(1.0));
-
-      // mouse wheel zoom (Ctrl/trackpad pinch on desktop)
-      stage.addEventListener("wheel", (e) => {
-        if(!pdfDoc) return;
-        if(e.ctrlKey){
-          e.preventDefault();
-          const delta = e.deltaY > 0 ? -0.08 : 0.08;
-          applyZoom(scale + delta);
-        }
-      }, { passive:false });
-
-      // Pan by dragging (desktop): hold space OR middle mouse
-      let isPanning = false;
-      let panStart = { x:0, y:0, sl:0, st:0 };
-
-      const startPan = (e) => {
-        isPanning = true;
-        const pt = (e.touches && e.touches[0]) ? e.touches[0] : e;
-        panStart = { x: pt.clientX, y: pt.clientY, sl: stage.scrollLeft, st: stage.scrollTop };
-        stage.style.cursor = "grabbing";
-      };
-      const movePan = (e) => {
-        if(!isPanning) return;
-        const pt = (e.touches && e.touches[0]) ? e.touches[0] : e;
-        const dx = pt.clientX - panStart.x;
-        const dy = pt.clientY - panStart.y;
-        stage.scrollLeft = panStart.sl - dx;
-        stage.scrollTop  = panStart.st - dy;
-      };
-      const endPan = () => {
-        isPanning = false;
-        stage.style.cursor = "";
-      };
-
-      // Only pan when space is held or middle mouse pressed
-      let spaceDown = false;
-      window.addEventListener("keydown", (e)=>{ if(e.code==="Space") spaceDown=true; });
-      window.addEventListener("keyup", (e)=>{ if(e.code==="Space") spaceDown=false; });
-
-      stage.addEventListener("mousedown", (e)=>{
-        if(e.button === 1 || spaceDown){
-          e.preventDefault();
-          startPan(e);
-        }
-      });
-      window.addEventListener("mousemove", movePan);
-      window.addEventListener("mouseup", endPan);
-
-      // Tools: drawing
+      // Drawing tools
       fabricCanvas.on("mouse:down", (opt) => {
         const p = fabricCanvas.getPointer(opt.e);
         if(currentTool === "line"){
-          drawingLine = new fabric.Line([p.x,p.y,p.x,p.y], { stroke: "#e2e8f0", strokeWidth: 2, selectable:false, evented:false });
+          drawingLine = new fabric.Line([p.x,p.y,p.x,p.y], { stroke: "#e2e8f0", strokeWidth: 2, selectable:false });
           fabricCanvas.add(drawingLine);
         } else if(currentTool === "arrow"){
-          drawingLine = new fabric.Line([p.x,p.y,p.x,p.y], { stroke:"#e2e8f0", strokeWidth:2, selectable:false, evented:false });
-          drawingLine._isArrow = true;
-          fabricCanvas.add(drawingLine);
+          drawingArrow = { x1:p.x, y1:p.y, x2:p.x, y2:p.y };
+          const line = new fabric.Line([p.x,p.y,p.x,p.y], { stroke:"#e2e8f0", strokeWidth:2, selectable:false });
+          line._isArrow = true;
+          fabricCanvas.add(line);
+          drawingLine = line;
         } else if(currentTool === "text"){
           const tb = new fabric.Textbox("Tekst", { left:p.x, top:p.y, fill:"#e2e8f0", fontSize:16, width: 220 });
           tb.selectable = true;
           fabricCanvas.add(tb);
           enableSelect();
           fabricCanvas.setActiveObject(tb);
-          fabricCanvas.requestRenderAll();
+          fabricCanvas.renderAll();
           pushState();
         }
       });
@@ -4198,23 +3855,28 @@ const VUILWATER_TABLE = {"4":{"0.3":44,"0.35":50,"0.4":50,"0.45":50,"0.5":50,"0.
         if(!drawingLine) return;
         const p = fabricCanvas.getPointer(opt.e);
         drawingLine.set({ x2:p.x, y2:p.y });
-        fabricCanvas.requestRenderAll();
+        fabricCanvas.renderAll();
       });
 
       fabricCanvas.on("mouse:up", () => {
         if(drawingLine){
           if(drawingLine._isArrow){
+            // add arrow head (simple triangle)
             const { x1,y1,x2,y2 } = drawingLine;
             const angle = Math.atan2(y2 - y1, x2 - x1);
+            const headLen = 12;
+            const hx = x2 - headLen * Math.cos(angle);
+            const hy = y2 - headLen * Math.sin(angle);
             const tri = new fabric.Triangle({
               left: x2, top: y2, originX:"center", originY:"center",
               angle: angle * 180/Math.PI + 90,
               width: 14, height: 14,
               fill: "#e2e8f0",
-              selectable:false, evented:false
+              selectable:false
             });
             fabricCanvas.add(tri);
           }
+          drawingLine.selectable = false;
           drawingLine = null;
           pushState();
         }
@@ -4231,14 +3893,15 @@ const VUILWATER_TABLE = {"4":{"0.3":44,"0.35":50,"0.4":50,"0.45":50,"0.5":50,"0.
         if(history.length <= 1) return;
         history.pop();
         const prevState = history[history.length - 1];
-        fabricCanvas.loadFromJSON(prevState, () => fabricCanvas.requestRenderAll());
+        fabricCanvas.loadFromJSON(prevState, () => fabricCanvas.renderAll());
       });
 
       fabricCanvas.on("path:created", pushState);
       fabricCanvas.on("object:modified", pushState);
+      fabricCanvas.on("object:added", () => { /* handled in places */ });
 
       document.getElementById("toolExport")?.addEventListener("click", () => {
-        if(!pdfDoc) return;
+        // merge pdfCanvas + fabric overlay into one PNG
         const out = document.createElement("canvas");
         out.width = pdfCanvas.width; out.height = pdfCanvas.height;
         const ctx = out.getContext("2d");
@@ -4249,13 +3912,6 @@ const VUILWATER_TABLE = {"4":{"0.3":44,"0.35":50,"0.4":50,"0.45":50,"0.5":50,"0.
         a.href = out.toDataURL("image/png");
         a.click();
       });
-
-      // Reset per open
-      window.calcResetters.pdfEditor = () => {
-        // keep file selection; just reset tools
-        enableSelect();
-        pushState();
-      };
 
       enableSelect();
       pushState();
