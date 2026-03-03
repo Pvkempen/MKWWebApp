@@ -25,7 +25,18 @@
       --radius-sm: 8px;
     }
     * { box-sizing: border-box; }
-    html, body { width:100%; max-width:100%; overflow-x:hidden; }
+    html, body {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+      height: 100%;
+      /* iOS rubber-band uses the html background when you overscroll */
+      background: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.14), transparent 30%),
+                  radial-gradient(circle at 80% 0%, rgba(167, 139, 250, 0.18), transparent 26%),
+                  linear-gradient(135deg, #0f172a 0%, #0b1021 50%, #0b1327 100%);
+      background-color: #0f172a;
+      overscroll-behavior-y: none;
+    }
     body {
       margin: 0;
       min-height: 100vh;
@@ -34,7 +45,7 @@
                   linear-gradient(135deg, #0f172a 0%, #0b1021 50%, #0b1327 100%);
       font-family: "Space Grotesk", "Segoe UI", sans-serif;
       color: #f8fafc;
-      padding: 18px;
+      padding: calc(18px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom));
       -webkit-font-smoothing: antialiased;
     }
     .page {
@@ -49,7 +60,7 @@
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       box-shadow: var(--shadow);
-      padding: 18px;
+      padding: calc(18px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom));
       backdrop-filter: blur(8px);
     }
     /* Home header removed per request */
@@ -184,9 +195,12 @@
 
     /* Sticky top bar on calc pages */
     .calc-topbar {
-      position: sticky;
-      top: 10px;
-      z-index: 20;
+      position: fixed;
+      top: calc(10px + env(safe-area-inset-top));
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(1200px, calc(100% - 36px));
+      z-index: 200;
       display: grid;
       grid-template-columns: auto 1fr auto;
       align-items: center;
@@ -301,10 +315,10 @@
     footer { color: var(--muted); text-align:center; font-size: 13px; margin: 10px 0 4px; }
 
     @media (max-width: 900px) {
-      body { padding: 14px; }
+      body { padding: calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom)); }
       table.cv-table { min-width: 760px; font-size: 12px; }
       table.cv-table th, table.cv-table td { padding: 8px 6px; }
-      .calc-topbar { top: 8px; }
+      .calc-topbar { top: calc(8px + env(safe-area-inset-top)); }
       .calc-topbar h2 { font-size: 15px; }
     }
   </style>
