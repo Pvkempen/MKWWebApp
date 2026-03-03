@@ -1131,6 +1131,88 @@
       applyViewport();
     })();
 
+  
+    (function setupLabelTooltips(){
+      const tip = document.getElementById("thTip");
+      if(!tip) return;
+      const isTouch = () => window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+
+      const show = (el, msg) => {
+        const rect = el.getBoundingClientRect();
+        tip.textContent = msg;
+        tip.style.display = "block";
+        const pad=10;
+        const r = tip.getBoundingClientRect();
+        const left = Math.min(window.innerWidth - r.width - pad, Math.max(pad, rect.left));
+        const top  = Math.min(window.innerHeight - r.height - pad, Math.max(pad, rect.bottom + 8));
+        tip.style.left = left + "px";
+        tip.style.top  = top + "px";
+      };
+      const hide = () => { tip.style.display="none"; };
+
+      document.querySelectorAll("label").forEach(lb=>{
+        const msg = (lb.textContent||"").trim().replace(/\s+/g," ");
+        if(msg && !lb.title) lb.title = msg; // desktop native tooltip
+        lb.style.cursor = "help";
+        lb.addEventListener("click", (e)=>{
+          if(!isTouch()) return;
+          e.stopPropagation();
+          if(tip.style.display==="block" && tip.textContent===msg){ hide(); return; }
+          show(lb, msg);
+        });
+      });
+
+      window.addEventListener("scroll", ()=>{ if(isTouch()) hide(); }, {passive:true});
+      document.addEventListener("click", ()=>{ if(isTouch()) hide(); });
+    })();
+
+  
+    (function setupVersionTooltip(){
+      const badge = document.querySelector(".version-badge");
+      const tip = document.getElementById("thTip");
+      if(!badge || !tip) return;
+      const isTouch = () => window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+
+      const CHANGELOG = {
+        "v1.0.7": [
+          "Fix: 'vrije doorlaat' tekst zat per ongeluk buiten tab en verscheen overal",
+          "Fix: checklist update direct bij aanvinken",
+          "Tooltips: ook op labels (Diameter, Luchtsnelheid, etc.)"
+        ]
+      };
+
+      const msg = (CHANGELOG[APP_VERSION] || []).map(s=>"• "+s).join("\n") || "Geen notities.";
+
+      const show = () => {
+        const rect = badge.getBoundingClientRect();
+        tip.textContent = msg;
+        tip.style.whiteSpace = "pre-line";
+        tip.style.display = "block";
+        const pad=10;
+        const r=tip.getBoundingClientRect();
+        const left = Math.min(window.innerWidth - r.width - pad, Math.max(pad, rect.left - r.width + rect.width));
+        const top  = Math.min(window.innerHeight - r.height - pad, Math.max(pad, rect.bottom + 8));
+        tip.style.left = left + "px";
+        tip.style.top  = top + "px";
+      };
+      const hide = () => { tip.style.display="none"; tip.style.whiteSpace="normal"; };
+
+      // desktop hover
+      badge.title = msg.replace(/\n/g," | ");
+
+      badge.addEventListener("mouseenter", ()=>{ if(!isTouch()) show(); });
+      badge.addEventListener("mouseleave", ()=>{ if(!isTouch()) hide(); });
+      // touch tap
+      badge.addEventListener("click", (e)=>{
+        if(!isTouch()) return;
+        e.stopPropagation();
+        if(tip.style.display==="block"){ hide(); } else { show(); }
+      });
+
+      window.addEventListener("scroll", ()=>{ if(isTouch()) hide(); }, {passive:true});
+      document.addEventListener("click", ()=>{ if(isTouch()) hide(); });
+    })();
+
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js">
     
@@ -1690,10 +1772,92 @@
       applyViewport();
     })();
 
+  
+    (function setupLabelTooltips(){
+      const tip = document.getElementById("thTip");
+      if(!tip) return;
+      const isTouch = () => window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+
+      const show = (el, msg) => {
+        const rect = el.getBoundingClientRect();
+        tip.textContent = msg;
+        tip.style.display = "block";
+        const pad=10;
+        const r = tip.getBoundingClientRect();
+        const left = Math.min(window.innerWidth - r.width - pad, Math.max(pad, rect.left));
+        const top  = Math.min(window.innerHeight - r.height - pad, Math.max(pad, rect.bottom + 8));
+        tip.style.left = left + "px";
+        tip.style.top  = top + "px";
+      };
+      const hide = () => { tip.style.display="none"; };
+
+      document.querySelectorAll("label").forEach(lb=>{
+        const msg = (lb.textContent||"").trim().replace(/\s+/g," ");
+        if(msg && !lb.title) lb.title = msg; // desktop native tooltip
+        lb.style.cursor = "help";
+        lb.addEventListener("click", (e)=>{
+          if(!isTouch()) return;
+          e.stopPropagation();
+          if(tip.style.display==="block" && tip.textContent===msg){ hide(); return; }
+          show(lb, msg);
+        });
+      });
+
+      window.addEventListener("scroll", ()=>{ if(isTouch()) hide(); }, {passive:true});
+      document.addEventListener("click", ()=>{ if(isTouch()) hide(); });
+    })();
+
+  
+    (function setupVersionTooltip(){
+      const badge = document.querySelector(".version-badge");
+      const tip = document.getElementById("thTip");
+      if(!badge || !tip) return;
+      const isTouch = () => window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+
+      const CHANGELOG = {
+        "v1.0.7": [
+          "Fix: 'vrije doorlaat' tekst zat per ongeluk buiten tab en verscheen overal",
+          "Fix: checklist update direct bij aanvinken",
+          "Tooltips: ook op labels (Diameter, Luchtsnelheid, etc.)"
+        ]
+      };
+
+      const msg = (CHANGELOG[APP_VERSION] || []).map(s=>"• "+s).join("\n") || "Geen notities.";
+
+      const show = () => {
+        const rect = badge.getBoundingClientRect();
+        tip.textContent = msg;
+        tip.style.whiteSpace = "pre-line";
+        tip.style.display = "block";
+        const pad=10;
+        const r=tip.getBoundingClientRect();
+        const left = Math.min(window.innerWidth - r.width - pad, Math.max(pad, rect.left - r.width + rect.width));
+        const top  = Math.min(window.innerHeight - r.height - pad, Math.max(pad, rect.bottom + 8));
+        tip.style.left = left + "px";
+        tip.style.top  = top + "px";
+      };
+      const hide = () => { tip.style.display="none"; tip.style.whiteSpace="normal"; };
+
+      // desktop hover
+      badge.title = msg.replace(/\n/g," | ");
+
+      badge.addEventListener("mouseenter", ()=>{ if(!isTouch()) show(); });
+      badge.addEventListener("mouseleave", ()=>{ if(!isTouch()) hide(); });
+      // touch tap
+      badge.addEventListener("click", (e)=>{
+        if(!isTouch()) return;
+        e.stopPropagation();
+        if(tip.style.display==="block"){ hide(); } else { show(); }
+      });
+
+      window.addEventListener("scroll", ()=>{ if(isTouch()) hide(); }, {passive:true});
+      document.addEventListener("click", ()=>{ if(isTouch()) hide(); });
+    })();
+
   </script>
 </head>
 <body>
-  <div class="version-badge">v1.0.6</div>
+  <div class="version-badge">v1.0.7</div>
   <main class="page">
     <!-- HOME -->
     <section id="homeScreen" class="card menu-card">
@@ -1740,16 +1904,16 @@
             </div>
             <div class="input-group">
               <label>Diameter (mm)</label>
-              <input id="roundDiameter" type="text" inputmode="decimal" placeholder="Bijv. 315 (leeg = auto)" / data-tip="Diameter van het ronde kanaal (mm). Laat leeg om te berekenen.">
+              <input id="roundDiameter" type="text" inputmode="decimal" placeholder="Bijv. 315 (leeg = auto)"  data-tip="Diameter van het ronde kanaal (mm). Laat leeg om te berekenen.">
               <p class="helper">Laat 1 veld leeg: dat veld wordt berekend en tijdelijk “vastgezet”.</p>
             </div>
             <div class="input-group">
               <label>Luchtsnelheid (m/s)</label>
-              <input id="roundVelocity" type="text" inputmode="decimal" placeholder="Bijv. 6.5" / data-tip="Luchtsnelheid in het kanaal (m/s).">
+              <input id="roundVelocity" type="text" inputmode="decimal" placeholder="Bijv. 6.5"  data-tip="Luchtsnelheid in het kanaal (m/s).">
             </div>
             <div class="input-group">
               <label>Luchthoeveelheid (m³/h)</label>
-              <input id="roundFlow" type="text" inputmode="decimal" placeholder="Bijv. 2200" / data-tip="Luchthoeveelheid (m³/h).">
+              <input id="roundFlow" type="text" inputmode="decimal" placeholder="Bijv. 2200"  data-tip="Luchthoeveelheid (m³/h).">
             </div>
           </div>
 
@@ -1760,20 +1924,20 @@
             </div>
             <div class="input-group">
               <label>Breedte (mm)</label>
-              <input id="rectWidth" type="text" inputmode="decimal" placeholder="Bijv. 400 (leeg = auto)" / data-tip="Breedte van het kanaal (mm). Laat leeg om te berekenen.">
+              <input id="rectWidth" type="text" inputmode="decimal" placeholder="Bijv. 400 (leeg = auto)"  data-tip="Breedte van het kanaal (mm). Laat leeg om te berekenen.">
               <p class="helper">Laat 1 veld leeg: dat veld wordt berekend en tijdelijk “vastgezet”.</p>
             </div>
             <div class="input-group">
               <label>Hoogte (mm)</label>
-              <input id="rectHeight" type="text" inputmode="decimal" placeholder="Bijv. 200" / data-tip="Hoogte van het kanaal (mm).">
+              <input id="rectHeight" type="text" inputmode="decimal" placeholder="Bijv. 200"  data-tip="Hoogte van het kanaal (mm).">
             </div>
             <div class="input-group">
               <label>Luchtsnelheid (m/s)</label>
-              <input id="rectVelocity" type="text" inputmode="decimal" placeholder="Bijv. 5.5" / data-tip="Luchtsnelheid (m/s).">
+              <input id="rectVelocity" type="text" inputmode="decimal" placeholder="Bijv. 5.5"  data-tip="Luchtsnelheid (m/s).">
             </div>
             <div class="input-group">
               <label>Luchthoeveelheid (m³/h)</label>
-              <input id="rectFlow" type="text" inputmode="decimal" placeholder="Bijv. 1600" / data-tip="Luchthoeveelheid (m³/h).">
+              <input id="rectFlow" type="text" inputmode="decimal" placeholder="Bijv. 1600"  data-tip="Luchthoeveelheid (m³/h).">
             </div>
           </div>
         </div>
@@ -2213,18 +2377,7 @@
           </div>
         </div>
       </div>
-
-      <p class="note" style="margin-top:6px;">Bereken benodigde vrije doorlaat (A) en minimale sleufhoogte op basis van Q en v.</p>
-
-        <div class="calc-grid" style="margin-top:12px;">
-          <div class="card" style="padding:14px;">
-            <div class="calc-grid" style="grid-template-columns:repeat(2,minmax(160px,1fr));">
-              <div class="input-group"><label>Q (m³/h)</label><input id="drQh" type="text" inputmode="decimal" placeholder="Bijv. 350"/></div>
-              <div class="input-group"><label>v (m/s)</label><input id="drV" type="text" inputmode="decimal" placeholder="Bijv. 1.5"/></div>
-              <div class="input-group"><label>Sleuflengte (mm)</label><input id="drLen" type="text" inputmode="decimal" placeholder="Bijv. 800"/></div>
-            </div>
-          </div>
-          <div class="card" style="padding:14px;">
+<div class="card" style="padding:14px;">
             <div class="section-title">Resultaat</div>
             <div class="details" style="padding:14px;">
               <div class="formula-block">
@@ -2664,7 +2817,7 @@
   <script>
     // ===== MKW Tools Webapp Version =====
     // Change this value when you publish a new version:
-    const APP_VERSION = "v1.0.6";
+    const APP_VERSION = "v1.0.7";
     (function(){ const b=document.querySelector('.version-badge'); if(b) b.textContent = APP_VERSION; })();
 
     (function(){ const b=document.querySelector('.version-badge'); if(b) b.textContent = APP_VERSION; })();
@@ -4241,7 +4394,7 @@ const VUILWATER_TABLE = {"4":{"0.3":44,"0.35":50,"0.4":50,"0.45":50,"0.5":50,"0.
           row.style.padding = "10px";
           row.style.border = "1px solid rgba(255,255,255,0.08)";
           row.style.borderRadius = "12px";
-          row.style.background = "rgba(0,0,0,0.18)";
+          row.style.background = it.done ? "rgba(56,189,248,0.10)" : "rgba(0,0,0,0.18)";
 
           const cb = document.createElement("input");
           cb.type = "checkbox";
@@ -4249,6 +4402,7 @@ const VUILWATER_TABLE = {"4":{"0.3":44,"0.35":50,"0.4":50,"0.45":50,"0.5":50,"0.
           cb.addEventListener("change", () => {
             it.done = cb.checked;
             save(items);
+            render();
           });
 
           const txt = document.createElement("div");
@@ -4855,6 +5009,88 @@ const VUILWATER_TABLE = {"4":{"0.3":44,"0.35":50,"0.4":50,"0.45":50,"0.5":50,"0.
       enableSelect();
       pushState();
       applyViewport();
+    })();
+
+  
+    (function setupLabelTooltips(){
+      const tip = document.getElementById("thTip");
+      if(!tip) return;
+      const isTouch = () => window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+
+      const show = (el, msg) => {
+        const rect = el.getBoundingClientRect();
+        tip.textContent = msg;
+        tip.style.display = "block";
+        const pad=10;
+        const r = tip.getBoundingClientRect();
+        const left = Math.min(window.innerWidth - r.width - pad, Math.max(pad, rect.left));
+        const top  = Math.min(window.innerHeight - r.height - pad, Math.max(pad, rect.bottom + 8));
+        tip.style.left = left + "px";
+        tip.style.top  = top + "px";
+      };
+      const hide = () => { tip.style.display="none"; };
+
+      document.querySelectorAll("label").forEach(lb=>{
+        const msg = (lb.textContent||"").trim().replace(/\s+/g," ");
+        if(msg && !lb.title) lb.title = msg; // desktop native tooltip
+        lb.style.cursor = "help";
+        lb.addEventListener("click", (e)=>{
+          if(!isTouch()) return;
+          e.stopPropagation();
+          if(tip.style.display==="block" && tip.textContent===msg){ hide(); return; }
+          show(lb, msg);
+        });
+      });
+
+      window.addEventListener("scroll", ()=>{ if(isTouch()) hide(); }, {passive:true});
+      document.addEventListener("click", ()=>{ if(isTouch()) hide(); });
+    })();
+
+  
+    (function setupVersionTooltip(){
+      const badge = document.querySelector(".version-badge");
+      const tip = document.getElementById("thTip");
+      if(!badge || !tip) return;
+      const isTouch = () => window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+
+      const CHANGELOG = {
+        "v1.0.7": [
+          "Fix: 'vrije doorlaat' tekst zat per ongeluk buiten tab en verscheen overal",
+          "Fix: checklist update direct bij aanvinken",
+          "Tooltips: ook op labels (Diameter, Luchtsnelheid, etc.)"
+        ]
+      };
+
+      const msg = (CHANGELOG[APP_VERSION] || []).map(s=>"• "+s).join("\n") || "Geen notities.";
+
+      const show = () => {
+        const rect = badge.getBoundingClientRect();
+        tip.textContent = msg;
+        tip.style.whiteSpace = "pre-line";
+        tip.style.display = "block";
+        const pad=10;
+        const r=tip.getBoundingClientRect();
+        const left = Math.min(window.innerWidth - r.width - pad, Math.max(pad, rect.left - r.width + rect.width));
+        const top  = Math.min(window.innerHeight - r.height - pad, Math.max(pad, rect.bottom + 8));
+        tip.style.left = left + "px";
+        tip.style.top  = top + "px";
+      };
+      const hide = () => { tip.style.display="none"; tip.style.whiteSpace="normal"; };
+
+      // desktop hover
+      badge.title = msg.replace(/\n/g," | ");
+
+      badge.addEventListener("mouseenter", ()=>{ if(!isTouch()) show(); });
+      badge.addEventListener("mouseleave", ()=>{ if(!isTouch()) hide(); });
+      // touch tap
+      badge.addEventListener("click", (e)=>{
+        if(!isTouch()) return;
+        e.stopPropagation();
+        if(tip.style.display==="block"){ hide(); } else { show(); }
+      });
+
+      window.addEventListener("scroll", ()=>{ if(isTouch()) hide(); }, {passive:true});
+      document.addEventListener("click", ()=>{ if(isTouch()) hide(); });
     })();
 
   </script>
