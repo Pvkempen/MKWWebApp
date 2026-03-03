@@ -4,11 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>MKW Tools | Webapp</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-  <link rel="icon" href="apple-touch-icon.png">
   <style>
     :root {
       --bg: #0f172a;
@@ -195,6 +196,11 @@
     .btn:active { transform: translateY(1px); }
     .hidden { display: none !important; }
 
+    /* Fixed topbar offset */
+    #calcScreen { padding-top: calc(118px + env(safe-area-inset-top)); }
+    @media (max-width: 900px) { #calcScreen { padding-top: calc(126px + env(safe-area-inset-top)); } }
+
+
     /* Sticky top bar on calc pages */
     .calc-topbar {
       position: fixed;
@@ -323,6 +329,32 @@
       .calc-topbar { top: calc(8px + env(safe-area-inset-top)); }
       .calc-topbar h2 { font-size: 15px; }
     }
+  
+    /* Form controls: keep theme (best-effort across browsers) */
+    :root { color-scheme: dark; }
+    select {
+      -webkit-appearance: none;
+      appearance: none;
+      background: rgba(0, 0, 0, 0.25);
+      color: #e5e7eb;
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      background-image:
+        linear-gradient(45deg, transparent 50%, rgba(226,232,240,0.9) 50%),
+        linear-gradient(135deg, rgba(226,232,240,0.9) 50%, transparent 50%),
+        linear-gradient(to right, transparent, transparent);
+      background-position:
+        calc(100% - 18px) calc(50% - 3px),
+        calc(100% - 12px) calc(50% - 3px),
+        0 0;
+      background-size: 6px 6px, 6px 6px, 100% 100%;
+      background-repeat: no-repeat;
+      padding-right: 34px !important;
+    }
+    select option {
+      background-color: #0b1224;
+      color: #e5e7eb;
+    }
+
   </style>
 </head>
 <body>
@@ -330,7 +362,7 @@
     <!-- HOME -->
     <section id="homeScreen" class="card menu-card">
       <h2>Berekeningen</h2>
-      <p style="margin:0;color:var(--muted);">Zoek of filter en start direct. (Nieuwe tools toegevoegd uit je berekeningen-zip.)</p>
+      <p style="margin:0;color:var(--muted);">Zoek of filter en start direct. </p>
 
       <div class="search-area">
         <div class="search">
@@ -972,7 +1004,114 @@
               Als je ook rekening wil houden met roosterverlies/weerstand, kan ik een extra “correctiefactor” toevoegen.
             </p>
           </div>
+       
+        <div class="calc-grid">
+          <div class="card" style="padding:14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+              <div style="font-weight:900;">Deur sleuf onder deur</div>
+              <span class="tag">Q → A → h</span>
+            </div>
+
+            <div class="input-group">
+              <label>Luchthoeveelheid (m³/h)</label>
+              <input id="dsQh" type="text" inputmode="decimal" placeholder="Voorbeeld: 150" />
+              <p class="helper">Zoek dit op in je ventilatie-berekening: afzuig- of overstroomdebiet dat door de deur moet.</p>
+            </div>
+
+            <div class="input-group">
+              <label>Snelheid over de sleuf (m/s)</label>
+              <input id="dsVslot" type="text" inputmode="decimal" placeholder="Voorbeeld: 1.5" value="1.5" />
+              <p class="helper">Kies een comfortabele snelheid (typisch 1–2 m/s voor overstroom).</p>
+            </div>
+
+            <div class="input-group">
+              <label>Maximale sleuflengte (mm)</label>
+              <input id="dsLen" type="text" inputmode="decimal" placeholder="Voorbeeld: 800" value="800" />
+              <p class="helper">Meestal: deurbreedte minus drempel/afdichtingen. Dit is de “vrije” lengte.</p>
+            </div>
+
+            <div class="result">
+              <div><strong>Oppervlakte sleuf (m²)</strong></div>
+              <div class="mono" id="dsAreaM2">—</div>
+            </div>
+            <div class="result">
+              <div><strong>Oppervlakte sleuf (cm²)</strong></div>
+              <div class="mono" id="dsAreaCm2">—</div>
+            </div>
+            <div class="result">
+              <div><strong>Minimale sleufhoogte (mm)</strong></div>
+              <div class="mono" id="dsMinH">—</div>
+            </div>
+            <div class="result">
+              <div><strong>Minimale sleufhoogte (cm)</strong></div>
+              <div class="mono" id="dsMinHcm">—</div>
+            </div>
+
+            <p class="helper">Formules: Q(m³/s)=Q(m³/h)/3600 • A=Q/v • h=A/(L) met L in meter.</p>
+          </div>
+
+          <div class="card" style="padding:14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+              <div style="font-weight:900;">Rooster berekening</div>
+              <span class="tag">Q → bruto</span>
+            </div>
+
+            <div class="input-group">
+              <label>Luchthoeveelheid (m³/h)</label>
+              <input id="drQh" type="text" inputmode="decimal" placeholder="Voorbeeld: 150" />
+              <p class="helper">Zelfde debiet als hierboven, als de overstroom via een rooster gaat.</p>
+            </div>
+
+            <div class="input-group">
+              <label>Snelheid door rooster (m/s)</label>
+              <input id="drV" type="text" inputmode="decimal" placeholder="Voorbeeld: 2.0" value="2.0" />
+              <p class="helper">Kies o.b.v. geluid/drukverlies (vaak 1.5–3 m/s).</p>
+            </div>
+
+            <div class="input-group">
+              <label>Vrije doorlaat rooster (%)</label>
+              <input id="drPct" type="text" inputmode="decimal" placeholder="Voorbeeld: 60" value="60" />
+              <p class="helper">Te vinden in datasheet van het rooster (vrije doorlaat / free area).</p>
+            </div>
+
+            <div class="result">
+              <div><strong>Benodigde netto A (m²)</strong></div>
+              <div class="mono" id="drNetA">—</div>
+            </div>
+            <div class="result">
+              <div><strong>Benodigde bruto A (m²)</strong></div>
+              <div class="mono" id="drBrutoM2">—</div>
+            </div>
+            <div class="result">
+              <div><strong>Benodigde bruto A (cm²)</strong></div>
+              <div class="mono" id="drBrutoCm2">—</div>
+            </div>
+            <div class="result">
+              <div><strong>Vierkant rooster (zijde in cm)</strong></div>
+              <div class="mono" id="drSideCm">—</div>
+            </div>
+            <div class="result">
+              <div><strong>Vierkant rooster (zijde in mm)</strong></div>
+              <div class="mono" id="drSideMm">—</div>
+            </div>
+
+            <div class="input-group">
+              <label>Rooster maat rechthoek (vul 1 maat in)</label>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div>
+                  <div class="helper" style="margin-bottom:6px;">Hoogte (mm) (laat leeg om te berekenen)</div>
+                  <input id="drH" type="text" inputmode="decimal" placeholder="Bijv. 200" />
+                </div>
+                <div>
+                  <div class="helper" style="margin-bottom:6px;">Breedte (mm) (laat leeg om te berekenen)</div>
+                  <input id="drW" type="text" inputmode="decimal" placeholder="Bijv. 300" />
+                </div>
+              </div>
+              <p class="helper">De app rekent de ontbrekende maat uit op basis van bruto-oppervlakte.</p>
+            </div>
+          </div>
         </div>
+</div>
       </div>
 
       <!-- NEW: Hemelwaterafvoer (basis) -->
@@ -1132,7 +1271,7 @@
     </section>
   </main>
 
-  <footer>Tip: op mobiel scrollen tabellen horizontaal. Geen witte “out-of-bounds” meer door overflow-fix.</footer>
+  <footer></footer>
 
   <script>
     window.calcResetters = window.calcResetters || {};
@@ -1178,7 +1317,7 @@
         koelleiding: { name:"Koelleiding Berekening", subtitle:"P + ΔT → Qv → diameter", category:"hvac", tags:["HVAC"], implemented:true, panelId:"koelleidingCalculator", search:"koelleiding berekening qv diameter leidingtype" },
         expansie:    { name:"Expansievat CV", subtitle:"Inhoud installatie → advies expansievat", category:"hvac", tags:["HVAC"], implemented:true, panelId:"expansieCalculator", search:"expansievat cv advies vep vn vtt" },
         buffervat:   { name:"Buffervat Koeling", subtitle:"kW + taps → inhoud buffervat", category:"hvac", tags:["HVAC"], implemented:true, panelId:"buffervatCalculator", search:"buffervat koeling inhoud taps glycol" },
-        deur:        { name:"Deur Sleuf Berekening", subtitle:"Q en v → minimale sleufhoogte", category:"hvac", tags:["HVAC"], implemented:true, panelId:"deurCalculator", search:"deur sleuf berekening luchtdoorlaat hoogte" },
+        deur:        { name:"Deur Sleuf Berekening", subtitle:"Q en v → minimale sleufhoogte", category:"hvac", tags:["HVAC"], implemented:true, panelId:"deurSleufCalculator", search:"deur sleuf berekening luchtdoorlaat hoogte" },
 
         planning:   { name:"Project checklist", subtitle:"Snelle checklist", category:"planning", tags:["Planning","Checklist"], implemented:true, panelId:"planningCalculator", search:"planning checklist project" }
       };
