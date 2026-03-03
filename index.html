@@ -877,7 +877,253 @@
           </div>
         </div>
       </div>
-      <div id="comingSoon" class="card details hidden">
+      
+      <!-- NEW: Luchtkanalen (extra) -->
+      <div id="luchtkanalenCalculator" class="card details calc-panel hidden">
+        <div class="calc-grid">
+          <div class="card" style="padding:14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+              <div style="font-weight:900;">Luchtkanalen</div>
+              <span class="tag">extra</span>
+            </div>
+            <p class="helper" style="margin-top:8px;">
+              Dit is de “uitgebreide” web-variant: snel tools zoals equivalent rond ↔ rechthoek en oppervlakte.
+              (Je bestaande Luchtkanaal Calculator blijft ook beschikbaar.)
+            </p>
+            <div class="input-group">
+              <label>Rechthoek: breedte (mm)</label>
+              <input id="lkW" type="text" inputmode="decimal" placeholder="Bijv. 400" />
+            </div>
+            <div class="input-group">
+              <label>Rechthoek: hoogte (mm)</label>
+              <input id="lkH" type="text" inputmode="decimal" placeholder="Bijv. 200" />
+            </div>
+            <div class="result">
+              <div><strong>Oppervlakte rechthoek</strong></div>
+              <div class="mono" id="lkArea">—</div>
+            </div>
+            <div class="result">
+              <div><strong>Equivalente ronde diameter</strong></div>
+              <div class="mono" id="lkEqD">—</div>
+            </div>
+            <p class="helper">Eq. diameter op basis van gelijke oppervlakte: d = √(4A/π).</p>
+          </div>
+
+          <div class="card" style="padding:14px;">
+            <div style="font-weight:900;">Rond ↔ rechthoek (gelijke oppervlakte)</div>
+            <div class="input-group">
+              <label>Ronde diameter (mm)</label>
+              <input id="lkD" type="text" inputmode="decimal" placeholder="Bijv. 315" />
+            </div>
+            <div class="input-group">
+              <label>Doel hoogte (mm)</label>
+              <input id="lkTargetH" type="text" inputmode="decimal" placeholder="Bijv. 200" />
+              <p class="helper">Bereken bij een vaste hoogte de benodigde breedte voor gelijke oppervlakte.</p>
+            </div>
+            <div class="result">
+              <div><strong>Oppervlakte rond</strong></div>
+              <div class="mono" id="lkAreaRound">—</div>
+            </div>
+            <div class="result">
+              <div><strong>Breedte bij doel-hoogte</strong></div>
+              <div class="mono" id="lkTargetW">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEW: Deur sleuf berekening -->
+      <div id="deurSleufCalculator" class="card details calc-panel hidden">
+        <div class="calc-grid">
+          <div class="card" style="padding:14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+              <div style="font-weight:900;">Deur Sleuf Berekening</div>
+              <span class="tag">Q → h</span>
+            </div>
+            <div class="input-group">
+              <label>Luchthoeveelheid (m³/h)</label>
+              <input id="dsQ" type="text" inputmode="decimal" placeholder="Bijv. 150" />
+            </div>
+            <div class="input-group">
+              <label>Max luchtsnelheid in sleuf (m/s)</label>
+              <input id="dsV" type="text" inputmode="decimal" placeholder="Bijv. 1.5" value="1.5" />
+            </div>
+            <div class="input-group">
+              <label>Vrije sleufbreedte (mm)</label>
+              <input id="dsW" type="text" inputmode="decimal" placeholder="Bijv. 800" value="800" />
+              <p class="helper">Neem deurbreedte minus drempel/afdichtingen.</p>
+            </div>
+            <div class="result">
+              <div><strong>Benodigde vrije doorsnede</strong></div>
+              <div class="mono" id="dsA">—</div>
+            </div>
+            <div class="result">
+              <div><strong>Sleufhoogte</strong></div>
+              <div class="mono" id="dsH">—</div>
+            </div>
+            <p class="helper">A = (Q/3600)/v. Hoogte = A / (breedte).</p>
+          </div>
+
+          <div class="card" style="padding:14px;">
+            <div style="font-weight:900;">Tip</div>
+            <p class="helper">
+              Als je ook rekening wil houden met roosterverlies/weerstand, kan ik een extra “correctiefactor” toevoegen.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEW: Hemelwaterafvoer (basis) -->
+      <div id="hemelwaterCalculator" class="card details calc-panel hidden">
+        <div class="calc-grid">
+          <div class="card" style="padding:14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+              <div style="font-weight:900;">Hemelwaterafvoer</div>
+              <span class="tag">dak → l/s</span>
+            </div>
+            <div class="input-group">
+              <label>Oppervlakte (m²)</label>
+              <input id="hwaAreaIn" type="text" inputmode="decimal" placeholder="Bijv. 240" />
+              <p class="helper">Of gebruik lengte × breedte hieronder.</p>
+            </div>
+            <div class="input-group">
+              <label>Lengte (m)</label>
+              <input id="hwaL" type="text" inputmode="decimal" placeholder="Bijv. 20" />
+            </div>
+            <div class="input-group">
+              <label>Breedte (m)</label>
+              <input id="hwaB" type="text" inputmode="decimal" placeholder="Bijv. 12" />
+            </div>
+            <div class="input-group">
+              <label>Regenintensiteit (l/s·m²)</label>
+              <input id="hwaI" type="text" inputmode="decimal" value="0.03" />
+            </div>
+            <div class="input-group">
+              <label>Reductiefactor</label>
+              <select id="hwaR">
+                <option value="1">1.00</option>
+                <option value="0.75">0.75</option>
+                <option value="0.60">0.60</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Aantal HWA’s</label>
+              <input id="hwaN" type="text" inputmode="numeric" value="1" />
+            </div>
+
+            <div class="result">
+              <div><strong>Gebruikte oppervlakte</strong></div>
+              <div class="mono" id="hwaArea">—</div>
+            </div>
+            <div class="result">
+              <div><strong>Debiet totaal</strong></div>
+              <div class="mono" id="hwaQ">—</div>
+            </div>
+            <div class="result">
+              <div><strong>Debiet per HWA</strong></div>
+              <div class="mono" id="hwaPer">—</div>
+            </div>
+          </div>
+
+          <div class="card" style="padding:14px;">
+            <div style="font-weight:900;">Diameter (advies)</div>
+            <p class="helper">
+              In je zip is de hemelwater-widget leeg. Als je een diameter-tabel gebruikt (NEN/ISSO of fabrikant),
+              kan ik die 1:1 toevoegen. Voor nu toon ik debiet (l/s) zodat je direct in je tabel kunt kiezen.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEW: Batch Renamer (browser) -->
+      <div id="batchRenamerCalculator" class="card details calc-panel hidden">
+        <div class="calc-grid">
+          <div class="card" style="padding:14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+              <div style="font-weight:900;">Batch Renamer</div>
+              <span class="tag">preview</span>
+            </div>
+            <div class="input-group">
+              <label>Bestandsnamen (1 per regel)</label>
+              <textarea id="brInput" rows="10" style="width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.25);color:#e5e7eb;font-size:14px;"></textarea>
+              <p class="helper">Plak hier een lijst, bv. uit Windows Verkenner of Excel.</p>
+            </div>
+          </div>
+
+          <div class="card" style="padding:14px;">
+            <div style="font-weight:900;">Regels</div>
+            <div class="input-group">
+              <label>Zoek</label>
+              <input id="brFind" type="text" placeholder="tekst of regex (optioneel)" />
+            </div>
+            <div class="input-group">
+              <label>Vervang door</label>
+              <input id="brReplace" type="text" placeholder="..." />
+            </div>
+            <div class="input-group">
+              <label>Prefix</label>
+              <input id="brPrefix" type="text" placeholder="Bijv. MKW_" />
+            </div>
+            <div class="input-group">
+              <label>Suffix</label>
+              <input id="brSuffix" type="text" placeholder="Bijv. _v2" />
+            </div>
+            <div class="input-group">
+              <label>Nummering</label>
+              <select id="brNumbering">
+                <option value="off">Uit</option>
+                <option value="end">Achteraan</option>
+                <option value="start">Vooraan</option>
+              </select>
+              <p class="helper">Voegt 001/002/003… toe.</p>
+            </div>
+            <div class="input-group">
+              <label>Startnummer</label>
+              <input id="brStart" type="text" inputmode="numeric" value="1" />
+            </div>
+
+            <button id="brCopy" class="btn" type="button">Kopieer preview</button>
+            <p class="helper">Kopieer de output en gebruik het in je workflow (PowerShell, explorer tools, etc.).</p>
+          </div>
+        </div>
+
+        <div class="card" style="padding:14px;">
+          <div style="font-weight:900;">Preview</div>
+          <div class="table-scroll" style="margin-top:10px;">
+            <table class="cv-table" style="min-width:760px;">
+              <thead>
+                <tr><th>#</th><th>Origineel</th><th>Nieuw</th></tr>
+              </thead>
+              <tbody id="brTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEW: Planning checklist -->
+      <div id="planningCalculator" class="card details calc-panel hidden">
+        <div class="card" style="padding:14px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+            <div style="font-weight:900;">Project checklist</div>
+            <span class="tag">local</span>
+          </div>
+          <p class="helper" style="margin-top:8px;">
+            Simpele checklist (wordt lokaal in je browser opgeslagen). Voeg je eigen items toe.
+          </p>
+
+          <div class="input-group">
+            <label>Nieuw item</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <input id="plNew" type="text" placeholder="Bijv. sparingscontrole uitgevoerd" style="flex:1;min-width:220px;" />
+              <button id="plAdd" class="btn" type="button">Toevoegen</button>
+              <button id="plClear" class="btn secondary" type="button">Reset</button>
+            </div>
+          </div>
+
+          <div id="plList" style="display:grid;gap:10px;margin-top:10px;"></div>
+        </div>
+      </div>
+<div id="comingSoon" class="card details hidden">
         <p id="comingSoonTitle" style="margin:0;font-weight:800;">Nieuw gereedschap</p>
         <p style="margin:0;color:var(--muted);">Deze berekening is nog niet overgezet naar web. (Wel toegevoegd aan het overzicht.)</p>
       </div>
@@ -914,16 +1160,16 @@
         uitzetting:  { name: "Uitzetting Buisleiding", subtitle: "Thermische uitzetting ΔL", category: "hvac", tags:["HVAC","Uitzetting"], implemented: true, panelId: "uitzetting", search:"uitzetting buisleiding thermisch delta l alpha" },
 
         // From zip - added to menu (not yet ported to web)
-        luchtkanalen_py: { name:"Luchtkanalen (uit desktop)", subtitle:"(Nog overzetten) - uitgebreide luchtkanalen tool", category:"hvac", tags:["HVAC","(soon)"], implemented:false, panelId:null, search:"luchtkanalen widget kanaalberekening" },
-        wachttijd:  { name:"Wachttijd Water", subtitle:"(Nog overzetten)", category:"water", tags:["Water","(soon)"], implemented:false, panelId:null, search:"wachttijd water legionella" },
-        tapwater:   { name:"Tapwater Dimensioneren", subtitle:"(Nog overzetten)", category:"water", tags:["Water","(soon)"], implemented:false, panelId:null, search:"tapwater dimensioneren qv r leiding diameters" },
-        vuilwater:  { name:"Vuilwaterafvoer", subtitle:"(Nog overzetten)", category:"water", tags:["Water","(soon)"], implemented:false, panelId:null, search:"vuilwater afvoerberekening afschot diameter" },
-        koelleiding:{ name:"Koelleiding Berekening", subtitle:"(Nog overzetten)", category:"hvac", tags:["HVAC","(soon)"], implemented:false, panelId:null, search:"koelleiding berekening koelvermogen" },
-        expansie:   { name:"Expansievat CV", subtitle:"(Nog overzetten)", category:"hvac", tags:["HVAC","(soon)"], implemented:false, panelId:null, search:"expansievat cv berekening" },
-        buffervat:  { name:"Buffervat Koeling", subtitle:"(Nog overzetten)", category:"hvac", tags:["HVAC","(soon)"], implemented:false, panelId:null, search:"inhoud buffervat koeling" },
-        deur_sleuf: { name:"Deur Sleuf Berekening", subtitle:"(Nog overzetten)", category:"hvac", tags:["HVAC","(soon)"], implemented:false, panelId:null, search:"deur sleuf berekening" },
-        dak_hwa:    { name:"Hemelwaterafvoer", subtitle:"(Nog overzetten)", category:"water", tags:["Water","(soon)"], implemented:false, panelId:null, search:"hemelwaterafvoer berekening" },
-        batch:      { name:"Batch Renamer", subtitle:"(Nog overzetten)", category:"util", tags:["Tools","(soon)"], implemented:false, panelId:null, search:"batch renamer" },
+        luchtkanalen_py: { name:"Luchtkanalen", subtitle:"Extra kanaal tools (web)", category:"hvac", tags:["HVAC","Kanaal"], implemented:true, panelId:"luchtkanalenCalculator", search:"luchtkanalen widget kanaalberekening" },
+        wachttijd:  { name:"Wachttijd Water", subtitle:"Leidingvolume → wachttijd", category:"water", tags:["Water","Legionella"], implemented:true, panelId:"wachttijdCalculator", search:"wachttijd water legionella" },
+        tapwater:   { name:"Tapwater Dimensioneren", subtitle:"TE/SE → qv + diameter", category:"water", tags:["Water","Tapwater"], implemented:true, panelId:"tapwaterCalculator", search:"tapwater dimensioneren qv r leiding diameters" },
+        vuilwater:  { name:"Vuilwaterafvoer", subtitle:"Debiet + afschot → diameter", category:"water", tags:["Water","Afvoer"], implemented:true, panelId:"vuilwaterCalculator", search:"vuilwater afvoerberekening afschot diameter" },
+        koelleiding:{ name:"Koelleiding Berekening", subtitle:"kW + ΔT → debiet + diameter", category:"hvac", tags:["HVAC","Koeling"], implemented:true, panelId:"koelleidingCalculator", search:"koelleiding berekening koelvermogen" },
+        expansie:   { name:"Expansievat CV", subtitle:"Systeemvolume → vatgrootte", category:"hvac", tags:["HVAC","CV"], implemented:true, panelId:"expansieCalculator", search:"expansievat cv berekening" },
+        buffervat:  { name:"Buffervat Koeling", subtitle:"P + tijd → liters", category:"hvac", tags:["HVAC","Buffer"], implemented:true, panelId:"buffervatCalculator", search:"inhoud buffervat koeling" },
+        deur_sleuf: { name:"Deur Sleuf Berekening", subtitle:"Q + breedte → sleufhoogte", category:"hvac", tags:["HVAC","Ventilatie"], implemented:true, panelId:"deurSleufCalculator", search:"deur sleuf berekening" },
+        dak_hwa:    { name:"Hemelwaterafvoer", subtitle:"Dakvlak → debiet (l/s)", category:"water", tags:["Water","HWA"], implemented:true, panelId:"hemelwaterCalculator", search:"hemelwaterafvoer berekening" },
+        batch:      { name:"Batch Renamer", subtitle:"Hernoem lijsten in bulk", category:"util", tags:["Tools","Rename"], implemented:true, panelId:"batchRenamerCalculator", search:"batch renamer" },
         tapwater:    { name:"Tapwater Dimensioneren", subtitle:"TE/SE/CV/BSH → qv + diameter", category:"water", tags:["Water"], implemented:true, panelId:"tapwaterCalculator", search:"tapwater dimensioneren te se cv bsh qv leiding" },
         wachttijd:   { name:"Wachttijd Water", subtitle:"Leidingwachttijd + 15s", category:"water", tags:["Water"], implemented:true, panelId:"wachttijdCalculator", search:"wachttijd water leiding l/h l/s dinw dhw" },
         vuilwater:   { name:"Vuilwaterafvoer", subtitle:"Samengestelde afvoer → diameter", category:"water", tags:["Water"], implemented:true, panelId:"vuilwaterCalculator", search:"vuilwater afvoer afschot basisafvoer leiding diameter" },
@@ -932,7 +1178,7 @@
         buffervat:   { name:"Buffervat Koeling", subtitle:"kW + taps → inhoud buffervat", category:"hvac", tags:["HVAC"], implemented:true, panelId:"buffervatCalculator", search:"buffervat koeling inhoud taps glycol" },
         deur:        { name:"Deur Sleuf Berekening", subtitle:"Q en v → minimale sleufhoogte", category:"hvac", tags:["HVAC"], implemented:true, panelId:"deurCalculator", search:"deur sleuf berekening luchtdoorlaat hoogte" },
 
-        planning:   { name:"Project checklist", subtitle:"(Binnenkort)", category:"planning", tags:["Planning","(soon)"], implemented:false, panelId:null, search:"planning checklist project" }
+        planning:   { name:"Project checklist", subtitle:"Snelle checklist", category:"planning", tags:["Planning","Checklist"], implemented:true, panelId:"planningCalculator", search:"planning checklist project" }
       };
 
       const createMenuButton = (key, cfg) => {
@@ -2225,6 +2471,355 @@ const VUILWATER_TABLE = {"4":{"0.3":44,"0.35":50,"0.4":50,"0.45":50,"0.5":50,"0.
       window.calcResetters.deurCalculator = ()=>{ qh.value=""; v.value=""; len.value=""; calc(); };
     })();
 
-  </script>
+  
+
+    (function setupLuchtkanalenExtra() {
+      const w = document.getElementById("lkW");
+      const h = document.getElementById("lkH");
+      const d = document.getElementById("lkD");
+      const th = document.getElementById("lkTargetH");
+      const outArea = document.getElementById("lkArea");
+      const outEqD = document.getElementById("lkEqD");
+      const outAreaR = document.getElementById("lkAreaRound");
+      const outTW = document.getElementById("lkTargetW");
+
+      const parseNum = (v) => {
+        if (typeof v !== "string") return NaN;
+        const m = v.replace(",", ".").match(/[-+]?\d*\.?\d+/);
+        return m ? parseFloat(m[0]) : NaN;
+      };
+
+      const calc = () => {
+        const W = parseNum(w.value);
+        const H = parseNum(h.value);
+        if (Number.isFinite(W) && Number.isFinite(H) && W>0 && H>0) {
+          const area_m2 = (W/1000)*(H/1000);
+          outArea.textContent = area_m2.toFixed(4) + " m²";
+          const eqDmm = Math.sqrt((4*area_m2)/Math.PI)*1000;
+          outEqD.textContent = eqDmm.toFixed(1) + " mm";
+        } else {
+          outArea.textContent = "—";
+          outEqD.textContent = "—";
+        }
+
+        const D = parseNum(d.value);
+        if (Number.isFinite(D) && D>0) {
+          const areaR = Math.PI * Math.pow((D/1000)/2, 2);
+          outAreaR.textContent = areaR.toFixed(4) + " m²";
+          const TH = parseNum(th.value);
+          if (Number.isFinite(TH) && TH>0) {
+            const TW = (areaR*1e6)/TH; // mm
+            outTW.textContent = TW.toFixed(1) + " mm";
+          } else outTW.textContent = "—";
+        } else {
+          outAreaR.textContent = "—";
+          outTW.textContent = "—";
+        }
+      };
+
+      [w,h,d,th].forEach(el => el && el.addEventListener("input", calc));
+      const reset = () => {
+        if (w) w.value=""; if (h) h.value=""; if (d) d.value=""; if (th) th.value="";
+        outArea.textContent="—"; outEqD.textContent="—"; outAreaR.textContent="—"; outTW.textContent="—";
+      };
+      window.calcResetters.luchtkanalenCalculator = reset;
+      reset();
+    })();
+
+    (function setupDeurSleuf() {
+      const q = document.getElementById("dsQ");
+      const v = document.getElementById("dsV");
+      const w = document.getElementById("dsW");
+      const outA = document.getElementById("dsA");
+      const outH = document.getElementById("dsH");
+
+      const parseNum = (s) => {
+        if (typeof s !== "string") return NaN;
+        const m = s.replace(",", ".").match(/[-+]?\d*\.?\d+/);
+        return m ? parseFloat(m[0]) : NaN;
+      };
+
+      const calc = () => {
+        const Q = parseNum(q.value);   // m3/h
+        const V = parseNum(v.value);   // m/s
+        const W = parseNum(w.value);   // mm
+        if (Number.isFinite(Q) && Number.isFinite(V) && V>0) {
+          const A = (Q/3600)/V; // m2
+          outA.textContent = (A*1e6).toFixed(0) + " mm²";
+          if (Number.isFinite(W) && W>0) {
+            const H = (A*1e6)/W; // mm
+            outH.textContent = H.toFixed(1) + " mm";
+          } else outH.textContent = "—";
+        } else {
+          outA.textContent = "—";
+          outH.textContent = "—";
+        }
+      };
+
+      [q,v,w].forEach(el => el && el.addEventListener("input", calc));
+      const reset = () => {
+        if (q) q.value="";
+        if (v) v.value="1.5";
+        if (w) w.value="800";
+        outA.textContent="—"; outH.textContent="—";
+      };
+      window.calcResetters.deurSleufCalculator = reset;
+      reset();
+    })();
+
+    (function setupHemelwater() {
+      const areaIn = document.getElementById("hwaAreaIn");
+      const L = document.getElementById("hwaL");
+      const B = document.getElementById("hwaB");
+      const I = document.getElementById("hwaI");
+      const R = document.getElementById("hwaR");
+      const N = document.getElementById("hwaN");
+      const outA = document.getElementById("hwaArea");
+      const outQ = document.getElementById("hwaQ");
+      const outP = document.getElementById("hwaPer");
+
+      const parseNum = (s) => {
+        if (typeof s !== "string") return NaN;
+        const m = s.replace(",", ".").match(/[-+]?\d*\.?\d+/);
+        return m ? parseFloat(m[0]) : NaN;
+      };
+
+      const calc = () => {
+        let A = parseNum(areaIn.value);
+        const l = parseNum(L.value);
+        const b = parseNum(B.value);
+        if (!(Number.isFinite(A) && A>0) && Number.isFinite(l) && Number.isFinite(b) && l>0 && b>0) {
+          A = l*b;
+        }
+        const i = parseNum(I.value);
+        const r = parseNum(R.value);
+        const n = parseNum(N.value);
+
+        if (Number.isFinite(A) && A>0) {
+          outA.textContent = A.toFixed(2) + " m²";
+          if (Number.isFinite(i) && Number.isFinite(r)) {
+            const q = A*i*r; // l/s
+            outQ.textContent = q.toFixed(3) + " l/s";
+            if (Number.isFinite(n) && n>0) outP.textContent = (q/n).toFixed(3) + " l/s";
+            else outP.textContent = "—";
+          } else {
+            outQ.textContent = "—";
+            outP.textContent = "—";
+          }
+        } else {
+          outA.textContent = "—";
+          outQ.textContent = "—";
+          outP.textContent = "—";
+        }
+      };
+
+      [areaIn,L,B,I,N].forEach(el => el && el.addEventListener("input", calc));
+      [R].forEach(el => el && el.addEventListener("change", calc));
+
+      const reset = () => {
+        if (areaIn) areaIn.value="";
+        if (L) L.value="";
+        if (B) B.value="";
+        if (I) I.value="0.03";
+        if (R) R.value="1";
+        if (N) N.value="1";
+        outA.textContent="—"; outQ.textContent="—"; outP.textContent="—";
+      };
+      window.calcResetters.hemelwaterCalculator = reset;
+      reset();
+    })();
+
+    (function setupBatchRenamer() {
+      const input = document.getElementById("brInput");
+      const find = document.getElementById("brFind");
+      const repl = document.getElementById("brReplace");
+      const pre = document.getElementById("brPrefix");
+      const suf = document.getElementById("brSuffix");
+      const numMode = document.getElementById("brNumbering");
+      const start = document.getElementById("brStart");
+      const tbody = document.getElementById("brTable");
+      const copyBtn = document.getElementById("brCopy");
+
+      const safeLines = () => (input.value || "").split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+
+      const pad3 = (n) => String(n).padStart(3, "0");
+
+      const compute = () => {
+        const lines = safeLines();
+        const f = find.value || "";
+        let reObj = null;
+        try { if (f) reObj = new RegExp(f, "g"); } catch(e) { reObj = null; }
+        const r = repl.value || "";
+        const p = pre.value || "";
+        const s = suf.value || "";
+        const mode = numMode.value || "off";
+        const st = parseInt((start.value || "1").replace(/\D/g,""),10) || 1;
+
+        tbody.innerHTML = "";
+        const outLines = [];
+
+        lines.forEach((orig, i) => {
+          let neu = orig;
+          if (reObj) neu = neu.replace(reObj, r);
+          else if (f) neu = neu.split(f).join(r);
+
+          neu = p + neu + s;
+
+          if (mode !== "off") {
+            const n = pad3(st + i);
+            neu = (mode === "start") ? (n + "_" + neu) : (neu + "_" + n);
+          }
+
+          outLines.push(neu);
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td class="readonly">${i+1}</td><td>${orig}</td><td class="readonly">${neu}</td>`;
+          tbody.appendChild(tr);
+        });
+
+        return outLines;
+      };
+
+      const copyPreview = async () => {
+        const outLines = compute();
+        const text = outLines.join("\n");
+        try {
+          await navigator.clipboard.writeText(text);
+          copyBtn.textContent = "Gekopieerd!";
+          setTimeout(()=> copyBtn.textContent="Kopieer preview", 900);
+        } catch(e) {
+          // fallback
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          document.body.removeChild(ta);
+          copyBtn.textContent = "Gekopieerd!";
+          setTimeout(()=> copyBtn.textContent="Kopieer preview", 900);
+        }
+      };
+
+      [input,find,repl,pre,suf,numMode,start].forEach(el => el && el.addEventListener("input", compute));
+      [numMode].forEach(el => el && el.addEventListener("change", compute));
+      if (copyBtn) copyBtn.addEventListener("click", copyPreview);
+
+      const reset = () => {
+        if (input) input.value="";
+        if (find) find.value="";
+        if (repl) repl.value="";
+        if (pre) pre.value="";
+        if (suf) suf.value="";
+        if (numMode) numMode.value="off";
+        if (start) start.value="1";
+        if (tbody) tbody.innerHTML="";
+        compute();
+      };
+      window.calcResetters.batchRenamerCalculator = reset;
+      reset();
+    })();
+
+    (function setupPlanningChecklist() {
+      const key = "mkw_planning_checklist_v1";
+      const listEl = document.getElementById("plList");
+      const addBtn = document.getElementById("plAdd");
+      const clearBtn = document.getElementById("plClear");
+      const newIn = document.getElementById("plNew");
+
+      const defaultItems = [
+        "Scope bevestigd met klant",
+        "Revit/IFC ontvangen en gecontroleerd",
+        "Sparingscontrole uitgevoerd",
+        "Debieten vastgesteld (ventilatie/water)",
+        "Diameterberekening uitgevoerd",
+        "Clash-check uitgevoerd",
+        "Werktekeningen / isometrieën gereed",
+        "Materialenlijst gecontroleerd",
+        "Uitvoering afgestemd (planning)",
+        "Oplevering / revisie bijgewerkt"
+      ];
+
+      const load = () => {
+        try {
+          const raw = localStorage.getItem(key);
+          if (raw) return JSON.parse(raw);
+        } catch(e) {}
+        return defaultItems.map((t,i)=>({ id: "d"+i, text:t, done:false }));
+      };
+
+      const save = (items) => {
+        try { localStorage.setItem(key, JSON.stringify(items)); } catch(e) {}
+      };
+
+      let items = load();
+
+      const render = () => {
+        if (!listEl) return;
+        listEl.innerHTML = "";
+        items.forEach((it, idx) => {
+          const row = document.createElement("div");
+          row.style.display = "flex";
+          row.style.alignItems = "center";
+          row.style.gap = "10px";
+          row.style.padding = "10px";
+          row.style.border = "1px solid rgba(255,255,255,0.08)";
+          row.style.borderRadius = "12px";
+          row.style.background = "rgba(0,0,0,0.18)";
+
+          const cb = document.createElement("input");
+          cb.type = "checkbox";
+          cb.checked = !!it.done;
+          cb.addEventListener("change", () => {
+            it.done = cb.checked;
+            save(items);
+          });
+
+          const txt = document.createElement("div");
+          txt.textContent = it.text;
+          txt.style.flex = "1";
+          txt.style.fontWeight = "700";
+          txt.style.color = it.done ? "rgba(187,247,208,0.9)" : "rgba(226,232,240,0.95)";
+          txt.style.textDecoration = it.done ? "line-through" : "none";
+
+          const del = document.createElement("button");
+          del.className = "btn secondary";
+          del.type = "button";
+          del.textContent = "Verwijder";
+          del.addEventListener("click", () => {
+            items.splice(idx,1);
+            save(items);
+            render();
+          });
+
+          row.append(cb, txt, del);
+          listEl.appendChild(row);
+        });
+      };
+
+      const addItem = () => {
+        const t = (newIn.value || "").trim();
+        if (!t) return;
+        items.push({ id: String(Date.now()), text: t, done:false });
+        newIn.value = "";
+        save(items);
+        render();
+      };
+
+      if (addBtn) addBtn.addEventListener("click", addItem);
+      if (newIn) newIn.addEventListener("keydown", (e)=>{ if(e.key==="Enter"){ e.preventDefault(); addItem(); }});
+      if (clearBtn) clearBtn.addEventListener("click", ()=>{
+        items = defaultItems.map((t,i)=>({ id:"d"+i, text:t, done:false }));
+        save(items);
+        render();
+      });
+
+      const reset = () => {
+        items = load();
+        render();
+      };
+      window.calcResetters.planningCalculator = reset;
+      reset();
+    })();
+</script>
 </body>
 </html>
