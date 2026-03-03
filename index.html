@@ -1693,7 +1693,7 @@
   </script>
 </head>
 <body>
-  <div class="version-badge">v1.0.5</div>
+  <div class="version-badge">v1.0.6</div>
   <main class="page">
     <!-- HOME -->
     <section id="homeScreen" class="card menu-card">
@@ -1710,8 +1710,6 @@
           <span class="chip" data-category="hvac">HVAC</span>
           <span class="chip" data-category="water">Water</span>
           <span class="chip" data-category="util">Tools</span>
-          <span class="chip" data-category="water">Water</span>
-          <span class="chip" data-category="tools">Tools</span>
           <span class="chip" data-category="planning">Planning</span>
         </div>
       </div>
@@ -2666,7 +2664,7 @@
   <script>
     // ===== MKW Tools Webapp Version =====
     // Change this value when you publish a new version:
-    const APP_VERSION = "v1.0.5";
+    const APP_VERSION = "v1.0.6";
     (function(){ const b=document.querySelector('.version-badge'); if(b) b.textContent = APP_VERSION; })();
 
     (function(){ const b=document.querySelector('.version-badge'); if(b) b.textContent = APP_VERSION; })();
@@ -2693,30 +2691,23 @@
         duct:        { name: "Luchtkanaal Calculator", subtitle: "Kanaaldiameter, snelheid of debiet", category: "hvac", tags:["HVAC","Ventilatie"], implemented: true, panelId: "ductCalculator", search:"luchtkanaal ventilatie hvac kanaal rond rechthoek q v d" },
         cvdiameter:  { name: "CV Diameter Berekening", subtitle: "Leidingdiameter op basis van kW en ΔT", category: "hvac", tags:["HVAC","Leidingen"], implemented: true, panelId: "cvCalculator", search:"cv diameter leiding pa kw delta t water" },
 
-        leidinginhoud:{ name: "Leidinginhoud", subtitle: "Volume per meter & totaalvolume", category: "util", tags:["Tools","Volume"], implemented: true, panelId: "leidingInhoud", search:"leidinginhoud liter per meter inhoud volume binnendiameter" },
+        tapwater:    { name:"Tapwater Dimensioneren", subtitle:"TE/SE/CV/BSH → qv + diameter", category:"water", tags:["Water","Tapwater"], implemented:true, panelId:"tapwaterCalculator", search:"tapwater dimensioneren te se cv bsh qv leiding" },
+        wachttijd:   { name:"Wachttijd Water", subtitle:"Leidingvolume → wachttijd", category:"water", tags:["Water","Legionella"], implemented:true, panelId:"wachttijdCalculator", search:"wachttijd water legionella leidingvolume" },
+        vuilwater:   { name:"Vuilwaterafvoer", subtitle:"Samengestelde afvoer → diameter", category:"water", tags:["Water","Afvoer"], implemented:true, panelId:"vuilwaterCalculator", search:"vuilwater afvoer afschot basisafvoer leiding diameter" },
+        hemelwater:  { name:"Hemelwaterafvoer", subtitle:"Dakvlak → debiet (l/s)", category:"water", tags:["Water","HWA"], implemented:true, panelId:"hemelwaterCalculator", search:"hemelwaterafvoer berekening dakvlak debiet" },
         dakafvoer:   { name: "Dakafvoer Berekening", subtitle: "Dakvlak → debiet (l/s) per afvoer", category: "water", tags:["Water","Hemelwater"], implemented: true, panelId: "dakafvoer", search:"dakafvoer hemelwater debiet regenintensiteit dakvlak l/s" },
+
+        koelleiding: { name:"Koelleiding Berekening", subtitle:"P + ΔT → Qv → diameter", category:"hvac", tags:["HVAC","Koeling"], implemented:true, panelId:"koelleidingCalculator", search:"koelleiding berekening qv diameter leidingtype" },
+        expansie:    { name:"Expansievat CV", subtitle:"Inhoud installatie → advies expansievat", category:"hvac", tags:["HVAC","CV"], implemented:true, panelId:"expansieCalculator", search:"expansievat cv advies vep vn vtt" },
+        buffervat:   { name:"Buffervat Koeling", subtitle:"kW + tijd → inhoud buffervat", category:"hvac", tags:["HVAC","Buffer"], implemented:true, panelId:"buffervatCalculator", search:"buffervat koeling inhoud" },
         uitzetting:  { name: "Uitzetting Buisleiding", subtitle: "Thermische uitzetting ΔL", category: "hvac", tags:["HVAC","Uitzetting"], implemented: true, panelId: "uitzetting", search:"uitzetting buisleiding thermisch delta l alpha" },
+        deursleuf:   { name:"Deur Sleuf Berekening", subtitle:"Q → sleufhoogte (incl. rooster)", category:"hvac", tags:["HVAC","Ventilatie"], implemented:true, panelId:"deurSleufCalculator", search:"deur sleuf berekening rooster q sleufhoogte" },
+        luchtkanalen:{ name:"Luchtkanalen Extra", subtitle:"Uitgebreide kanaalhulpen", category:"hvac", tags:["HVAC","Kanaal"], implemented:true, panelId:"luchtkanalenCalculator", search:"luchtkanalen widget kanaalberekening" },
 
-        // From zip - added to menu (not yet ported to web)
-        luchtkanalen_py: { name:"Luchtkanalen", subtitle:"Extra kanaal tools (web)", category:"hvac", tags:["HVAC","Kanaal"], implemented:true, panelId:"luchtkanalenCalculator", search:"luchtkanalen widget kanaalberekening" },
-        wachttijd:  { name:"Wachttijd Water", subtitle:"Leidingvolume → wachttijd", category:"water", tags:["Water","Legionella"], implemented:true, panelId:"wachttijdCalculator", search:"wachttijd water legionella" },
-        tapwater:   { name:"Tapwater Dimensioneren", subtitle:"TE/SE → qv + diameter", category:"water", tags:["Water","Tapwater"], implemented:true, panelId:"tapwaterCalculator", search:"tapwater dimensioneren qv r leiding diameters" },
-        vuilwater:  { name:"Vuilwaterafvoer", subtitle:"Debiet + afschot → diameter", category:"water", tags:["Water","Afvoer"], implemented:true, panelId:"vuilwaterCalculator", search:"vuilwater afvoerberekening afschot diameter" },
-        koelleiding:{ name:"Koelleiding Berekening", subtitle:"kW + ΔT → debiet + diameter", category:"hvac", tags:["HVAC","Koeling"], implemented:true, panelId:"koelleidingCalculator", search:"koelleiding berekening koelvermogen" },
-        expansie:   { name:"Expansievat CV", subtitle:"Systeemvolume → vatgrootte", category:"hvac", tags:["HVAC","CV"], implemented:true, panelId:"expansieCalculator", search:"expansievat cv berekening" },
-        buffervat:  { name:"Buffervat Koeling", subtitle:"P + tijd → liters", category:"hvac", tags:["HVAC","Buffer"], implemented:true, panelId:"buffervatCalculator", search:"inhoud buffervat koeling" },
-dak_hwa:    { name:"Hemelwaterafvoer", subtitle:"Dakvlak → debiet (l/s)", category:"water", tags:["Water","HWA"], implemented:true, panelId:"hemelwaterCalculator", search:"hemelwaterafvoer berekening" },
+        leidinginhoud:{ name: "Leidinginhoud", subtitle: "Volume per meter & totaalvolume", category: "util", tags:["Tools","Volume"], implemented: true, panelId: "leidingInhoud", search:"leidinginhoud liter per meter inhoud volume binnendiameter" },
+        pdfeditor:   { name:"PDF Editor", subtitle:"PDF openen & annoteren (pijl/tekst/lijn)", category:"util", tags:["Tools","PDF"], implemented:true, panelId:"pdfEditor", search:"pdf editor annoteren tekenen pijl tekst" },
 
-        tapwater:    { name:"Tapwater Dimensioneren", subtitle:"TE/SE/CV/BSH → qv + diameter", category:"water", tags:["Water"], implemented:true, panelId:"tapwaterCalculator", search:"tapwater dimensioneren te se cv bsh qv leiding" },
-        wachttijd:   { name:"Wachttijd Water", subtitle:"Leidingwachttijd + 15s", category:"water", tags:["Water"], implemented:true, panelId:"wachttijdCalculator", search:"wachttijd water leiding l/h l/s dinw dhw" },
-        vuilwater:   { name:"Vuilwaterafvoer", subtitle:"Samengestelde afvoer → diameter", category:"water", tags:["Water"], implemented:true, panelId:"vuilwaterCalculator", search:"vuilwater afvoer afschot basisafvoer leiding diameter" },
-        koelleiding: { name:"Koelleiding Berekening", subtitle:"P + ΔT → Qv → diameter", category:"hvac", tags:["HVAC"], implemented:true, panelId:"koelleidingCalculator", search:"koelleiding berekening qv diameter leidingtype" },
-        expansie:    { name:"Expansievat CV", subtitle:"Inhoud installatie → advies expansievat", category:"hvac", tags:["HVAC"], implemented:true, panelId:"expansieCalculator", search:"expansievat cv advies vep vn vtt" },
-        buffervat:   { name:"Buffervat Koeling", subtitle:"kW + taps → inhoud buffervat", category:"hvac", tags:["HVAC"], implemented:true, panelId:"buffervatCalculator", search:"buffervat koeling inhoud taps glycol" },
-
-
-        pdfeditor:  { name:"PDF Editor", subtitle:"PDF openen & annoteren (tekst/lijnen/pijlen)", category:"util", tags:["Tools","PDF"], implemented:true, panelId:"pdfEditor", search:"pdf editor annoteren tekenen pijl tekst" },
-        planning:   { name:"Project checklist", subtitle:"Snelle checklist", category:"planning", tags:["Planning","Checklist"], implemented:true, panelId:"planningCalculator", search:"planning checklist project" }
+        planning:    { name:"Project checklist", subtitle:"Snelle checklist", category:"planning", tags:["Planning","Checklist"], implemented:true, panelId:"planningCalculator", search:"planning checklist project" }
       };
 
       const createMenuButton = (key, cfg) => {
