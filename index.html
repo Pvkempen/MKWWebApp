@@ -442,6 +442,27 @@
       border-color: rgba(56,189,248,0.22);
     }
 
+  
+    .version-badge{
+      position: fixed;
+      top: calc(10px + env(safe-area-inset-top));
+      right: 14px;
+      z-index: 300;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(11,18,36,0.70);
+      backdrop-filter: blur(10px);
+      color: rgba(226,232,240,0.85);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      pointer-events: none;
+    }
+    @media (max-width: 900px){
+      .version-badge{ right: 10px; top: calc(8px + env(safe-area-inset-top)); font-size: 11px; }
+    }
+
   </style>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js">
@@ -910,6 +931,7 @@
   </script>
 </head>
 <body>
+  <div class="version-badge">v1.0.1</div>
   <main class="page">
     <!-- HOME -->
     <section id="homeScreen" class="card menu-card">
