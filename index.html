@@ -355,7 +355,559 @@
       color: #e5e7eb;
     }
 
+  
+    /* Calc panels: reduce "double borders" */
+    .calc-panel .input-group{
+      border: none;
+      background: transparent;
+      padding: 0;
+    }
+    .calc-panel .input-group input,
+    .calc-panel .input-group select{
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.28);
+    }
+    .calc-panel .input-group label{ margin-top: 4px; }
+    .calc-panel .input-group + .input-group{ margin-top: 10px; }
+
+    /* Result cells: neutral "computed" look instead of green */
+    .result{
+      border: 1px solid rgba(167, 139, 250, 0.28);
+      background: rgba(167, 139, 250, 0.06);
+      box-shadow: 0 10px 24px rgba(167, 139, 250, 0.10);
+    }
+    .result strong{ color: #e9d5ff; }
+
+    /* Tables: default responsive (no forced min-width), keep CV table wide */
+    table.cv-table{ min-width: 0; }
+    #cvCalculator table.cv-table{ min-width: 960px; }
+
+    /* Cells: ensure dropdowns/text fit better */
+    table.cv-table th, table.cv-table td{ vertical-align: top; }
+    table.cv-table select{ min-width: 140px; }
+    table.cv-table input{ min-width: 110px; }
+    table.cv-table th{ max-width: 180px; }
+
+    /* Compact inline fields (label + control in one row) */
+    .inline-field{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content: space-between;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      padding: 12px;
+      border-radius: var(--radius-md);
+    }
+    .inline-field .k{ font-weight: 800; color: #e5e7eb; white-space:nowrap; }
+    .inline-field .v{ display:flex; gap:10px; align-items:center; flex:1; justify-content:flex-end; }
+    .inline-field .v input{ width: 120px; }
+    .inline-field .v select{ width: 220px; min-width: 180px; }
+    @media (max-width: 540px){
+      .inline-field{ flex-direction: column; align-items: stretch; }
+      .inline-field .v{ justify-content: flex-start; }
+      .inline-field .v input, .inline-field .v select{ width: 100%; }
+    }
+
+    /* Tooltip bubble */
+    .th-tip{
+      position: fixed;
+      z-index: 500;
+      max-width: min(320px, calc(100vw - 24px));
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(56,189,248,0.25);
+      background: rgba(11,18,36,0.92);
+      color: #e2e8f0;
+      box-shadow: 0 18px 50px rgba(0,0,0,0.40);
+      font-size: 12px;
+      line-height: 1.35;
+      backdrop-filter: blur(10px);
+      display:none;
+    }
+
+  
+    .check-row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+    }
+    .check-row.checked{
+      background: rgba(56,189,248,0.10);
+      border-color: rgba(56,189,248,0.22);
+    }
+
   </style>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js">
+    (function setupPdfEditor(){
+      const fileInput = document.getElementById("pdfFile");
+      const pdfCanvas = document.getElementById("pdfCanvas");
+      const annCanvasEl = document.getElementById("annCanvas");
+      const stage = document.getElementById("pdfStage");
+      const lbl = document.getElementById("pdfPageLabel");
+      const prev = document.getElementById("pdfPrev");
+      const next = document.getElementById("pdfNext");
+
+      if(!fileInput || !pdfCanvas || !annCanvasEl || !window.pdfjsLib || !window.fabric) return;
+
+      // PDF.js worker
+      try{
+        pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      }catch(e){}
+
+      let pdfDoc = null;
+      let pageNum = 1;
+      let viewportScale = 1.2;
+
+      // Fabric overlay
+      const fabricCanvas = new fabric.Canvas("annCanvas", { selection: true });
+      fabricCanvas.setBackgroundColor(null, fabricCanvas.renderAll.bind(fabricCanvas));
+
+      const history = [];
+      const pushState = () => {
+        history.push(JSON.stringify(fabricCanvas.toJSON()));
+        if(history.length > 50) history.shift();
+      };
+
+      const setToolActive = (id) => {
+        ["toolSelect","toolPen","toolLine","toolArrow","toolText"].forEach(x=>{
+          const b=document.getElementById(x);
+          if(b) b.style.borderColor = (x===id) ? "rgba(56,189,248,0.55)" : "rgba(255,255,255,0.08)";
+        });
+      };
+
+      let currentTool = "select";
+      let drawingLine = null;
+      let drawingArrow = null;
+
+      const enableSelect = () => {
+        currentTool = "select";
+        fabricCanvas.isDrawingMode = false;
+        fabricCanvas.selection = true;
+        fabricCanvas.forEachObject(o => o.selectable = true);
+        setToolActive("toolSelect");
+      };
+
+      const enablePen = () => {
+        currentTool = "pen";
+        fabricCanvas.isDrawingMode = true;
+        fabricCanvas.freeDrawingBrush.width = 2;
+        setToolActive("toolPen");
+      };
+
+      const enableLine = () => {
+        currentTool = "line";
+        fabricCanvas.isDrawingMode = false;
+        fabricCanvas.selection = false;
+        fabricCanvas.forEachObject(o => o.selectable = false);
+        setToolActive("toolLine");
+      };
+
+      const enableArrow = () => {
+        currentTool = "arrow";
+        fabricCanvas.isDrawingMode = false;
+        fabricCanvas.selection = false;
+        fabricCanvas.forEachObject(o => o.selectable = false);
+        setToolActive("toolArrow");
+      };
+
+      const enableText = () => {
+        currentTool = "text";
+        fabricCanvas.isDrawingMode = false;
+        fabricCanvas.selection = false;
+        fabricCanvas.forEachObject(o => o.selectable = false);
+        setToolActive("toolText");
+      };
+
+      const resizeOverlayToPdf = (w,h) => {
+        pdfCanvas.width = w; pdfCanvas.height = h;
+        annCanvasEl.width = w; annCanvasEl.height = h;
+        annCanvasEl.style.width = w + "px";
+        annCanvasEl.style.height = h + "px";
+        pdfCanvas.style.width = w + "px";
+        pdfCanvas.style.height = h + "px";
+
+        fabricCanvas.setWidth(w);
+        fabricCanvas.setHeight(h);
+        fabricCanvas.calcOffset();
+        fabricCanvas.renderAll();
+      };
+
+      const renderPage = async (num) => {
+        if(!pdfDoc) return;
+        const page = await pdfDoc.getPage(num);
+
+        // Fit width to container
+        const containerWidth = stage.clientWidth ? stage.clientWidth : 900;
+        const unscaled = page.getViewport({ scale: 1.0 });
+        const scale = Math.max(0.6, Math.min(2.5, containerWidth / unscaled.width));
+        viewportScale = scale;
+
+        const viewport = page.getViewport({ scale });
+        resizeOverlayToPdf(Math.floor(viewport.width), Math.floor(viewport.height));
+
+        const ctx = pdfCanvas.getContext("2d");
+        await page.render({ canvasContext: ctx, viewport }).promise;
+
+        // Clear annotations on page change (simple version)
+        fabricCanvas.clear();
+        pushState();
+
+        lbl.textContent = `Pagina ${num} / ${pdfDoc.numPages}`;
+      };
+
+      const loadPdf = async (file) => {
+        const buf = await file.arrayBuffer();
+        pdfDoc = await pdfjsLib.getDocument({ data: buf }).promise;
+        pageNum = 1;
+        await renderPage(pageNum);
+      };
+
+      fileInput.addEventListener("change", async (e) => {
+        const f = e.target.files && e.target.files[0];
+        if(!f) return;
+        await loadPdf(f);
+      });
+
+      prev && prev.addEventListener("click", async () => {
+        if(!pdfDoc) return;
+        pageNum = Math.max(1, pageNum - 1);
+        await renderPage(pageNum);
+      });
+      next && next.addEventListener("click", async () => {
+        if(!pdfDoc) return;
+        pageNum = Math.min(pdfDoc.numPages, pageNum + 1);
+        await renderPage(pageNum);
+      });
+
+      // Drawing tools
+      fabricCanvas.on("mouse:down", (opt) => {
+        const p = fabricCanvas.getPointer(opt.e);
+        if(currentTool === "line"){
+          drawingLine = new fabric.Line([p.x,p.y,p.x,p.y], { stroke: "#e2e8f0", strokeWidth: 2, selectable:false });
+          fabricCanvas.add(drawingLine);
+        } else if(currentTool === "arrow"){
+          drawingArrow = { x1:p.x, y1:p.y, x2:p.x, y2:p.y };
+          const line = new fabric.Line([p.x,p.y,p.x,p.y], { stroke:"#e2e8f0", strokeWidth:2, selectable:false });
+          line._isArrow = true;
+          fabricCanvas.add(line);
+          drawingLine = line;
+        } else if(currentTool === "text"){
+          const tb = new fabric.Textbox("Tekst", { left:p.x, top:p.y, fill:"#e2e8f0", fontSize:16, width: 220 });
+          tb.selectable = true;
+          fabricCanvas.add(tb);
+          enableSelect();
+          fabricCanvas.setActiveObject(tb);
+          fabricCanvas.renderAll();
+          pushState();
+        }
+      });
+
+      fabricCanvas.on("mouse:move", (opt) => {
+        if(!drawingLine) return;
+        const p = fabricCanvas.getPointer(opt.e);
+        drawingLine.set({ x2:p.x, y2:p.y });
+        fabricCanvas.renderAll();
+      });
+
+      fabricCanvas.on("mouse:up", () => {
+        if(drawingLine){
+          if(drawingLine._isArrow){
+            // add arrow head (simple triangle)
+            const { x1,y1,x2,y2 } = drawingLine;
+            const angle = Math.atan2(y2 - y1, x2 - x1);
+            const headLen = 12;
+            const hx = x2 - headLen * Math.cos(angle);
+            const hy = y2 - headLen * Math.sin(angle);
+            const tri = new fabric.Triangle({
+              left: x2, top: y2, originX:"center", originY:"center",
+              angle: angle * 180/Math.PI + 90,
+              width: 14, height: 14,
+              fill: "#e2e8f0",
+              selectable:false
+            });
+            fabricCanvas.add(tri);
+          }
+          drawingLine.selectable = false;
+          drawingLine = null;
+          pushState();
+        }
+      });
+
+      // Buttons
+      document.getElementById("toolSelect")?.addEventListener("click", enableSelect);
+      document.getElementById("toolPen")?.addEventListener("click", enablePen);
+      document.getElementById("toolLine")?.addEventListener("click", enableLine);
+      document.getElementById("toolArrow")?.addEventListener("click", enableArrow);
+      document.getElementById("toolText")?.addEventListener("click", enableText);
+
+      document.getElementById("toolUndo")?.addEventListener("click", () => {
+        if(history.length <= 1) return;
+        history.pop();
+        const prevState = history[history.length - 1];
+        fabricCanvas.loadFromJSON(prevState, () => fabricCanvas.renderAll());
+      });
+
+      fabricCanvas.on("path:created", pushState);
+      fabricCanvas.on("object:modified", pushState);
+      fabricCanvas.on("object:added", () => { /* handled in places */ });
+
+      document.getElementById("toolExport")?.addEventListener("click", () => {
+        // merge pdfCanvas + fabric overlay into one PNG
+        const out = document.createElement("canvas");
+        out.width = pdfCanvas.width; out.height = pdfCanvas.height;
+        const ctx = out.getContext("2d");
+        ctx.drawImage(pdfCanvas,0,0);
+        ctx.drawImage(annCanvasEl,0,0);
+        const a = document.createElement("a");
+        a.download = `pdf-annotatie-p${pageNum}.png`;
+        a.href = out.toDataURL("image/png");
+        a.click();
+      });
+
+      enableSelect();
+      pushState();
+    })();
+
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js">
+    (function setupPdfEditor(){
+      const fileInput = document.getElementById("pdfFile");
+      const pdfCanvas = document.getElementById("pdfCanvas");
+      const annCanvasEl = document.getElementById("annCanvas");
+      const stage = document.getElementById("pdfStage");
+      const lbl = document.getElementById("pdfPageLabel");
+      const prev = document.getElementById("pdfPrev");
+      const next = document.getElementById("pdfNext");
+
+      if(!fileInput || !pdfCanvas || !annCanvasEl || !window.pdfjsLib || !window.fabric) return;
+
+      // PDF.js worker
+      try{
+        pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      }catch(e){}
+
+      let pdfDoc = null;
+      let pageNum = 1;
+      let viewportScale = 1.2;
+
+      // Fabric overlay
+      const fabricCanvas = new fabric.Canvas("annCanvas", { selection: true });
+      fabricCanvas.setBackgroundColor(null, fabricCanvas.renderAll.bind(fabricCanvas));
+
+      const history = [];
+      const pushState = () => {
+        history.push(JSON.stringify(fabricCanvas.toJSON()));
+        if(history.length > 50) history.shift();
+      };
+
+      const setToolActive = (id) => {
+        ["toolSelect","toolPen","toolLine","toolArrow","toolText"].forEach(x=>{
+          const b=document.getElementById(x);
+          if(b) b.style.borderColor = (x===id) ? "rgba(56,189,248,0.55)" : "rgba(255,255,255,0.08)";
+        });
+      };
+
+      let currentTool = "select";
+      let drawingLine = null;
+      let drawingArrow = null;
+
+      const enableSelect = () => {
+        currentTool = "select";
+        fabricCanvas.isDrawingMode = false;
+        fabricCanvas.selection = true;
+        fabricCanvas.forEachObject(o => o.selectable = true);
+        setToolActive("toolSelect");
+      };
+
+      const enablePen = () => {
+        currentTool = "pen";
+        fabricCanvas.isDrawingMode = true;
+        fabricCanvas.freeDrawingBrush.width = 2;
+        setToolActive("toolPen");
+      };
+
+      const enableLine = () => {
+        currentTool = "line";
+        fabricCanvas.isDrawingMode = false;
+        fabricCanvas.selection = false;
+        fabricCanvas.forEachObject(o => o.selectable = false);
+        setToolActive("toolLine");
+      };
+
+      const enableArrow = () => {
+        currentTool = "arrow";
+        fabricCanvas.isDrawingMode = false;
+        fabricCanvas.selection = false;
+        fabricCanvas.forEachObject(o => o.selectable = false);
+        setToolActive("toolArrow");
+      };
+
+      const enableText = () => {
+        currentTool = "text";
+        fabricCanvas.isDrawingMode = false;
+        fabricCanvas.selection = false;
+        fabricCanvas.forEachObject(o => o.selectable = false);
+        setToolActive("toolText");
+      };
+
+      const resizeOverlayToPdf = (w,h) => {
+        pdfCanvas.width = w; pdfCanvas.height = h;
+        annCanvasEl.width = w; annCanvasEl.height = h;
+        annCanvasEl.style.width = w + "px";
+        annCanvasEl.style.height = h + "px";
+        pdfCanvas.style.width = w + "px";
+        pdfCanvas.style.height = h + "px";
+
+        fabricCanvas.setWidth(w);
+        fabricCanvas.setHeight(h);
+        fabricCanvas.calcOffset();
+        fabricCanvas.renderAll();
+      };
+
+      const renderPage = async (num) => {
+        if(!pdfDoc) return;
+        const page = await pdfDoc.getPage(num);
+
+        // Fit width to container
+        const containerWidth = stage.clientWidth ? stage.clientWidth : 900;
+        const unscaled = page.getViewport({ scale: 1.0 });
+        const scale = Math.max(0.6, Math.min(2.5, containerWidth / unscaled.width));
+        viewportScale = scale;
+
+        const viewport = page.getViewport({ scale });
+        resizeOverlayToPdf(Math.floor(viewport.width), Math.floor(viewport.height));
+
+        const ctx = pdfCanvas.getContext("2d");
+        await page.render({ canvasContext: ctx, viewport }).promise;
+
+        // Clear annotations on page change (simple version)
+        fabricCanvas.clear();
+        pushState();
+
+        lbl.textContent = `Pagina ${num} / ${pdfDoc.numPages}`;
+      };
+
+      const loadPdf = async (file) => {
+        const buf = await file.arrayBuffer();
+        pdfDoc = await pdfjsLib.getDocument({ data: buf }).promise;
+        pageNum = 1;
+        await renderPage(pageNum);
+      };
+
+      fileInput.addEventListener("change", async (e) => {
+        const f = e.target.files && e.target.files[0];
+        if(!f) return;
+        await loadPdf(f);
+      });
+
+      prev && prev.addEventListener("click", async () => {
+        if(!pdfDoc) return;
+        pageNum = Math.max(1, pageNum - 1);
+        await renderPage(pageNum);
+      });
+      next && next.addEventListener("click", async () => {
+        if(!pdfDoc) return;
+        pageNum = Math.min(pdfDoc.numPages, pageNum + 1);
+        await renderPage(pageNum);
+      });
+
+      // Drawing tools
+      fabricCanvas.on("mouse:down", (opt) => {
+        const p = fabricCanvas.getPointer(opt.e);
+        if(currentTool === "line"){
+          drawingLine = new fabric.Line([p.x,p.y,p.x,p.y], { stroke: "#e2e8f0", strokeWidth: 2, selectable:false });
+          fabricCanvas.add(drawingLine);
+        } else if(currentTool === "arrow"){
+          drawingArrow = { x1:p.x, y1:p.y, x2:p.x, y2:p.y };
+          const line = new fabric.Line([p.x,p.y,p.x,p.y], { stroke:"#e2e8f0", strokeWidth:2, selectable:false });
+          line._isArrow = true;
+          fabricCanvas.add(line);
+          drawingLine = line;
+        } else if(currentTool === "text"){
+          const tb = new fabric.Textbox("Tekst", { left:p.x, top:p.y, fill:"#e2e8f0", fontSize:16, width: 220 });
+          tb.selectable = true;
+          fabricCanvas.add(tb);
+          enableSelect();
+          fabricCanvas.setActiveObject(tb);
+          fabricCanvas.renderAll();
+          pushState();
+        }
+      });
+
+      fabricCanvas.on("mouse:move", (opt) => {
+        if(!drawingLine) return;
+        const p = fabricCanvas.getPointer(opt.e);
+        drawingLine.set({ x2:p.x, y2:p.y });
+        fabricCanvas.renderAll();
+      });
+
+      fabricCanvas.on("mouse:up", () => {
+        if(drawingLine){
+          if(drawingLine._isArrow){
+            // add arrow head (simple triangle)
+            const { x1,y1,x2,y2 } = drawingLine;
+            const angle = Math.atan2(y2 - y1, x2 - x1);
+            const headLen = 12;
+            const hx = x2 - headLen * Math.cos(angle);
+            const hy = y2 - headLen * Math.sin(angle);
+            const tri = new fabric.Triangle({
+              left: x2, top: y2, originX:"center", originY:"center",
+              angle: angle * 180/Math.PI + 90,
+              width: 14, height: 14,
+              fill: "#e2e8f0",
+              selectable:false
+            });
+            fabricCanvas.add(tri);
+          }
+          drawingLine.selectable = false;
+          drawingLine = null;
+          pushState();
+        }
+      });
+
+      // Buttons
+      document.getElementById("toolSelect")?.addEventListener("click", enableSelect);
+      document.getElementById("toolPen")?.addEventListener("click", enablePen);
+      document.getElementById("toolLine")?.addEventListener("click", enableLine);
+      document.getElementById("toolArrow")?.addEventListener("click", enableArrow);
+      document.getElementById("toolText")?.addEventListener("click", enableText);
+
+      document.getElementById("toolUndo")?.addEventListener("click", () => {
+        if(history.length <= 1) return;
+        history.pop();
+        const prevState = history[history.length - 1];
+        fabricCanvas.loadFromJSON(prevState, () => fabricCanvas.renderAll());
+      });
+
+      fabricCanvas.on("path:created", pushState);
+      fabricCanvas.on("object:modified", pushState);
+      fabricCanvas.on("object:added", () => { /* handled in places */ });
+
+      document.getElementById("toolExport")?.addEventListener("click", () => {
+        // merge pdfCanvas + fabric overlay into one PNG
+        const out = document.createElement("canvas");
+        out.width = pdfCanvas.width; out.height = pdfCanvas.height;
+        const ctx = out.getContext("2d");
+        ctx.drawImage(pdfCanvas,0,0);
+        ctx.drawImage(annCanvasEl,0,0);
+        const a = document.createElement("a");
+        a.download = `pdf-annotatie-p${pageNum}.png`;
+        a.href = out.toDataURL("image/png");
+        a.click();
+      });
+
+      enableSelect();
+      pushState();
+    })();
+
+  </script>
 </head>
 <body>
   <main class="page">
@@ -652,25 +1204,25 @@
         </div>
         <p class="note" style="margin-top:6px;">Vul TE/SE/CV/BSH + lengte. qv/diameter/snelheid/R en Δp worden automatisch bepaald via de tabellen.</p>
 
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-top:10px;">
-          <div class="input-group" style="min-width:220px;flex:0 0 auto;">
-            <label>Max snelheid (m/s)</label>
-            <input id="twMaxSpeed" type="text" inputmode="decimal" placeholder="Bijv. 2.0" value="2.0" />
-            <div class="helper">Wordt gebruikt als filter in de qv/R tabel.</div>
+        
+        <div style="display:grid;gap:10px;margin-top:10px;">
+          <div class="inline-field">
+            <div class="k">Max snelheid</div>
+            <div class="v">
+              <input id="twMaxSpeed" type="text" inputmode="decimal" placeholder="2.0" value="2.0" />
+              <span class="helper" style="margin:0;white-space:nowrap;">m/s</span>
+            </div>
           </div>
-          <div class="input-group" style="min-width:240px;flex:0 0 auto;">
-            <label>Type tabel</label>
-            <select id="twType" class="cv-input">
-              <option value="Koper Koud">Koper Koud</option>
-              <option value="Koper Warm">Koper Warm</option>
-              <option value="Kunststof koud">Kunststof koud</option>
-              <option value="Kunststof Warm">Kunststof Warm</option>
-            </select>
-            <div class="helper">Kies materiaal & warm/koud.</div>
+          <div class="inline-field">
+            <div class="k">Type tabel</div>
+            <div class="v">
+              <select id="twType" class="cv-input"></select>
+            </div>
           </div>
+          <p class="helper" style="margin:0;">Max snelheid = grens voor de lookup. Type tabel = welke qv/R tabel je gebruikt.</p>
         </div>
 
-        <div class="table-scroll" style="margin-top:12px;">
+        <div class="table-scroll<div class="table-scroll" style="margin-top:12px;">
           <table class="cv-table" style="min-width:1120px;">
             <thead>
               <tr>
@@ -1114,6 +1666,62 @@
 </div>
       </div>
 
+      
+      <!-- NEW: PDF Editor -->
+      <div id="pdfEditor" class="card details calc-panel hidden">
+        <div class="calc-grid">
+          <div class="card" style="padding:14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+              <div style="font-weight:900;">PDF Editor</div>
+              <span class="tag">annoteren</span>
+            </div>
+            <p class="helper" style="margin-top:8px;">
+              Upload een PDF en annoteer met tekst, lijnen en pijlen. (Let op: echte PDF-tekst “bewerken” is in de browser meestal niet betrouwbaar; dit is bedoeld voor annotaties.)
+            </p>
+
+            <div class="input-group" style="margin-top:12px;">
+              <label>Open PDF</label>
+              <input id="pdfFile" type="file" accept="application/pdf" />
+              <p class="helper">Werkt op telefoon en PC.</p>
+            </div>
+
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+              <button class="btn secondary" type="button" id="pdfPrev">◀︎</button>
+              <button class="btn secondary" type="button" id="pdfNext">▶︎</button>
+              <span class="tag" id="pdfPageLabel">Pagina —</span>
+            </div>
+
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+              <button class="btn secondary" type="button" id="toolSelect">Select</button>
+              <button class="btn secondary" type="button" id="toolPen">Pen</button>
+              <button class="btn secondary" type="button" id="toolLine">Lijn</button>
+              <button class="btn secondary" type="button" id="toolArrow">Pijl</button>
+              <button class="btn secondary" type="button" id="toolText">Tekst</button>
+              <button class="btn secondary" type="button" id="toolUndo">Undo</button>
+              <button class="btn" type="button" id="toolExport">Export PNG</button>
+            </div>
+
+            <div style="margin-top:12px;border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden;background:rgba(0,0,0,0.18);">
+              <div id="pdfStage" style="position:relative;width:100%;overflow:auto;">
+                <canvas id="pdfCanvas"></canvas>
+                <canvas id="annCanvas" style="position:absolute;left:0;top:0;"></canvas>
+              </div>
+            </div>
+            <p class="helper" style="margin-top:10px;">Tip: gebruik ‘Select’ om objecten te verplaatsen/verwijderen. Export is per pagina (PNG) met je annotaties.</p>
+          </div>
+
+          <div class="card" style="padding:14px;">
+            <div style="font-weight:900;">Wat kan wel / niet</div>
+            <ul style="margin:10px 0 0;color:#cbd5e1;line-height:1.6;">
+              <li><strong>Wel:</strong> lijnen, pijlen, tekst, handtekening/pen, markeringen.</li>
+              <li><strong>Niet (betrouwbaar):</strong> bestaande PDF-tekst aanpassen alsof het Word is.</li>
+              <li>Als je écht tekst wilt wijzigen: beste workflow is “annoteren + nieuwe PDF export” of een server-side editor.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+
       <!-- NEW: Hemelwaterafvoer (basis) -->
       <div id="hemelwaterCalculator" class="card details calc-panel hidden">
         <div class="calc-grid">
@@ -1271,6 +1879,9 @@
     </section>
   </main>
 
+  <div id="thTip" class="th-tip"></div>
+
+
   <footer></footer>
 
   <script>
@@ -1310,7 +1921,7 @@
         buffervat:  { name:"Buffervat Koeling", subtitle:"P + tijd → liters", category:"hvac", tags:["HVAC","Buffer"], implemented:true, panelId:"buffervatCalculator", search:"inhoud buffervat koeling" },
         deur_sleuf: { name:"Deur Sleuf Berekening", subtitle:"Q + breedte → sleufhoogte", category:"hvac", tags:["HVAC","Ventilatie"], implemented:true, panelId:"deurSleufCalculator", search:"deur sleuf berekening" },
         dak_hwa:    { name:"Hemelwaterafvoer", subtitle:"Dakvlak → debiet (l/s)", category:"water", tags:["Water","HWA"], implemented:true, panelId:"hemelwaterCalculator", search:"hemelwaterafvoer berekening" },
-        batch:      { name:"Batch Renamer", subtitle:"Hernoem lijsten in bulk", category:"util", tags:["Tools","Rename"], implemented:true, panelId:"batchRenamerCalculator", search:"batch renamer" },
+
         tapwater:    { name:"Tapwater Dimensioneren", subtitle:"TE/SE/CV/BSH → qv + diameter", category:"water", tags:["Water"], implemented:true, panelId:"tapwaterCalculator", search:"tapwater dimensioneren te se cv bsh qv leiding" },
         wachttijd:   { name:"Wachttijd Water", subtitle:"Leidingwachttijd + 15s", category:"water", tags:["Water"], implemented:true, panelId:"wachttijdCalculator", search:"wachttijd water leiding l/h l/s dinw dhw" },
         vuilwater:   { name:"Vuilwaterafvoer", subtitle:"Samengestelde afvoer → diameter", category:"water", tags:["Water"], implemented:true, panelId:"vuilwaterCalculator", search:"vuilwater afvoer afschot basisafvoer leiding diameter" },
@@ -1319,6 +1930,7 @@
         buffervat:   { name:"Buffervat Koeling", subtitle:"kW + taps → inhoud buffervat", category:"hvac", tags:["HVAC"], implemented:true, panelId:"buffervatCalculator", search:"buffervat koeling inhoud taps glycol" },
         deur:        { name:"Deur Sleuf Berekening", subtitle:"Q en v → minimale sleufhoogte", category:"hvac", tags:["HVAC"], implemented:true, panelId:"deurSleufCalculator", search:"deur sleuf berekening luchtdoorlaat hoogte" },
 
+        pdfeditor:  { name:"PDF Editor", subtitle:"PDF openen & annoteren (tekst/lijnen/pijlen)", category:"util", tags:["Tools","PDF"], implemented:true, panelId:"pdfEditor", search:"pdf editor annoteren tekenen pijl tekst" },
         planning:   { name:"Project checklist", subtitle:"Snelle checklist", category:"planning", tags:["Planning","Checklist"], implemented:true, panelId:"planningCalculator", search:"planning checklist project" }
       };
 
@@ -2055,8 +2667,6 @@ const VUILWATER_TABLE = {"4":{"0.3":44,"0.35":50,"0.4":50,"0.45":50,"0.5":50,"0.
 
           // H in kPa: auto = L*10 (like your tooltips); keep editable if user types a number
           const hkVal = _num(hk.value);
-          if (!Number.isFinite(hkVal) && Number.isFinite(L)) hk.value = _fmt0(L*10);
-
           const calc1 = 0.083*Math.sqrt(Math.max(0,TE)) + 0.417*Math.pow(Math.max(0,SE), 0.125) + CV;
           const calc2 = BSH + CV;
           _setText(b1, _fmt(calc1,3));
@@ -2867,18 +3477,7 @@ const VUILWATER_TABLE = {"4":{"0.3":44,"0.35":50,"0.4":50,"0.45":50,"0.5":50,"0.
       const clearBtn = document.getElementById("plClear");
       const newIn = document.getElementById("plNew");
 
-      const defaultItems = [
-        "Scope bevestigd met klant",
-        "Revit/IFC ontvangen en gecontroleerd",
-        "Sparingscontrole uitgevoerd",
-        "Debieten vastgesteld (ventilatie/water)",
-        "Diameterberekening uitgevoerd",
-        "Clash-check uitgevoerd",
-        "Werktekeningen / isometrieën gereed",
-        "Materialenlijst gecontroleerd",
-        "Uitvoering afgestemd (planning)",
-        "Oplevering / revisie bijgewerkt"
-      ];
+      const defaultItems = [];
 
       const load = () => {
         try {
@@ -2961,6 +3560,309 @@ const VUILWATER_TABLE = {"4":{"0.3":44,"0.35":50,"0.4":50,"0.45":50,"0.5":50,"0.
       window.calcResetters.planningCalculator = reset;
       reset();
     })();
-</script>
+
+    (function setupTableHeaderTooltips(){
+      const tip = document.getElementById("thTip");
+      if(!tip) return;
+
+      const help = {
+        "Sectie":"Vrije tekst/naam voor jouw deeltraject.",
+        "Aanvoer °C":"Temperatuur aanvoerwater (bijv. 75).",
+        "Retour °C":"Temperatuur retourwater (bijv. 60).",
+        "Benodigd kW":"Warmte-/koelvraag voor deze sectie.",
+        "Max Pa/m":"Maximaal toegestane drukval per meter.",
+        "Materiaal":"Kies leidingtype. Lookup gebruikt bijbehorende binnendiameters/ruwheid.",
+        "ν (10^-6 m²/s)":"Kinematische viscositeit bij gemiddelde temperatuur (lookup).",
+        "ρ (kg/m³)":"Dichtheid bij gemiddelde temperatuur (lookup).",
+        "Qm (m³/h)":"Berekend debiet dat nodig is (resultaat).",
+        "kW gehaald":"Berekend vermogen bij gekozen diameter/Pa.",
+        "Diameter":"Gekozen diameter uit lookup die voldoet.",
+        "Pa":"Pa/m waarbij het benodigde kW net gehaald wordt.",
+        "H in KPA":"Horizontale lengte → drukverliescomponent (vul zelf in als je dat gebruikt)."
+      };
+
+      let activeTh = null;
+
+      const show = (th, x, y) => {
+        const t = (th.textContent || "").trim();
+        const msg = th.dataset.help || help[t];
+        if(!msg) return;
+        tip.textContent = msg;
+        tip.style.display = "block";
+        const pad = 10;
+        const r = tip.getBoundingClientRect();
+        const left = Math.min(window.innerWidth - r.width - pad, Math.max(pad, x));
+        const top  = Math.min(window.innerHeight - r.height - pad, Math.max(pad, y));
+        tip.style.left = left + "px";
+        tip.style.top  = top + "px";
+      };
+
+      const hide = () => {
+        tip.style.display = "none";
+        activeTh = null;
+      };
+
+      const isTouch = () => window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+
+      document.querySelectorAll("table th").forEach(th => {
+        const t = (th.textContent || "").trim();
+        if(help[t]) th.dataset.help = help[t];
+
+        th.addEventListener("mouseenter", (e) => {
+          if(isTouch()) return;
+          const rect = th.getBoundingClientRect();
+          show(th, rect.left, rect.bottom + 8);
+        });
+        th.addEventListener("mouseleave", (e) => {
+          if(isTouch()) return;
+          hide();
+        });
+
+        th.addEventListener("click", (e) => {
+          if(!isTouch()) return;
+          e.stopPropagation();
+          const rect = th.getBoundingClientRect();
+          if(activeTh === th && tip.style.display === "block") { hide(); return; }
+          activeTh = th;
+          show(th, rect.left, rect.bottom + 8);
+        });
+      });
+
+      window.addEventListener("scroll", () => { if(isTouch()) hide(); }, { passive:true });
+      document.addEventListener("click", (e) => { if(isTouch()) hide(); });
+    })();
+
+  
+    (function setupPdfEditor(){
+      const fileInput = document.getElementById("pdfFile");
+      const pdfCanvas = document.getElementById("pdfCanvas");
+      const annCanvasEl = document.getElementById("annCanvas");
+      const stage = document.getElementById("pdfStage");
+      const lbl = document.getElementById("pdfPageLabel");
+      const prev = document.getElementById("pdfPrev");
+      const next = document.getElementById("pdfNext");
+
+      if(!fileInput || !pdfCanvas || !annCanvasEl || !window.pdfjsLib || !window.fabric) return;
+
+      // PDF.js worker
+      try{
+        pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      }catch(e){}
+
+      let pdfDoc = null;
+      let pageNum = 1;
+      let viewportScale = 1.2;
+
+      // Fabric overlay
+      const fabricCanvas = new fabric.Canvas("annCanvas", { selection: true });
+      fabricCanvas.setBackgroundColor(null, fabricCanvas.renderAll.bind(fabricCanvas));
+
+      const history = [];
+      const pushState = () => {
+        history.push(JSON.stringify(fabricCanvas.toJSON()));
+        if(history.length > 50) history.shift();
+      };
+
+      const setToolActive = (id) => {
+        ["toolSelect","toolPen","toolLine","toolArrow","toolText"].forEach(x=>{
+          const b=document.getElementById(x);
+          if(b) b.style.borderColor = (x===id) ? "rgba(56,189,248,0.55)" : "rgba(255,255,255,0.08)";
+        });
+      };
+
+      let currentTool = "select";
+      let drawingLine = null;
+      let drawingArrow = null;
+
+      const enableSelect = () => {
+        currentTool = "select";
+        fabricCanvas.isDrawingMode = false;
+        fabricCanvas.selection = true;
+        fabricCanvas.forEachObject(o => o.selectable = true);
+        setToolActive("toolSelect");
+      };
+
+      const enablePen = () => {
+        currentTool = "pen";
+        fabricCanvas.isDrawingMode = true;
+        fabricCanvas.freeDrawingBrush.width = 2;
+        setToolActive("toolPen");
+      };
+
+      const enableLine = () => {
+        currentTool = "line";
+        fabricCanvas.isDrawingMode = false;
+        fabricCanvas.selection = false;
+        fabricCanvas.forEachObject(o => o.selectable = false);
+        setToolActive("toolLine");
+      };
+
+      const enableArrow = () => {
+        currentTool = "arrow";
+        fabricCanvas.isDrawingMode = false;
+        fabricCanvas.selection = false;
+        fabricCanvas.forEachObject(o => o.selectable = false);
+        setToolActive("toolArrow");
+      };
+
+      const enableText = () => {
+        currentTool = "text";
+        fabricCanvas.isDrawingMode = false;
+        fabricCanvas.selection = false;
+        fabricCanvas.forEachObject(o => o.selectable = false);
+        setToolActive("toolText");
+      };
+
+      const resizeOverlayToPdf = (w,h) => {
+        pdfCanvas.width = w; pdfCanvas.height = h;
+        annCanvasEl.width = w; annCanvasEl.height = h;
+        annCanvasEl.style.width = w + "px";
+        annCanvasEl.style.height = h + "px";
+        pdfCanvas.style.width = w + "px";
+        pdfCanvas.style.height = h + "px";
+
+        fabricCanvas.setWidth(w);
+        fabricCanvas.setHeight(h);
+        fabricCanvas.calcOffset();
+        fabricCanvas.renderAll();
+      };
+
+      const renderPage = async (num) => {
+        if(!pdfDoc) return;
+        const page = await pdfDoc.getPage(num);
+
+        // Fit width to container
+        const containerWidth = stage.clientWidth ? stage.clientWidth : 900;
+        const unscaled = page.getViewport({ scale: 1.0 });
+        const scale = Math.max(0.6, Math.min(2.5, containerWidth / unscaled.width));
+        viewportScale = scale;
+
+        const viewport = page.getViewport({ scale });
+        resizeOverlayToPdf(Math.floor(viewport.width), Math.floor(viewport.height));
+
+        const ctx = pdfCanvas.getContext("2d");
+        await page.render({ canvasContext: ctx, viewport }).promise;
+
+        // Clear annotations on page change (simple version)
+        fabricCanvas.clear();
+        pushState();
+
+        lbl.textContent = `Pagina ${num} / ${pdfDoc.numPages}`;
+      };
+
+      const loadPdf = async (file) => {
+        const buf = await file.arrayBuffer();
+        pdfDoc = await pdfjsLib.getDocument({ data: buf }).promise;
+        pageNum = 1;
+        await renderPage(pageNum);
+      };
+
+      fileInput.addEventListener("change", async (e) => {
+        const f = e.target.files && e.target.files[0];
+        if(!f) return;
+        await loadPdf(f);
+      });
+
+      prev && prev.addEventListener("click", async () => {
+        if(!pdfDoc) return;
+        pageNum = Math.max(1, pageNum - 1);
+        await renderPage(pageNum);
+      });
+      next && next.addEventListener("click", async () => {
+        if(!pdfDoc) return;
+        pageNum = Math.min(pdfDoc.numPages, pageNum + 1);
+        await renderPage(pageNum);
+      });
+
+      // Drawing tools
+      fabricCanvas.on("mouse:down", (opt) => {
+        const p = fabricCanvas.getPointer(opt.e);
+        if(currentTool === "line"){
+          drawingLine = new fabric.Line([p.x,p.y,p.x,p.y], { stroke: "#e2e8f0", strokeWidth: 2, selectable:false });
+          fabricCanvas.add(drawingLine);
+        } else if(currentTool === "arrow"){
+          drawingArrow = { x1:p.x, y1:p.y, x2:p.x, y2:p.y };
+          const line = new fabric.Line([p.x,p.y,p.x,p.y], { stroke:"#e2e8f0", strokeWidth:2, selectable:false });
+          line._isArrow = true;
+          fabricCanvas.add(line);
+          drawingLine = line;
+        } else if(currentTool === "text"){
+          const tb = new fabric.Textbox("Tekst", { left:p.x, top:p.y, fill:"#e2e8f0", fontSize:16, width: 220 });
+          tb.selectable = true;
+          fabricCanvas.add(tb);
+          enableSelect();
+          fabricCanvas.setActiveObject(tb);
+          fabricCanvas.renderAll();
+          pushState();
+        }
+      });
+
+      fabricCanvas.on("mouse:move", (opt) => {
+        if(!drawingLine) return;
+        const p = fabricCanvas.getPointer(opt.e);
+        drawingLine.set({ x2:p.x, y2:p.y });
+        fabricCanvas.renderAll();
+      });
+
+      fabricCanvas.on("mouse:up", () => {
+        if(drawingLine){
+          if(drawingLine._isArrow){
+            // add arrow head (simple triangle)
+            const { x1,y1,x2,y2 } = drawingLine;
+            const angle = Math.atan2(y2 - y1, x2 - x1);
+            const headLen = 12;
+            const hx = x2 - headLen * Math.cos(angle);
+            const hy = y2 - headLen * Math.sin(angle);
+            const tri = new fabric.Triangle({
+              left: x2, top: y2, originX:"center", originY:"center",
+              angle: angle * 180/Math.PI + 90,
+              width: 14, height: 14,
+              fill: "#e2e8f0",
+              selectable:false
+            });
+            fabricCanvas.add(tri);
+          }
+          drawingLine.selectable = false;
+          drawingLine = null;
+          pushState();
+        }
+      });
+
+      // Buttons
+      document.getElementById("toolSelect")?.addEventListener("click", enableSelect);
+      document.getElementById("toolPen")?.addEventListener("click", enablePen);
+      document.getElementById("toolLine")?.addEventListener("click", enableLine);
+      document.getElementById("toolArrow")?.addEventListener("click", enableArrow);
+      document.getElementById("toolText")?.addEventListener("click", enableText);
+
+      document.getElementById("toolUndo")?.addEventListener("click", () => {
+        if(history.length <= 1) return;
+        history.pop();
+        const prevState = history[history.length - 1];
+        fabricCanvas.loadFromJSON(prevState, () => fabricCanvas.renderAll());
+      });
+
+      fabricCanvas.on("path:created", pushState);
+      fabricCanvas.on("object:modified", pushState);
+      fabricCanvas.on("object:added", () => { /* handled in places */ });
+
+      document.getElementById("toolExport")?.addEventListener("click", () => {
+        // merge pdfCanvas + fabric overlay into one PNG
+        const out = document.createElement("canvas");
+        out.width = pdfCanvas.width; out.height = pdfCanvas.height;
+        const ctx = out.getContext("2d");
+        ctx.drawImage(pdfCanvas,0,0);
+        ctx.drawImage(annCanvasEl,0,0);
+        const a = document.createElement("a");
+        a.download = `pdf-annotatie-p${pageNum}.png`;
+        a.href = out.toDataURL("image/png");
+        a.click();
+      });
+
+      enableSelect();
+      pushState();
+    })();
+
+  </script>
 </body>
 </html>
