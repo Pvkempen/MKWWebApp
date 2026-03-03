@@ -340,6 +340,8 @@
           <span class="chip" data-category="hvac">HVAC</span>
           <span class="chip" data-category="water">Water</span>
           <span class="chip" data-category="util">Tools</span>
+          <span class="chip" data-category="water">Water</span>
+          <span class="chip" data-category="tools">Tools</span>
           <span class="chip" data-category="planning">Planning</span>
         </div>
       </div>
@@ -607,6 +609,274 @@
         </div>
       </div>
 
+
+      <!-- Tapwater -->
+      <div id="tapwaterCalculator" class="card details calc-panel hidden">
+        <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <span>Tapwater dimensioneren</span>
+          <span class="badge">TE/SE → qv</span>
+        </div>
+        <p class="note" style="margin-top:6px;">Vul TE/SE/CV/BSH + lengte. qv/diameter/snelheid/R en Δp worden automatisch bepaald via de tabellen.</p>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-top:10px;">
+          <div class="input-group" style="min-width:220px;flex:0 0 auto;">
+            <label>Max snelheid (m/s)</label>
+            <input id="twMaxSpeed" type="text" inputmode="decimal" placeholder="Bijv. 2.0" value="2.0" />
+            <div class="helper">Wordt gebruikt als filter in de qv/R tabel.</div>
+          </div>
+          <div class="input-group" style="min-width:240px;flex:0 0 auto;">
+            <label>Type tabel</label>
+            <select id="twType" class="cv-input">
+              <option value="Koper Koud">Koper Koud</option>
+              <option value="Koper Warm">Koper Warm</option>
+              <option value="Kunststof koud">Kunststof koud</option>
+              <option value="Kunststof Warm">Kunststof Warm</option>
+            </select>
+            <div class="helper">Kies materiaal & warm/koud.</div>
+          </div>
+        </div>
+
+        <div class="table-scroll" style="margin-top:12px;">
+          <table class="cv-table" style="min-width:1120px;">
+            <thead>
+              <tr>
+                <th>Sectie</th>
+                <th>Lengte (m)</th>
+                <th>H (kPa)</th>
+                <th>TE</th>
+                <th>SE</th>
+                <th>CV</th>
+                <th>BSH</th>
+                <th>Berekening 1</th>
+                <th>Berekening 2</th>
+                <th>qv (l/s)</th>
+                <th>Uitw. (mm)</th>
+                <th>V (m/s)</th>
+                <th>R</th>
+                <th>Δp (kPa)</th>
+              </tr>
+            </thead>
+            <tbody id="twBody"></tbody>
+          </table>
+        </div>
+        <div class="table-actions">
+          <button id="twAddRow" class="btn" type="button">Rij toevoegen</button>
+          <button id="twDeleteRow" class="btn secondary" type="button">Laatste rij verwijderen</button>
+        </div>
+      </div>
+
+      <!-- Wachttijd -->
+      <div id="wachttijdCalculator" class="card details calc-panel hidden">
+        <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <span>Wachttijd water</span>
+          <span class="badge">sec</span>
+        </div>
+        <p class="note" style="margin-top:6px;">Vul l/h of l/s, Dinw en lengte. Leidingwachttijd en totale wachttijd worden berekend (totaal = wachttijd + 15s).</p>
+
+        <div class="table-scroll" style="margin-top:12px;">
+          <table class="cv-table" style="min-width:1100px;">
+            <thead>
+              <tr>
+                <th>Leidingdeel</th>
+                <th>Soort toestel</th>
+                <th>l/h</th>
+                <th>l/s</th>
+                <th>Dinw (mm)</th>
+                <th>Lengte (m)</th>
+                <th>DHw,70</th>
+                <th>Leidingwachttijd</th>
+                <th>Totale wachttijd</th>
+              </tr>
+            </thead>
+            <tbody id="wwBody"></tbody>
+          </table>
+        </div>
+        <div class="table-actions">
+          <button id="wwAddRow" class="btn" type="button">Rij toevoegen</button>
+          <button id="wwDeleteRow" class="btn secondary" type="button">Laatste rij verwijderen</button>
+        </div>
+      </div>
+
+      <!-- Vuilwater -->
+      <div id="vuilwaterCalculator" class="card details calc-panel hidden">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;justify-content:space-between;">
+          <div>
+            <div class="section-title">Vuilwaterafvoer</div>
+            <p class="note" style="margin:6px 0 0;">Som basisafvoer + gebouwfactor → samengestelde afvoer → (afschot) diameter tabel → handelsmaat.</p>
+          </div>
+          <div class="input-group" style="min-width:260px;flex:0 0 auto;">
+            <label>Type gebouw</label>
+            <select id="vwBuilding" class="cv-input"></select>
+            <div class="helper">Factor wordt automatisch toegepast.</div>
+          </div>
+        </div>
+
+        <div class="table-scroll" style="margin-top:12px;">
+          <table class="cv-table" style="min-width:1320px;">
+            <thead>
+              <tr>
+                <th>Sectie</th>
+                <th>Type leiding</th>
+                <th>Som basisafvoer (l/s)</th>
+                <th>Formule basisafvoer</th>
+                <th>Grootste basisafvoer</th>
+                <th>Samengestelde afvoer</th>
+                <th>Afschot (mm/m)</th>
+                <th>Factor bochten</th>
+                <th>Materiaal</th>
+                <th>Ontwerp middellijn (inw.)</th>
+                <th>Handelsmaat (uitw.)</th>
+              </tr>
+            </thead>
+            <tbody id="vwBody"></tbody>
+          </table>
+        </div>
+        <div class="table-actions">
+          <button id="vwAddRow" class="btn" type="button">Rij toevoegen</button>
+          <button id="vwDeleteRow" class="btn secondary" type="button">Laatste rij verwijderen</button>
+        </div>
+      </div>
+
+      <!-- Koelleiding -->
+      <div id="koelleidingCalculator" class="card details calc-panel hidden">
+        <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <span>Koelleiding berekening</span>
+          <span class="badge">Qv → diameter</span>
+        </div>
+        <p class="note" style="margin-top:6px;">Berekening gebruikt: Qv = P / (4200 * (Tret - Taanv)). Tabellen bepalen diameter + vmax + R en Q-min/Q-max.</p>
+
+        <div class="table-scroll" style="margin-top:12px;">
+          <table class="cv-table" style="min-width:1200px;">
+            <thead>
+              <tr>
+                <th>P (W)</th>
+                <th>T aanvoer (°C)</th>
+                <th>T retour (°C)</th>
+                <th>Qv</th>
+                <th>Type leiding</th>
+                <th>Diameter</th>
+                <th>V max</th>
+                <th>R</th>
+                <th>Q min</th>
+                <th>Q max</th>
+              </tr>
+            </thead>
+            <tbody id="klBody"></tbody>
+          </table>
+        </div>
+        <div class="table-actions">
+          <button id="klAddRow" class="btn" type="button">Rij toevoegen</button>
+          <button id="klDeleteRow" class="btn secondary" type="button">Laatste rij verwijderen</button>
+        </div>
+      </div>
+
+      <!-- Expansievat -->
+      <div id="expansieCalculator" class="card details calc-panel hidden">
+        <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <span>Expansievat CV</span>
+          <span class="badge">advies</span>
+        </div>
+        <div class="calc-grid" style="margin-top:12px;">
+          <div class="card" style="padding:14px;">
+            <div class="section-title">Invoer</div>
+            <div class="calc-grid" style="grid-template-columns:repeat(2,minmax(140px,1fr));">
+              <div class="input-group"><label>C inhoud installatie (L)</label><input id="exCi" type="text" inputmode="decimal" placeholder="Bijv. 250"/></div>
+              <div class="input-group"><label>T aanvoer (°C)</label><input id="exT1" type="text" inputmode="decimal" placeholder="75"/></div>
+              <div class="input-group"><label>T retour (°C)</label><input id="exT2" type="text" inputmode="decimal" placeholder="60"/></div>
+              <div class="input-group"><label>Locatie (m)</label><input id="exPn" type="text" inputmode="decimal" placeholder="0"/></div>
+              <div class="input-group"><label>Einddruk (bar)</label><input id="exPs" type="text" inputmode="decimal" placeholder="2.5"/></div>
+            </div>
+          </div>
+          <div class="card" style="padding:14px;">
+            <div class="section-title">Resultaat</div>
+            <div class="details" style="padding:14px;">
+              <div class="formula-block">
+                <div><strong>Gem. T</strong>: <span id="exAvg"></span></div>
+                <div><strong>Ce</strong>: <span id="exCe"></span></div>
+                <div><strong>Vep</strong>: <span id="exVep"></span></div>
+                <div><strong>Rt</strong>: <span id="exRt"></span></div>
+                <div><strong>Vn</strong>: <span id="exVn"></span></div>
+                <div><strong>Pg</strong>: <span id="exPg"></span></div>
+                <div><strong>Pf</strong>: <span id="exPf"></span></div>
+                <div><strong>Fp</strong>: <span id="exFp"></span></div>
+                <div><strong>Vtt</strong>: <span id="exVtt"></span></div>
+                <div><strong>Advies A1</strong>: <span id="exA1"></span></div>
+                <div><strong>Advies A2 (Vtr)</strong>: <span id="exA2"></span></div>
+              </div>
+              <p class="note" style="margin-top:8px;">Let op: dit volgt jouw MKW-tool tabellen/regels (incl. 1.18 factor).</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Buffervat -->
+      <div id="buffervatCalculator" class="card details calc-panel hidden">
+        <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <span>Buffervat koeling</span>
+          <span class="badge">L</span>
+        </div>
+        <p class="note" style="margin-top:6px;">Formule: (((3600 / taps) * 0.5 * kW) / (2 * 2 * c)) - (Vsys + Vunit)</p>
+
+        <div class="calc-grid" style="margin-top:12px;">
+          <div class="card" style="padding:14px;">
+            <div class="calc-grid" style="grid-template-columns:repeat(2,minmax(160px,1fr));">
+              <div class="input-group"><label>Koelcapaciteit (kW)</label><input id="bfKw" type="text" inputmode="decimal" placeholder="Bijv. 60"/></div>
+              <div class="input-group"><label>Inschakelingen/uur</label><input id="bfTaps" type="text" inputmode="decimal" placeholder="Bijv. 6"/></div>
+              <div class="input-group"><label>Inhoud systeem (L)</label><input id="bfVsys" type="text" inputmode="decimal" placeholder="Bijv. 150"/></div>
+              <div class="input-group"><label>Inhoud koelmachine (L)</label><input id="bfVunit" type="text" inputmode="decimal" placeholder="Bijv. 20"/></div>
+              <div class="input-group"><label>Medium (c)</label>
+                <select id="bfC" class="cv-input">
+                  <option>Water</option>
+                  <option>10% Glycol</option>
+                  <option>20% Glycol</option>
+                  <option>30% Glycol</option>
+                </select>
+                <div class="helper">Soortelijke warmte (kJ/kgK) uit jouw tool.</div>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="padding:14px;">
+            <div class="section-title">Berekende inhoud</div>
+            <div class="details" style="padding:14px;">
+              <div class="formula-block">
+                <div><strong>Resultaat</strong>: <span id="bfOut"></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Deur sleuf -->
+      <div id="deurCalculator" class="card details calc-panel hidden">
+        <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <span>Deur sleuf berekening</span>
+          <span class="badge">mm</span>
+        </div>
+        <p class="note" style="margin-top:6px;">Bereken benodigde vrije doorlaat (A) en minimale sleufhoogte op basis van Q en v.</p>
+
+        <div class="calc-grid" style="margin-top:12px;">
+          <div class="card" style="padding:14px;">
+            <div class="calc-grid" style="grid-template-columns:repeat(2,minmax(160px,1fr));">
+              <div class="input-group"><label>Q (m³/h)</label><input id="drQh" type="text" inputmode="decimal" placeholder="Bijv. 350"/></div>
+              <div class="input-group"><label>v (m/s)</label><input id="drV" type="text" inputmode="decimal" placeholder="Bijv. 1.5"/></div>
+              <div class="input-group"><label>Sleuflengte (mm)</label><input id="drLen" type="text" inputmode="decimal" placeholder="Bijv. 800"/></div>
+            </div>
+          </div>
+          <div class="card" style="padding:14px;">
+            <div class="section-title">Resultaat</div>
+            <div class="details" style="padding:14px;">
+              <div class="formula-block">
+                <div><strong>Q (m³/s)</strong>: <span id="drQs"></span></div>
+                <div><strong>A (m²)</strong>: <span id="drA"></span></div>
+                <div><strong>A (cm²)</strong>: <span id="drAcm"></span></div>
+                <div><strong>Lengte (cm)</strong>: <span id="drLcm"></span></div>
+                <div><strong>Min. hoogte (mm)</strong>: <span id="drMinMm"></span></div>
+                <div><strong>Min. hoogte (cm)</strong>: <span id="drMinCm"></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div id="comingSoon" class="card details hidden">
         <p id="comingSoonTitle" style="margin:0;font-weight:800;">Nieuw gereedschap</p>
         <p style="margin:0;color:var(--muted);">Deze berekening is nog niet overgezet naar web. (Wel toegevoegd aan het overzicht.)</p>
@@ -654,6 +924,14 @@
         deur_sleuf: { name:"Deur Sleuf Berekening", subtitle:"(Nog overzetten)", category:"hvac", tags:["HVAC","(soon)"], implemented:false, panelId:null, search:"deur sleuf berekening" },
         dak_hwa:    { name:"Hemelwaterafvoer", subtitle:"(Nog overzetten)", category:"water", tags:["Water","(soon)"], implemented:false, panelId:null, search:"hemelwaterafvoer berekening" },
         batch:      { name:"Batch Renamer", subtitle:"(Nog overzetten)", category:"util", tags:["Tools","(soon)"], implemented:false, panelId:null, search:"batch renamer" },
+        tapwater:    { name:"Tapwater Dimensioneren", subtitle:"TE/SE/CV/BSH → qv + diameter", category:"water", tags:["Water"], implemented:true, panelId:"tapwaterCalculator", search:"tapwater dimensioneren te se cv bsh qv leiding" },
+        wachttijd:   { name:"Wachttijd Water", subtitle:"Leidingwachttijd + 15s", category:"water", tags:["Water"], implemented:true, panelId:"wachttijdCalculator", search:"wachttijd water leiding l/h l/s dinw dhw" },
+        vuilwater:   { name:"Vuilwaterafvoer", subtitle:"Samengestelde afvoer → diameter", category:"water", tags:["Water"], implemented:true, panelId:"vuilwaterCalculator", search:"vuilwater afvoer afschot basisafvoer leiding diameter" },
+        koelleiding: { name:"Koelleiding Berekening", subtitle:"P + ΔT → Qv → diameter", category:"hvac", tags:["HVAC"], implemented:true, panelId:"koelleidingCalculator", search:"koelleiding berekening qv diameter leidingtype" },
+        expansie:    { name:"Expansievat CV", subtitle:"Inhoud installatie → advies expansievat", category:"hvac", tags:["HVAC"], implemented:true, panelId:"expansieCalculator", search:"expansievat cv advies vep vn vtt" },
+        buffervat:   { name:"Buffervat Koeling", subtitle:"kW + taps → inhoud buffervat", category:"hvac", tags:["HVAC"], implemented:true, panelId:"buffervatCalculator", search:"buffervat koeling inhoud taps glycol" },
+        deur:        { name:"Deur Sleuf Berekening", subtitle:"Q en v → minimale sleufhoogte", category:"hvac", tags:["HVAC"], implemented:true, panelId:"deurCalculator", search:"deur sleuf berekening luchtdoorlaat hoogte" },
+
         planning:   { name:"Project checklist", subtitle:"(Binnenkort)", category:"planning", tags:["Planning","(soon)"], implemented:false, panelId:null, search:"planning checklist project" }
       };
 
@@ -1292,6 +1570,661 @@
       resetTable();
       window.calcResetters.cvCalculator = resetTable;
     })();
+  
+
+    // ====== EXTRA CALCULATORS (ported from berekeningen.zip) ======
+const TAPWATER_TABLES = {"Koper Koud":{"12":[{"speed":0.1,"q":0.008,"r":0.038},{"speed":0.15,"q":0.012,"r":0.073},{"speed":0.2,"q":0.016,"r":0.116},{"speed":0.25,"q":0.02,"r":0.168},{"speed":0.3,"q":0.024,"r":0.227},{"speed":0.35,"q":0.027,"r":0.294},{"speed":0.4,"q":0.031,"r":0.368},{"speed":0.45,"q":0.035,"r":0.449},{"speed":0.5,"q":0.039,"r":0.538},{"speed":0.55,"q":0.043,"r":0.633},{"speed":0.6,"q":0.047,"r":0.735},{"speed":0.65,"q":0.051,"r":0.844},{"speed":0.7,"q":0.055,"r":0.96},{"speed":0.75,"q":0.059,"r":1.082},{"speed":0.8,"q":0.063,"r":1.211},{"speed":0.85,"q":0.067,"r":1.347},{"speed":0.9,"q":0.071,"r":1.489},{"speed":0.95,"q":0.075,"r":1.637},{"speed":1.0,"q":0.079,"r":1.792},{"speed":1.1,"q":0.086,"r":2.121},{"speed":1.2,"q":0.094,"r":2.475},{"speed":1.3,"q":0.102,"r":2.854},{"speed":1.4,"q":0.11,"r":3.259},{"speed":1.5,"q":0.118,"r":3.688},{"speed":1.6,"q":0.126,"r":4.142},{"speed":1.7,"q":0.134,"r":4.621},{"speed":1.8,"q":0.141,"r":5.124},{"speed":1.9,"q":0.149,"r":5.652},{"speed":2.0,"q":0.157,"r":6.204},{"speed":2.1,"q":0.165,"r":6.781},{"speed":2.2,"q":0.173,"r":7.382},{"speed":2.3,"q":0.181,"r":8.007},{"speed":2.4,"q":0.188,"r":8.656}],"15":[{"speed":0.1,"q":0.013,"r":0.026},{"speed":0.15,"q":0.02,"r":0.051},{"speed":0.2,"q":0.027,"r":0.081},{"speed":0.25,"q":0.033,"r":0.118},{"speed":0.3,"q":0.04,"r":0.16},{"speed":0.35,"q":0.046,"r":0.207},{"speed":0.4,"q":0.053,"r":0.26},{"speed":0.45,"q":0.06,"r":0.318},{"speed":0.5,"q":0.066,"r":0.381},{"speed":0.55,"q":0.073,"r":0.449},{"speed":0.6,"q":0.08,"r":0.522},{"speed":0.65,"q":0.086,"r":0.599},{"speed":0.7,"q":0.093,"r":0.682},{"speed":0.75,"q":0.1,"r":0.769},{"speed":0.8,"q":0.106,"r":0.862},{"speed":0.85,"q":0.113,"r":0.958},{"speed":0.9,"q":0.119,"r":1.06},{"speed":0.95,"q":0.126,"r":1.166},{"speed":1.0,"q":0.133,"r":1.277},{"speed":1.1,"q":0.146,"r":1.512},{"speed":1.2,"q":0.159,"r":1.766},{"speed":1.3,"q":0.173,"r":2.037},{"speed":1.4,"q":0.186,"r":2.327},{"speed":1.5,"q":0.199,"r":2.635},{"speed":1.6,"q":0.212,"r":2.96},{"speed":1.7,"q":0.226,"r":3.303},{"speed":1.8,"q":0.239,"r":3.664},{"speed":1.9,"q":0.252,"r":4.042},{"speed":2.0,"q":0.265,"r":4.438},{"speed":2.1,"q":0.279,"r":4.852},{"speed":2.2,"q":0.292,"r":5.283},{"speed":2.3,"q":0.305,"r":5.731},{"speed":2.4,"q":0.319,"r":6.197}],"22":[{"speed":0.1,"q":0.031,"r":0.015},{"speed":0.15,"q":0.046,"r":0.029},{"speed":0.2,"q":0.062,"r":0.046},{"speed":0.25,"q":0.077,"r":0.067},{"speed":0.3,"q":0.092,"r":0.092},{"speed":0.35,"q":0.108,"r":0.119},{"speed":0.4,"q":0.123,"r":0.15},{"speed":0.45,"q":0.139,"r":0.184},{"speed":0.5,"q":0.154,"r":0.221},{"speed":0.55,"q":0.169,"r":0.26},{"speed":0.6,"q":0.185,"r":0.303},{"speed":0.65,"q":0.2,"r":0.348},{"speed":0.7,"q":0.216,"r":0.397},{"speed":0.75,"q":0.231,"r":0.448},{"speed":0.8,"q":0.246,"r":0.502},{"speed":0.85,"q":0.262,"r":0.559},{"speed":0.9,"q":0.277,"r":0.618},{"speed":0.95,"q":0.293,"r":0.681},{"speed":1.0,"q":0.308,"r":0.746},{"speed":1.1,"q":0.339,"r":0.884},{"speed":1.2,"q":0.369,"r":1.033},{"speed":1.3,"q":0.4,"r":1.193},{"speed":1.4,"q":0.431,"r":1.364},{"speed":1.5,"q":0.462,"r":1.545},{"speed":1.6,"q":0.493,"r":1.737},{"speed":1.7,"q":0.523,"r":1.939},{"speed":1.8,"q":0.554,"r":2.151},{"speed":1.9,"q":0.585,"r":2.374},{"speed":2.0,"q":0.616,"r":2.608},{"speed":2.1,"q":0.647,"r":2.852},{"speed":2.2,"q":0.677,"r":3.106},{"speed":2.3,"q":0.708,"r":3.37},{"speed":2.4,"q":0.739,"r":3.645}],"28":[{"speed":0.1,"q":0.051,"r":0.01},{"speed":0.15,"q":0.077,"r":0.02},{"speed":0.2,"q":0.103,"r":0.033},{"speed":0.25,"q":0.129,"r":0.048},{"speed":0.3,"q":0.154,"r":0.066},{"speed":0.35,"q":0.18,"r":0.085},{"speed":0.4,"q":0.206,"r":0.108},{"speed":0.45,"q":0.232,"r":0.132},{"speed":0.5,"q":0.257,"r":0.159},{"speed":0.55,"q":0.283,"r":0.187},{"speed":0.6,"q":0.309,"r":0.218},{"speed":0.65,"q":0.335,"r":0.251},{"speed":0.7,"q":0.36,"r":0.286},{"speed":0.75,"q":0.386,"r":0.323},{"speed":0.8,"q":0.412,"r":0.362},{"speed":0.85,"q":0.438,"r":0.403},{"speed":0.9,"q":0.463,"r":0.447},{"speed":0.95,"q":0.489,"r":0.492},{"speed":1.0,"q":0.515,"r":0.539},{"speed":1.1,"q":0.566,"r":0.639},{"speed":1.2,"q":0.618,"r":0.747},{"speed":1.3,"q":0.669,"r":0.863},{"speed":1.4,"q":0.721,"r":0.987},{"speed":1.5,"q":0.772,"r":1.119},{"speed":1.6,"q":0.824,"r":1.258},{"speed":1.7,"q":0.875,"r":1.404},{"speed":1.8,"q":0.926,"r":1.559},{"speed":1.9,"q":0.978,"r":1.721},{"speed":2.0,"q":1.029,"r":1.89},{"speed":2.1,"q":1.081,"r":2.067},{"speed":2.2,"q":1.132,"r":2.252},{"speed":2.3,"q":1.184,"r":2.444},{"speed":2.4,"q":1.235,"r":2.644}],"35":[{"speed":0.1,"q":0.08,"r":0.008},{"speed":0.15,"q":0.121,"r":0.015},{"speed":0.2,"q":0.161,"r":0.025},{"speed":0.25,"q":0.201,"r":0.036},{"speed":0.3,"q":0.241,"r":0.049},{"speed":0.35,"q":0.281,"r":0.064},{"speed":0.4,"q":0.322,"r":0.081},{"speed":0.45,"q":0.362,"r":0.099},{"speed":0.5,"q":0.402,"r":0.119},{"speed":0.55,"q":0.442,"r":0.141},{"speed":0.6,"q":0.483,"r":0.164},{"speed":0.65,"q":0.523,"r":0.189},{"speed":0.7,"q":0.563,"r":0.216},{"speed":0.75,"q":0.603,"r":0.244},{"speed":0.8,"q":0.643,"r":0.273},{"speed":0.85,"q":0.684,"r":0.305},{"speed":0.9,"q":0.724,"r":0.337},{"speed":0.95,"q":0.764,"r":0.371},{"speed":1.0,"q":0.804,"r":0.407},{"speed":1.1,"q":0.885,"r":0.483},{"speed":1.2,"q":0.965,"r":0.565},{"speed":1.3,"q":1.046,"r":0.653},{"speed":1.4,"q":1.126,"r":0.747},{"speed":1.5,"q":1.206,"r":0.847},{"speed":1.6,"q":1.287,"r":0.952},{"speed":1.7,"q":1.367,"r":1.063},{"speed":1.8,"q":1.448,"r":1.18},{"speed":1.9,"q":1.528,"r":1.303},{"speed":2.0,"q":1.608,"r":1.432},{"speed":2.1,"q":1.689,"r":1.566},{"speed":2.2,"q":1.769,"r":1.706},{"speed":2.3,"q":1.85,"r":1.852},{"speed":2.4,"q":1.93,"r":2.004}],"42":[{"speed":0.1,"q":0.119,"r":0.006},{"speed":0.15,"q":0.179,"r":0.012},{"speed":0.2,"q":0.239,"r":0.019},{"speed":0.25,"q":0.299,"r":0.028},{"speed":0.3,"q":0.358,"r":0.038},{"speed":0.35,"q":0.418,"r":0.05},{"speed":0.4,"q":0.478,"r":0.063},{"speed":0.45,"q":0.538,"r":0.077},{"speed":0.5,"q":0.597,"r":0.093},{"speed":0.55,"q":0.657,"r":0.11},{"speed":0.6,"q":0.717,"r":0.128},{"speed":0.65,"q":0.776,"r":0.147},{"speed":0.7,"q":0.836,"r":0.168},{"speed":0.75,"q":0.896,"r":0.19},{"speed":0.8,"q":0.956,"r":0.213},{"speed":0.85,"q":1.015,"r":0.238},{"speed":0.9,"q":1.075,"r":0.263},{"speed":0.95,"q":1.135,"r":0.29},{"speed":1.0,"q":1.195,"r":0.318},{"speed":1.1,"q":1.314,"r":0.377},{"speed":1.2,"q":1.434,"r":0.442},{"speed":1.3,"q":1.553,"r":0.511},{"speed":1.4,"q":1.672,"r":0.584},{"speed":1.5,"q":1.792,"r":0.662},{"speed":1.6,"q":1.911,"r":0.745},{"speed":1.7,"q":2.031,"r":0.832},{"speed":1.8,"q":2.15,"r":0.924},{"speed":1.9,"q":2.27,"r":1.02},{"speed":2.0,"q":2.389,"r":1.121},{"speed":2.1,"q":2.509,"r":1.226},{"speed":2.2,"q":2.628,"r":1.336},{"speed":2.3,"q":2.748,"r":1.45},{"speed":2.4,"q":2.867,"r":1.569}],"54":[{"speed":0.1,"q":0.204,"r":0.004},{"speed":0.15,"q":0.306,"r":0.008},{"speed":0.2,"q":0.409,"r":0.013},{"speed":0.25,"q":0.511,"r":0.02},{"speed":0.3,"q":0.613,"r":0.027},{"speed":0.35,"q":0.715,"r":0.035},{"speed":0.4,"q":0.817,"r":0.045},{"speed":0.45,"q":0.919,"r":0.055},{"speed":0.5,"q":1.021,"r":0.066},{"speed":0.55,"q":1.124,"r":0.078},{"speed":0.6,"q":1.226,"r":0.091},{"speed":0.65,"q":1.328,"r":0.105},{"speed":0.7,"q":1.43,"r":0.12},{"speed":0.75,"q":1.532,"r":0.136},{"speed":0.8,"q":1.634,"r":0.153},{"speed":0.85,"q":1.736,"r":0.17},{"speed":0.9,"q":1.839,"r":0.189},{"speed":0.95,"q":1.941,"r":0.208},{"speed":1.0,"q":2.043,"r":0.228},{"speed":1.1,"q":2.247,"r":0.271},{"speed":1.2,"q":2.451,"r":0.317},{"speed":1.3,"q":2.656,"r":0.366},{"speed":1.4,"q":2.86,"r":0.419},{"speed":1.5,"q":3.064,"r":0.475},{"speed":1.6,"q":3.269,"r":0.535},{"speed":1.7,"q":3.473,"r":0.598},{"speed":1.8,"q":3.677,"r":0.664},{"speed":1.9,"q":3.881,"r":0.733},{"speed":2.0,"q":4.086,"r":0.805},{"speed":2.1,"q":4.29,"r":0.881},{"speed":2.2,"q":4.494,"r":0.96},{"speed":2.3,"q":4.698,"r":1.043},{"speed":2.4,"q":4.903,"r":1.128}],"64":[{"speed":0.1,"q":0.283,"r":0.003},{"speed":0.15,"q":0.424,"r":0.007},{"speed":0.2,"q":0.565,"r":0.011},{"speed":0.25,"q":0.707,"r":0.016},{"speed":0.3,"q":0.848,"r":0.022},{"speed":0.35,"q":0.99,"r":0.029},{"speed":0.4,"q":1.131,"r":0.036},{"speed":0.45,"q":1.272,"r":0.045},{"speed":0.5,"q":1.414,"r":0.054},{"speed":0.55,"q":1.555,"r":0.064},{"speed":0.6,"q":1.696,"r":0.075},{"speed":0.65,"q":1.838,"r":0.086},{"speed":0.7,"q":1.979,"r":0.098},{"speed":0.75,"q":2.121,"r":0.111},{"speed":0.8,"q":2.262,"r":0.125},{"speed":0.85,"q":2.403,"r":0.139},{"speed":0.9,"q":2.545,"r":0.154},{"speed":0.95,"q":2.686,"r":0.17},{"speed":1.0,"q":2.827,"r":0.186},{"speed":1.1,"q":3.11,"r":0.221},{"speed":1.2,"q":3.393,"r":0.259},{"speed":1.3,"q":3.676,"r":0.3},{"speed":1.4,"q":3.958,"r":0.343},{"speed":1.5,"q":4.241,"r":0.389},{"speed":1.6,"q":4.524,"r":0.438},{"speed":1.7,"q":4.807,"r":0.489},{"speed":1.8,"q":5.089,"r":0.544},{"speed":1.9,"q":5.372,"r":0.6},{"speed":2.0,"q":5.655,"r":0.66},{"speed":2.1,"q":5.938,"r":0.722},{"speed":2.2,"q":6.22,"r":0.787},{"speed":2.3,"q":6.503,"r":0.855},{"speed":2.4,"q":6.786,"r":0.925}],"76.1":[{"speed":0.1,"q":0.408,"r":0.003},{"speed":0.15,"q":0.612,"r":0.005},{"speed":0.2,"q":0.817,"r":0.009},{"speed":0.25,"q":1.021,"r":0.013},{"speed":0.3,"q":1.225,"r":0.018},{"speed":0.35,"q":1.429,"r":0.023},{"speed":0.4,"q":1.633,"r":0.029},{"speed":0.45,"q":1.837,"r":0.036},{"speed":0.5,"q":2.041,"r":0.043},{"speed":0.55,"q":2.246,"r":0.051},{"speed":0.6,"q":2.45,"r":0.059},{"speed":0.65,"q":2.654,"r":0.069},{"speed":0.7,"q":2.858,"r":0.078},{"speed":0.75,"q":3.062,"r":0.089},{"speed":0.8,"q":3.266,"r":0.099},{"speed":0.85,"q":3.47,"r":0.111},{"speed":0.9,"q":3.675,"r":0.123},{"speed":0.95,"q":3.879,"r":0.136},{"speed":1.0,"q":4.083,"r":0.149},{"speed":1.1,"q":4.491,"r":0.177},{"speed":1.2,"q":4.899,"r":0.207},{"speed":1.3,"q":5.308,"r":0.239},{"speed":1.4,"q":5.716,"r":0.274},{"speed":1.5,"q":6.124,"r":0.311},{"speed":1.6,"q":6.533,"r":0.35},{"speed":1.7,"q":6.941,"r":0.391},{"speed":1.8,"q":7.349,"r":0.434},{"speed":1.9,"q":7.757,"r":0.48},{"speed":2.0,"q":8.166,"r":0.527},{"speed":2.1,"q":8.574,"r":0.577},{"speed":2.2,"q":8.982,"r":0.629},{"speed":2.3,"q":9.39,"r":0.683},{"speed":2.4,"q":9.799,"r":0.739}],"88.9":[{"speed":0.1,"q":0.566,"r":0.002},{"speed":0.15,"q":0.849,"r":0.004},{"speed":0.2,"q":1.132,"r":0.007},{"speed":0.25,"q":1.415,"r":0.01},{"speed":0.3,"q":1.698,"r":0.014},{"speed":0.35,"q":1.981,"r":0.019},{"speed":0.4,"q":2.264,"r":0.024},{"speed":0.45,"q":2.548,"r":0.029},{"speed":0.5,"q":2.831,"r":0.035},{"speed":0.55,"q":3.114,"r":0.042},{"speed":0.6,"q":3.397,"r":0.049},{"speed":0.65,"q":3.68,"r":0.056},{"speed":0.7,"q":3.963,"r":0.064},{"speed":0.75,"q":4.246,"r":0.072},{"speed":0.8,"q":4.529,"r":0.081},{"speed":0.85,"q":4.812,"r":0.091},{"speed":0.9,"q":5.095,"r":0.101},{"speed":0.95,"q":5.378,"r":0.111},{"speed":1.0,"q":5.661,"r":0.122},{"speed":1.1,"q":6.227,"r":0.145},{"speed":1.2,"q":6.793,"r":0.169},{"speed":1.3,"q":7.36,"r":0.196},{"speed":1.4,"q":7.926,"r":0.224},{"speed":1.5,"q":8.492,"r":0.255},{"speed":1.6,"q":9.058,"r":0.287},{"speed":1.7,"q":9.624,"r":0.32},{"speed":1.8,"q":10.19,"r":0.356},{"speed":1.9,"q":10.756,"r":0.393},{"speed":2.0,"q":11.322,"r":0.432},{"speed":2.1,"q":11.888,"r":0.473},{"speed":2.2,"q":12.455,"r":0.516},{"speed":2.3,"q":13.021,"r":0.56},{"speed":2.4,"q":13.587,"r":0.606}],"108":[{"speed":0.1,"q":0.833,"r":0.002},{"speed":0.15,"q":1.25,"r":0.003},{"speed":0.2,"q":1.666,"r":0.006},{"speed":0.25,"q":2.083,"r":0.008},{"speed":0.3,"q":2.5,"r":0.011},{"speed":0.35,"q":2.916,"r":0.015},{"speed":0.4,"q":3.333,"r":0.019},{"speed":0.45,"q":3.75,"r":0.023},{"speed":0.5,"q":4.166,"r":0.028},{"speed":0.55,"q":4.583,"r":0.033},{"speed":0.6,"q":4.999,"r":0.038},{"speed":0.65,"q":5.416,"r":0.044},{"speed":0.7,"q":5.833,"r":0.05},{"speed":0.75,"q":6.249,"r":0.057},{"speed":0.8,"q":6.666,"r":0.064},{"speed":0.85,"q":7.082,"r":0.072},{"speed":0.9,"q":7.499,"r":0.079},{"speed":0.95,"q":7.916,"r":0.088},{"speed":1.0,"q":8.332,"r":0.096},{"speed":1.1,"q":9.166,"r":0.114},{"speed":1.2,"q":9.999,"r":0.134},{"speed":1.3,"q":10.832,"r":0.155},{"speed":1.4,"q":11.665,"r":0.177},{"speed":1.5,"q":12.498,"r":0.201},{"speed":1.6,"q":13.332,"r":0.227},{"speed":1.7,"q":14.165,"r":0.253},{"speed":1.8,"q":14.998,"r":0.281},{"speed":1.9,"q":15.831,"r":0.311},{"speed":2.0,"q":16.665,"r":0.342},{"speed":2.1,"q":17.498,"r":0.374},{"speed":2.2,"q":18.331,"r":0.408},{"speed":2.3,"q":19.164,"r":0.443},{"speed":2.4,"q":19.997,"r":0.48}],"133":[{"speed":0.1,"q":1.267,"r":0.001},{"speed":0.15,"q":1.9,"r":0.003},{"speed":0.2,"q":2.534,"r":0.004},{"speed":0.25,"q":3.167,"r":0.006},{"speed":0.3,"q":3.8,"r":0.009},{"speed":0.35,"q":4.434,"r":0.011},{"speed":0.4,"q":5.067,"r":0.014},{"speed":0.45,"q":5.7,"r":0.018},{"speed":0.5,"q":6.334,"r":0.021},{"speed":0.55,"q":6.967,"r":0.025},{"speed":0.6,"q":7.601,"r":0.03},{"speed":0.65,"q":8.234,"r":0.034},{"speed":0.7,"q":8.867,"r":0.039},{"speed":0.75,"q":9.501,"r":0.044},{"speed":0.8,"q":10.134,"r":0.05},{"speed":0.85,"q":10.768,"r":0.055},{"speed":0.9,"q":11.401,"r":0.061},{"speed":0.95,"q":12.034,"r":0.068},{"speed":1.0,"q":12.668,"r":0.074},{"speed":1.1,"q":13.934,"r":0.089},{"speed":1.2,"q":15.201,"r":0.104},{"speed":1.3,"q":16.468,"r":0.12},{"speed":1.4,"q":17.735,"r":0.138},{"speed":1.5,"q":19.002,"r":0.156},{"speed":1.6,"q":20.268,"r":0.176},{"speed":1.7,"q":21.535,"r":0.197},{"speed":1.8,"q":22.802,"r":0.218},{"speed":1.9,"q":24.069,"r":0.241},{"speed":2.0,"q":25.335,"r":0.265},{"speed":2.1,"q":26.602,"r":0.291},{"speed":2.2,"q":27.869,"r":0.317},{"speed":2.3,"q":29.136,"r":0.344},{"speed":2.4,"q":30.402,"r":0.372}]},"Koper Warm":{"12":[{"speed":0.1,"q":0.008,"r":0.026},{"speed":0.15,"q":0.012,"r":0.05},{"speed":0.2,"q":0.016,"r":0.082},{"speed":0.25,"q":0.02,"r":0.121},{"speed":0.3,"q":0.024,"r":0.166},{"speed":0.35,"q":0.027,"r":0.218},{"speed":0.4,"q":0.031,"r":0.276},{"speed":0.45,"q":0.035,"r":0.34},{"speed":0.5,"q":0.039,"r":0.411},{"speed":0.55,"q":0.043,"r":0.487},{"speed":0.6,"q":0.047,"r":0.57},{"speed":0.65,"q":0.051,"r":0.659},{"speed":0.7,"q":0.055,"r":0.753},{"speed":0.75,"q":0.059,"r":0.854},{"speed":0.8,"q":0.063,"r":0.961},{"speed":0.85,"q":0.067,"r":1.074},{"speed":0.9,"q":0.071,"r":1.192},{"speed":0.95,"q":0.075,"r":1.317},{"speed":1.0,"q":0.079,"r":1.447},{"speed":1.1,"q":0.086,"r":1.726},{"speed":1.2,"q":0.094,"r":2.028},{"speed":1.3,"q":0.102,"r":2.354},{"speed":1.4,"q":0.11,"r":2.703},{"speed":1.5,"q":0.118,"r":3.075},{"speed":1.6,"q":0.126,"r":3.471},{"speed":1.7,"q":0.134,"r":3.891},{"speed":1.8,"q":0.141,"r":4.333},{"speed":1.9,"q":0.149,"r":4.799},{"speed":2.0,"q":0.157,"r":5.288},{"speed":2.1,"q":0.165,"r":5.8},{"speed":2.2,"q":0.173,"r":6.336},{"speed":2.3,"q":0.181,"r":6.894},{"speed":2.4,"q":0.188,"r":7.476}],"15":[{"speed":0.1,"q":0.013,"r":0.018},{"speed":0.15,"q":0.02,"r":0.036},{"speed":0.2,"q":0.027,"r":0.058},{"speed":0.25,"q":0.033,"r":0.086},{"speed":0.3,"q":0.04,"r":0.118},{"speed":0.35,"q":0.046,"r":0.155},{"speed":0.4,"q":0.053,"r":0.197},{"speed":0.45,"q":0.06,"r":0.243},{"speed":0.5,"q":0.066,"r":0.293},{"speed":0.55,"q":0.073,"r":0.348},{"speed":0.6,"q":0.08,"r":0.407},{"speed":0.65,"q":0.086,"r":0.471},{"speed":0.7,"q":0.093,"r":0.539},{"speed":0.75,"q":0.1,"r":0.611},{"speed":0.8,"q":0.106,"r":0.688},{"speed":0.85,"q":0.113,"r":0.768},{"speed":0.9,"q":0.119,"r":0.854},{"speed":0.95,"q":0.126,"r":0.943},{"speed":1.0,"q":0.133,"r":1.037},{"speed":1.1,"q":0.146,"r":1.236},{"speed":1.2,"q":0.159,"r":1.453},{"speed":1.3,"q":0.173,"r":1.687},{"speed":1.4,"q":0.186,"r":1.938},{"speed":1.5,"q":0.199,"r":2.205},{"speed":1.6,"q":0.212,"r":2.489},{"speed":1.7,"q":0.226,"r":2.79},{"speed":1.8,"q":0.239,"r":3.108},{"speed":1.9,"q":0.252,"r":3.442},{"speed":2.0,"q":0.265,"r":3.794},{"speed":2.1,"q":0.279,"r":4.161},{"speed":2.2,"q":0.292,"r":4.546},{"speed":2.3,"q":0.305,"r":4.947},{"speed":2.4,"q":0.319,"r":5.365}],"22":[{"speed":0.1,"q":0.031,"r":0.01},{"speed":0.15,"q":0.046,"r":0.021},{"speed":0.2,"q":0.062,"r":0.034},{"speed":0.25,"q":0.077,"r":0.05},{"speed":0.3,"q":0.092,"r":0.069},{"speed":0.35,"q":0.108,"r":0.091},{"speed":0.4,"q":0.123,"r":0.115},{"speed":0.45,"q":0.139,"r":0.142},{"speed":0.5,"q":0.154,"r":0.172},{"speed":0.55,"q":0.169,"r":0.204},{"speed":0.6,"q":0.185,"r":0.239},{"speed":0.65,"q":0.2,"r":0.277},{"speed":0.7,"q":0.216,"r":0.317},{"speed":0.75,"q":0.231,"r":0.359},{"speed":0.8,"q":0.246,"r":0.404},{"speed":0.85,"q":0.262,"r":0.452},{"speed":0.9,"q":0.277,"r":0.502},{"speed":0.95,"q":0.293,"r":0.555},{"speed":1.0,"q":0.308,"r":0.61},{"speed":1.1,"q":0.339,"r":0.728},{"speed":1.2,"q":0.369,"r":0.856},{"speed":1.3,"q":0.4,"r":0.994},{"speed":1.4,"q":0.431,"r":1.142},{"speed":1.5,"q":0.462,"r":1.3},{"speed":1.6,"q":0.493,"r":1.468},{"speed":1.7,"q":0.523,"r":1.646},{"speed":1.8,"q":0.554,"r":1.833},{"speed":1.9,"q":0.585,"r":2.031},{"speed":2.0,"q":0.616,"r":2.238},{"speed":2.1,"q":0.647,"r":2.456},{"speed":2.2,"q":0.677,"r":2.683},{"speed":2.3,"q":0.708,"r":2.92},{"speed":2.4,"q":0.739,"r":3.167}],"28":[{"speed":0.1,"q":0.051,"r":0.007},{"speed":0.15,"q":0.077,"r":0.015},{"speed":0.2,"q":0.103,"r":0.024},{"speed":0.25,"q":0.129,"r":0.036},{"speed":0.3,"q":0.154,"r":0.05},{"speed":0.35,"q":0.18,"r":0.066},{"speed":0.4,"q":0.206,"r":0.083},{"speed":0.45,"q":0.232,"r":0.103},{"speed":0.5,"q":0.257,"r":0.124},{"speed":0.55,"q":0.283,"r":0.148},{"speed":0.6,"q":0.309,"r":0.173},{"speed":0.65,"q":0.335,"r":0.2},{"speed":0.7,"q":0.36,"r":0.229},{"speed":0.75,"q":0.386,"r":0.26},{"speed":0.8,"q":0.412,"r":0.293},{"speed":0.85,"q":0.438,"r":0.328},{"speed":0.9,"q":0.463,"r":0.364},{"speed":0.95,"q":0.489,"r":0.403},{"speed":1.0,"q":0.515,"r":0.443},{"speed":1.1,"q":0.566,"r":0.528},{"speed":1.2,"q":0.618,"r":0.621},{"speed":1.3,"q":0.669,"r":0.722},{"speed":1.4,"q":0.721,"r":0.829},{"speed":1.5,"q":0.772,"r":0.944},{"speed":1.6,"q":0.824,"r":1.066},{"speed":1.7,"q":0.875,"r":1.195},{"speed":1.8,"q":0.926,"r":1.332},{"speed":1.9,"q":0.978,"r":1.475},{"speed":2.0,"q":1.029,"r":1.626},{"speed":2.1,"q":1.081,"r":1.784},{"speed":2.2,"q":1.132,"r":1.949},{"speed":2.3,"q":1.184,"r":2.122},{"speed":2.4,"q":1.235,"r":2.301}],"35":[{"speed":0.1,"q":0.08,"r":0.006},{"speed":0.15,"q":0.121,"r":0.011},{"speed":0.2,"q":0.161,"r":0.018},{"speed":0.25,"q":0.201,"r":0.027},{"speed":0.3,"q":0.241,"r":0.038},{"speed":0.35,"q":0.281,"r":0.05},{"speed":0.4,"q":0.322,"r":0.063},{"speed":0.45,"q":0.362,"r":0.078},{"speed":0.5,"q":0.402,"r":0.094},{"speed":0.55,"q":0.442,"r":0.112},{"speed":0.6,"q":0.483,"r":0.131},{"speed":0.65,"q":0.523,"r":0.152},{"speed":0.7,"q":0.563,"r":0.174},{"speed":0.75,"q":0.603,"r":0.197},{"speed":0.8,"q":0.643,"r":0.222},{"speed":0.85,"q":0.684,"r":0.248},{"speed":0.9,"q":0.724,"r":0.276},{"speed":0.95,"q":0.764,"r":0.305},{"speed":1.0,"q":0.804,"r":0.336},{"speed":1.1,"q":0.885,"r":0.401},{"speed":1.2,"q":0.965,"r":0.471},{"speed":1.3,"q":1.046,"r":0.547},{"speed":1.4,"q":1.126,"r":0.629},{"speed":1.5,"q":1.206,"r":0.716},{"speed":1.6,"q":1.287,"r":0.809},{"speed":1.7,"q":1.367,"r":0.907},{"speed":1.8,"q":1.448,"r":1.011},{"speed":1.9,"q":1.528,"r":1.12},{"speed":2.0,"q":1.608,"r":1.234},{"speed":2.1,"q":1.689,"r":1.354},{"speed":2.2,"q":1.769,"r":1.48},{"speed":2.3,"q":1.85,"r":1.611},{"speed":2.4,"q":1.93,"r":1.747}],"42":[{"speed":0.1,"q":0.119,"r":0.004},{"speed":0.15,"q":0.179,"r":0.009},{"speed":0.2,"q":0.239,"r":0.014},{"speed":0.25,"q":0.299,"r":0.021},{"speed":0.3,"q":0.358,"r":0.029},{"speed":0.35,"q":0.418,"r":0.039},{"speed":0.4,"q":0.478,"r":0.049},{"speed":0.45,"q":0.538,"r":0.061},{"speed":0.5,"q":0.597,"r":0.074},{"speed":0.55,"q":0.657,"r":0.088},{"speed":0.6,"q":0.717,"r":0.103},{"speed":0.65,"q":0.776,"r":0.119},{"speed":0.7,"q":0.836,"r":0.136},{"speed":0.75,"q":0.896,"r":0.154},{"speed":0.8,"q":0.956,"r":0.174},{"speed":0.85,"q":1.015,"r":0.194},{"speed":0.9,"q":1.075,"r":0.216},{"speed":0.95,"q":1.135,"r":0.239},{"speed":1.0,"q":1.195,"r":0.263},{"speed":1.1,"q":1.314,"r":0.314},{"speed":1.2,"q":1.434,"r":0.369},{"speed":1.3,"q":1.553,"r":0.429},{"speed":1.4,"q":1.672,"r":0.493},{"speed":1.5,"q":1.792,"r":0.561},{"speed":1.6,"q":1.911,"r":0.634},{"speed":1.7,"q":2.031,"r":0.711},{"speed":1.8,"q":2.15,"r":0.792},{"speed":1.9,"q":2.27,"r":0.878},{"speed":2.0,"q":2.389,"r":0.968},{"speed":2.1,"q":2.509,"r":1.062},{"speed":2.2,"q":2.628,"r":1.16},{"speed":2.3,"q":2.748,"r":1.263},{"speed":2.4,"q":2.867,"r":1.37}],"54":[{"speed":0.1,"q":0.204,"r":0.003},{"speed":0.15,"q":0.306,"r":0.006},{"speed":0.2,"q":0.409,"r":0.01},{"speed":0.25,"q":0.511,"r":0.015},{"speed":0.3,"q":0.613,"r":0.021},{"speed":0.35,"q":0.715,"r":0.028},{"speed":0.4,"q":0.817,"r":0.035},{"speed":0.45,"q":0.919,"r":0.044},{"speed":0.5,"q":1.021,"r":0.053},{"speed":0.55,"q":1.124,"r":0.063},{"speed":0.6,"q":1.226,"r":0.074},{"speed":0.65,"q":1.328,"r":0.085},{"speed":0.7,"q":1.43,"r":0.098},{"speed":0.75,"q":1.532,"r":0.111},{"speed":0.8,"q":1.634,"r":0.125},{"speed":0.85,"q":1.736,"r":0.14},{"speed":0.9,"q":1.839,"r":0.155},{"speed":0.95,"q":1.941,"r":0.172},{"speed":1.0,"q":2.043,"r":0.189},{"speed":1.1,"q":2.247,"r":0.226},{"speed":1.2,"q":2.451,"r":0.266},{"speed":1.3,"q":2.656,"r":0.309},{"speed":1.4,"q":2.86,"r":0.355},{"speed":1.5,"q":3.064,"r":0.404},{"speed":1.6,"q":3.269,"r":0.456},{"speed":1.7,"q":3.473,"r":0.512},{"speed":1.8,"q":3.677,"r":0.57},{"speed":1.9,"q":3.881,"r":0.632},{"speed":2.0,"q":4.086,"r":0.697},{"speed":2.1,"q":4.29,"r":0.765},{"speed":2.2,"q":4.494,"r":0.836},{"speed":2.3,"q":4.698,"r":0.91},{"speed":2.4,"q":4.903,"r":0.987}],"64":[{"speed":0.1,"q":0.283,"r":0.002},{"speed":0.15,"q":0.424,"r":0.005},{"speed":0.2,"q":0.565,"r":0.008},{"speed":0.25,"q":0.707,"r":0.012},{"speed":0.3,"q":0.848,"r":0.017},{"speed":0.35,"q":0.99,"r":0.023},{"speed":0.4,"q":1.131,"r":0.029},{"speed":0.45,"q":1.272,"r":0.036},{"speed":0.5,"q":1.414,"r":0.043},{"speed":0.55,"q":1.555,"r":0.051},{"speed":0.6,"q":1.696,"r":0.06},{"speed":0.65,"q":1.838,"r":0.07},{"speed":0.7,"q":1.979,"r":0.08},{"speed":0.75,"q":2.121,"r":0.091},{"speed":0.8,"q":2.262,"r":0.102},{"speed":0.85,"q":2.403,"r":0.115},{"speed":0.9,"q":2.545,"r":0.127},{"speed":0.95,"q":2.686,"r":0.141},{"speed":1.0,"q":2.827,"r":0.155},{"speed":1.1,"q":3.11,"r":0.185},{"speed":1.2,"q":3.393,"r":0.218},{"speed":1.3,"q":3.676,"r":0.253},{"speed":1.4,"q":3.958,"r":0.291},{"speed":1.5,"q":4.241,"r":0.331},{"speed":1.6,"q":4.524,"r":0.374},{"speed":1.7,"q":4.807,"r":0.42},{"speed":1.8,"q":5.089,"r":0.468},{"speed":1.9,"q":5.372,"r":0.519},{"speed":2.0,"q":5.655,"r":0.572},{"speed":2.1,"q":5.938,"r":0.627},{"speed":2.2,"q":6.22,"r":0.685},{"speed":2.3,"q":6.503,"r":0.746},{"speed":2.4,"q":6.786,"r":0.809}],"76.1":[{"speed":0.1,"q":0.408,"r":0.002},{"speed":0.15,"q":0.612,"r":0.004},{"speed":0.2,"q":0.817,"r":0.007},{"speed":0.25,"q":1.021,"r":0.01},{"speed":0.3,"q":1.225,"r":0.014},{"speed":0.35,"q":1.429,"r":0.018},{"speed":0.4,"q":1.633,"r":0.023},{"speed":0.45,"q":1.837,"r":0.028},{"speed":0.5,"q":2.041,"r":0.035},{"speed":0.55,"q":2.246,"r":0.041},{"speed":0.6,"q":2.45,"r":0.048},{"speed":0.65,"q":2.654,"r":0.056},{"speed":0.7,"q":2.858,"r":0.064},{"speed":0.75,"q":3.062,"r":0.073},{"speed":0.8,"q":3.266,"r":0.082},{"speed":0.85,"q":3.47,"r":0.092},{"speed":0.9,"q":3.675,"r":0.102},{"speed":0.95,"q":3.879,"r":0.113},{"speed":1.0,"q":4.083,"r":0.124},{"speed":1.1,"q":4.491,"r":0.148},{"speed":1.2,"q":4.899,"r":0.174},{"speed":1.3,"q":5.308,"r":0.202},{"speed":1.4,"q":5.716,"r":0.233},{"speed":1.5,"q":6.124,"r":0.265},{"speed":1.6,"q":6.533,"r":0.3},{"speed":1.7,"q":6.941,"r":0.336},{"speed":1.8,"q":7.349,"r":0.374},{"speed":1.9,"q":7.757,"r":0.415},{"speed":2.0,"q":8.166,"r":0.457},{"speed":2.1,"q":8.574,"r":0.502},{"speed":2.2,"q":8.982,"r":0.548},{"speed":2.3,"q":9.39,"r":0.597},{"speed":2.4,"q":9.799,"r":0.648}],"88.9":[{"speed":0.1,"q":0.566,"r":0.002},{"speed":0.15,"q":0.849,"r":0.003},{"speed":0.2,"q":1.132,"r":0.005},{"speed":0.25,"q":1.415,"r":0.008},{"speed":0.3,"q":1.698,"r":0.011},{"speed":0.35,"q":1.981,"r":0.015},{"speed":0.4,"q":2.264,"r":0.019},{"speed":0.45,"q":2.548,"r":0.023},{"speed":0.5,"q":2.831,"r":0.028},{"speed":0.55,"q":3.114,"r":0.034},{"speed":0.6,"q":3.397,"r":0.039},{"speed":0.65,"q":3.68,"r":0.046},{"speed":0.7,"q":3.963,"r":0.052},{"speed":0.75,"q":4.246,"r":0.06},{"speed":0.8,"q":4.529,"r":0.067},{"speed":0.85,"q":4.812,"r":0.075},{"speed":0.9,"q":5.095,"r":0.084},{"speed":0.95,"q":5.378,"r":0.092},{"speed":1.0,"q":5.661,"r":0.102},{"speed":1.1,"q":6.227,"r":0.121},{"speed":1.2,"q":6.793,"r":0.143},{"speed":1.3,"q":7.36,"r":0.166},{"speed":1.4,"q":7.926,"r":0.191},{"speed":1.5,"q":8.492,"r":0.218},{"speed":1.6,"q":9.058,"r":0.246},{"speed":1.7,"q":9.624,"r":0.276},{"speed":1.8,"q":10.19,"r":0.307},{"speed":1.9,"q":10.756,"r":0.34},{"speed":2.0,"q":11.322,"r":0.375},{"speed":2.1,"q":11.888,"r":0.412},{"speed":2.2,"q":12.455,"r":0.45},{"speed":2.3,"q":13.021,"r":0.49},{"speed":2.4,"q":13.587,"r":0.531}],"108":[{"speed":0.1,"q":0.833,"r":0.001},{"speed":0.15,"q":1.25,"r":0.003},{"speed":0.2,"q":1.666,"r":0.004},{"speed":0.25,"q":2.083,"r":0.006},{"speed":0.3,"q":2.5,"r":0.009},{"speed":0.35,"q":2.916,"r":0.012},{"speed":0.4,"q":3.333,"r":0.015},{"speed":0.45,"q":3.75,"r":0.018},{"speed":0.5,"q":4.166,"r":0.022},{"speed":0.55,"q":4.583,"r":0.027},{"speed":0.6,"q":4.999,"r":0.031},{"speed":0.65,"q":5.416,"r":0.036},{"speed":0.7,"q":5.833,"r":0.041},{"speed":0.75,"q":6.249,"r":0.047},{"speed":0.8,"q":6.666,"r":0.053},{"speed":0.85,"q":7.082,"r":0.059},{"speed":0.9,"q":7.499,"r":0.066},{"speed":0.95,"q":7.916,"r":0.073},{"speed":1.0,"q":8.332,"r":0.08},{"speed":1.1,"q":9.166,"r":0.096},{"speed":1.2,"q":9.999,"r":0.113},{"speed":1.3,"q":10.832,"r":0.132},{"speed":1.4,"q":11.665,"r":0.151},{"speed":1.5,"q":12.498,"r":0.172},{"speed":1.6,"q":13.332,"r":0.195},{"speed":1.7,"q":14.165,"r":0.218},{"speed":1.8,"q":14.998,"r":0.243},{"speed":1.9,"q":15.831,"r":0.27},{"speed":2.0,"q":16.665,"r":0.297},{"speed":2.1,"q":17.498,"r":0.326},{"speed":2.2,"q":18.331,"r":0.357},{"speed":2.3,"q":19.164,"r":0.388},{"speed":2.4,"q":19.997,"r":0.421}],"133":[{"speed":0.1,"q":1.267,"r":0.001},{"speed":0.15,"q":1.9,"r":0.002},{"speed":0.2,"q":2.534,"r":0.003},{"speed":0.25,"q":3.167,"r":0.005},{"speed":0.3,"q":3.8,"r":0.007},{"speed":0.35,"q":4.434,"r":0.009},{"speed":0.4,"q":5.067,"r":0.012},{"speed":0.45,"q":5.7,"r":0.014},{"speed":0.5,"q":6.334,"r":0.017},{"speed":0.55,"q":6.967,"r":0.021},{"speed":0.6,"q":7.601,"r":0.024},{"speed":0.65,"q":8.234,"r":0.028},{"speed":0.7,"q":8.867,"r":0.032},{"speed":0.75,"q":9.501,"r":0.037},{"speed":0.8,"q":10.134,"r":0.041},{"speed":0.85,"q":10.768,"r":0.046},{"speed":0.9,"q":11.401,"r":0.051},{"speed":0.95,"q":12.034,"r":0.057},{"speed":1.0,"q":12.668,"r":0.062},{"speed":1.1,"q":13.934,"r":0.075},{"speed":1.2,"q":15.201,"r":0.088},{"speed":1.3,"q":16.468,"r":0.102},{"speed":1.4,"q":17.735,"r":0.118},{"speed":1.5,"q":19.002,"r":0.134},{"speed":1.6,"q":20.268,"r":0.151},{"speed":1.7,"q":21.535,"r":0.17},{"speed":1.8,"q":22.802,"r":0.189},{"speed":1.9,"q":24.069,"r":0.21},{"speed":2.0,"q":25.335,"r":0.231},{"speed":2.1,"q":26.602,"r":0.254},{"speed":2.2,"q":27.869,"r":0.277},{"speed":2.3,"q":29.136,"r":0.302},{"speed":2.4,"q":30.402,"r":0.327}]},"Kunststof koud":{"16":[{"speed":0.1,"q":0.02,"r":0.02},{"speed":0.15,"q":0.03,"r":0.039},{"speed":0.2,"q":0.04,"r":0.062},{"speed":0.25,"q":0.05,"r":0.089},{"speed":0.3,"q":0.06,"r":0.121},{"speed":0.35,"q":0.07,"r":0.157},{"speed":0.4,"q":0.08,"r":0.197},{"speed":0.45,"q":0.09,"r":0.241},{"speed":0.5,"q":0.101,"r":0.288},{"speed":0.55,"q":0.111,"r":0.339},{"speed":0.6,"q":0.121,"r":0.393},{"speed":0.65,"q":0.131,"r":0.452},{"speed":0.7,"q":0.141,"r":0.513},{"speed":0.75,"q":0.151,"r":0.578},{"speed":0.8,"q":0.161,"r":0.647},{"speed":0.85,"q":0.171,"r":0.719},{"speed":0.9,"q":0.181,"r":0.794},{"speed":0.95,"q":0.191,"r":0.873},{"speed":1.0,"q":0.201,"r":0.954},{"speed":1.1,"q":0.221,"r":1.128},{"speed":1.2,"q":0.241,"r":1.315},{"speed":1.3,"q":0.261,"r":1.514},{"speed":1.4,"q":0.281,"r":1.726},{"speed":1.5,"q":0.302,"r":1.95},{"speed":1.6,"q":0.322,"r":2.187},{"speed":1.7,"q":0.342,"r":2.436},{"speed":1.8,"q":0.362,"r":2.698},{"speed":1.9,"q":0.382,"r":2.972},{"speed":2.0,"q":0.402,"r":3.257},{"speed":2.1,"q":0.422,"r":3.555},{"speed":2.2,"q":0.442,"r":3.865},{"speed":2.3,"q":0.462,"r":4.187},{"speed":2.4,"q":0.483,"r":4.521}],"20":[{"speed":0.1,"q":0.031,"r":0.015},{"speed":0.15,"q":0.047,"r":0.029},{"speed":0.2,"q":0.063,"r":0.046},{"speed":0.25,"q":0.079,"r":0.067},{"speed":0.3,"q":0.094,"r":0.09},{"speed":0.35,"q":0.11,"r":0.117},{"speed":0.4,"q":0.126,"r":0.147},{"speed":0.45,"q":0.141,"r":0.18},{"speed":0.5,"q":0.157,"r":0.216},{"speed":0.55,"q":0.173,"r":0.254},{"speed":0.6,"q":0.188,"r":0.296},{"speed":0.65,"q":0.204,"r":0.339},{"speed":0.7,"q":0.22,"r":0.386},{"speed":0.75,"q":0.236,"r":0.435},{"speed":0.8,"q":0.251,"r":0.487},{"speed":0.85,"q":0.267,"r":0.541},{"speed":0.9,"q":0.283,"r":0.598},{"speed":0.95,"q":0.298,"r":0.658},{"speed":1.0,"q":0.314,"r":0.72},{"speed":1.1,"q":0.346,"r":0.851},{"speed":1.2,"q":0.377,"r":0.992},{"speed":1.3,"q":0.408,"r":1.143},{"speed":1.4,"q":0.44,"r":1.304},{"speed":1.5,"q":0.471,"r":1.474},{"speed":1.6,"q":0.503,"r":1.653},{"speed":1.7,"q":0.534,"r":1.842},{"speed":1.8,"q":0.565,"r":2.041},{"speed":1.9,"q":0.597,"r":2.248},{"speed":2.0,"q":0.628,"r":2.465},{"speed":2.1,"q":0.66,"r":2.691},{"speed":2.2,"q":0.691,"r":2.926},{"speed":2.3,"q":0.723,"r":3.171},{"speed":2.4,"q":0.754,"r":3.424}],"26":[{"speed":0.1,"q":0.053,"r":0.01},{"speed":0.15,"q":0.08,"r":0.02},{"speed":0.2,"q":0.106,"r":0.032},{"speed":0.25,"q":0.133,"r":0.047},{"speed":0.3,"q":0.159,"r":0.064},{"speed":0.35,"q":0.186,"r":0.084},{"speed":0.4,"q":0.212,"r":0.105},{"speed":0.45,"q":0.239,"r":0.129},{"speed":0.5,"q":0.265,"r":0.154},{"speed":0.55,"q":0.292,"r":0.182},{"speed":0.6,"q":0.319,"r":0.212},{"speed":0.65,"q":0.345,"r":0.243},{"speed":0.7,"q":0.372,"r":0.277},{"speed":0.75,"q":0.398,"r":0.312},{"speed":0.8,"q":0.425,"r":0.349},{"speed":0.85,"q":0.451,"r":0.389},{"speed":0.9,"q":0.478,"r":0.43},{"speed":0.95,"q":0.504,"r":0.473},{"speed":1.0,"q":0.531,"r":0.517},{"speed":1.1,"q":0.584,"r":0.612},{"speed":1.2,"q":0.637,"r":0.714},{"speed":1.3,"q":0.69,"r":0.823},{"speed":1.4,"q":0.743,"r":0.939},{"speed":1.5,"q":0.796,"r":1.062},{"speed":1.6,"q":0.849,"r":1.192},{"speed":1.7,"q":0.903,"r":1.329},{"speed":1.8,"q":0.956,"r":1.472},{"speed":1.9,"q":1.009,"r":1.623},{"speed":2.0,"q":1.062,"r":1.78},{"speed":2.1,"q":1.115,"r":1.943},{"speed":2.2,"q":1.168,"r":2.114},{"speed":2.3,"q":1.221,"r":2.291},{"speed":2.4,"q":1.274,"r":2.474}],"32":[{"speed":0.1,"q":0.08,"r":0.008},{"speed":0.15,"q":0.121,"r":0.015},{"speed":0.2,"q":0.161,"r":0.025},{"speed":0.25,"q":0.201,"r":0.036},{"speed":0.3,"q":0.241,"r":0.049},{"speed":0.35,"q":0.281,"r":0.064},{"speed":0.4,"q":0.322,"r":0.081},{"speed":0.45,"q":0.362,"r":0.099},{"speed":0.5,"q":0.402,"r":0.119},{"speed":0.55,"q":0.442,"r":0.14},{"speed":0.6,"q":0.483,"r":0.163},{"speed":0.65,"q":0.523,"r":0.187},{"speed":0.7,"q":0.563,"r":0.213},{"speed":0.75,"q":0.603,"r":0.24},{"speed":0.8,"q":0.643,"r":0.269},{"speed":0.85,"q":0.684,"r":0.3},{"speed":0.9,"q":0.724,"r":0.331},{"speed":0.95,"q":0.764,"r":0.364},{"speed":1.0,"q":0.804,"r":0.399},{"speed":1.1,"q":0.885,"r":0.472},{"speed":1.2,"q":0.965,"r":0.551},{"speed":1.3,"q":1.046,"r":0.636},{"speed":1.4,"q":1.126,"r":0.726},{"speed":1.5,"q":1.206,"r":0.821},{"speed":1.6,"q":1.287,"r":0.922},{"speed":1.7,"q":1.367,"r":1.028},{"speed":1.8,"q":1.448,"r":1.139},{"speed":1.9,"q":1.528,"r":1.255},{"speed":2.0,"q":1.608,"r":1.377},{"speed":2.1,"q":1.689,"r":1.504},{"speed":2.2,"q":1.769,"r":1.636},{"speed":2.3,"q":1.85,"r":1.773},{"speed":2.4,"q":1.93,"r":1.916}],"40":[{"speed":0.1,"q":0.126,"r":0.006},{"speed":0.15,"q":0.188,"r":0.011},{"speed":0.2,"q":0.251,"r":0.019},{"speed":0.25,"q":0.314,"r":0.027},{"speed":0.3,"q":0.377,"r":0.037},{"speed":0.35,"q":0.44,"r":0.048},{"speed":0.4,"q":0.503,"r":0.061},{"speed":0.45,"q":0.565,"r":0.074},{"speed":0.5,"q":0.628,"r":0.089},{"speed":0.55,"q":0.691,"r":0.106},{"speed":0.6,"q":0.754,"r":0.123},{"speed":0.65,"q":0.817,"r":0.141},{"speed":0.7,"q":0.88,"r":0.161},{"speed":0.75,"q":0.942,"r":0.182},{"speed":0.8,"q":1.005,"r":0.204},{"speed":0.85,"q":1.068,"r":0.227},{"speed":0.9,"q":1.131,"r":0.251},{"speed":0.95,"q":1.194,"r":0.276},{"speed":1.0,"q":1.257,"r":0.302},{"speed":1.1,"q":1.382,"r":0.358},{"speed":1.2,"q":1.508,"r":0.418},{"speed":1.3,"q":1.634,"r":0.482},{"speed":1.4,"q":1.759,"r":0.551},{"speed":1.5,"q":1.885,"r":0.623},{"speed":1.6,"q":2.011,"r":0.7},{"speed":1.7,"q":2.136,"r":0.781},{"speed":1.8,"q":2.262,"r":0.865},{"speed":1.9,"q":2.388,"r":0.954},{"speed":2.0,"q":2.513,"r":1.047},{"speed":2.1,"q":2.639,"r":1.144},{"speed":2.2,"q":2.765,"r":1.244},{"speed":2.3,"q":2.89,"r":1.349},{"speed":2.4,"q":3.016,"r":1.457}],"50":[{"speed":0.1,"q":0.196,"r":0.004},{"speed":0.15,"q":0.295,"r":0.009},{"speed":0.2,"q":0.393,"r":0.014},{"speed":0.25,"q":0.491,"r":0.02},{"speed":0.3,"q":0.589,"r":0.028},{"speed":0.35,"q":0.687,"r":0.036},{"speed":0.4,"q":0.785,"r":0.046},{"speed":0.45,"q":0.884,"r":0.056},{"speed":0.5,"q":0.982,"r":0.068},{"speed":0.55,"q":1.08,"r":0.08},{"speed":0.6,"q":1.178,"r":0.093},{"speed":0.65,"q":1.276,"r":0.107},{"speed":0.7,"q":1.374,"r":0.122},{"speed":0.75,"q":1.473,"r":0.138},{"speed":0.8,"q":1.571,"r":0.154},{"speed":0.85,"q":1.669,"r":0.172},{"speed":0.9,"q":1.767,"r":0.19},{"speed":0.95,"q":1.865,"r":0.209},{"speed":1.0,"q":1.963,"r":0.229},{"speed":1.1,"q":2.16,"r":0.272},{"speed":1.2,"q":2.356,"r":0.318},{"speed":1.3,"q":2.553,"r":0.367},{"speed":1.4,"q":2.749,"r":0.419},{"speed":1.5,"q":2.945,"r":0.474},{"speed":1.6,"q":3.142,"r":0.532},{"speed":1.7,"q":3.338,"r":0.594},{"speed":1.8,"q":3.534,"r":0.658},{"speed":1.9,"q":3.731,"r":0.726},{"speed":2.0,"q":3.927,"r":0.797},{"speed":2.1,"q":4.123,"r":0.871},{"speed":2.2,"q":4.32,"r":0.947},{"speed":2.3,"q":4.516,"r":1.027},{"speed":2.4,"q":4.712,"r":1.11}],"63":[{"speed":0.1,"q":0.332,"r":0.003},{"speed":0.15,"q":0.498,"r":0.006},{"speed":0.2,"q":0.664,"r":0.01},{"speed":0.25,"q":0.83,"r":0.015},{"speed":0.3,"q":0.995,"r":0.02},{"speed":0.35,"q":1.161,"r":0.026},{"speed":0.4,"q":1.327,"r":0.033},{"speed":0.45,"q":1.493,"r":0.04},{"speed":0.5,"q":1.659,"r":0.049},{"speed":0.55,"q":1.825,"r":0.058},{"speed":0.6,"q":1.991,"r":0.067},{"speed":0.65,"q":2.157,"r":0.077},{"speed":0.7,"q":2.323,"r":0.088},{"speed":0.75,"q":2.489,"r":0.1},{"speed":0.8,"q":2.655,"r":0.112},{"speed":0.85,"q":2.821,"r":0.124},{"speed":0.9,"q":2.986,"r":0.138},{"speed":0.95,"q":3.152,"r":0.152},{"speed":1.0,"q":3.318,"r":0.166},{"speed":1.1,"q":3.65,"r":0.197},{"speed":1.2,"q":3.982,"r":0.23},{"speed":1.3,"q":4.314,"r":0.266},{"speed":1.4,"q":4.646,"r":0.304},{"speed":1.5,"q":4.977,"r":0.344},{"speed":1.6,"q":5.309,"r":0.386},{"speed":1.7,"q":5.641,"r":0.431},{"speed":1.8,"q":5.973,"r":0.478},{"speed":1.9,"q":6.305,"r":0.527},{"speed":2.0,"q":6.637,"r":0.579},{"speed":2.1,"q":6.968,"r":0.633},{"speed":2.2,"q":7.3,"r":0.689},{"speed":2.3,"q":7.632,"r":0.747},{"speed":2.4,"q":7.964,"r":0.807}]},"Kunststof Warm":{"16":[{"speed":0.1,"q":0.02,"r":0.014},{"speed":0.15,"q":0.03,"r":0.027},{"speed":0.2,"q":0.04,"r":0.044},{"speed":0.25,"q":0.05,"r":0.065},{"speed":0.3,"q":0.06,"r":0.089},{"speed":0.35,"q":0.07,"r":0.116},{"speed":0.4,"q":0.08,"r":0.147},{"speed":0.45,"q":0.09,"r":0.181},{"speed":0.5,"q":0.101,"r":0.218},{"speed":0.55,"q":0.111,"r":0.258},{"speed":0.6,"q":0.121,"r":0.301},{"speed":0.65,"q":0.131,"r":0.347},{"speed":0.7,"q":0.141,"r":0.396},{"speed":0.75,"q":0.151,"r":0.448},{"speed":0.8,"q":0.161,"r":0.503},{"speed":0.85,"q":0.171,"r":0.561},{"speed":0.9,"q":0.181,"r":0.622},{"speed":0.95,"q":0.191,"r":0.686},{"speed":1.0,"q":0.201,"r":0.753},{"speed":1.1,"q":0.221,"r":0.895},{"speed":1.2,"q":0.241,"r":1.049},{"speed":1.3,"q":0.261,"r":1.214},{"speed":1.4,"q":0.281,"r":1.39},{"speed":1.5,"q":0.302,"r":1.578},{"speed":1.6,"q":0.322,"r":1.777},{"speed":1.7,"q":0.342,"r":1.987},{"speed":1.8,"q":0.362,"r":2.209},{"speed":1.9,"q":0.382,"r":2.441},{"speed":2.0,"q":0.402,"r":2.685},{"speed":2.1,"q":0.422,"r":2.94},{"speed":2.2,"q":0.442,"r":3.206},{"speed":2.3,"q":0.462,"r":3.483},{"speed":2.4,"q":0.483,"r":3.771}],"20":[{"speed":0.1,"q":0.031,"r":0.01},{"speed":0.15,"q":0.047,"r":0.02},{"speed":0.2,"q":0.063,"r":0.033},{"speed":0.25,"q":0.079,"r":0.049},{"speed":0.3,"q":0.094,"r":0.067},{"speed":0.35,"q":0.11,"r":0.088},{"speed":0.4,"q":0.126,"r":0.111},{"speed":0.45,"q":0.141,"r":0.136},{"speed":0.5,"q":0.157,"r":0.164},{"speed":0.55,"q":0.173,"r":0.195},{"speed":0.6,"q":0.188,"r":0.227},{"speed":0.65,"q":0.204,"r":0.262},{"speed":0.7,"q":0.22,"r":0.3},{"speed":0.75,"q":0.236,"r":0.339},{"speed":0.8,"q":0.251,"r":0.381},{"speed":0.85,"q":0.267,"r":0.425},{"speed":0.9,"q":0.283,"r":0.471},{"speed":0.95,"q":0.298,"r":0.52},{"speed":1.0,"q":0.314,"r":0.57},{"speed":1.1,"q":0.346,"r":0.678},{"speed":1.2,"q":0.377,"r":0.795},{"speed":1.3,"q":0.408,"r":0.92},{"speed":1.4,"q":0.44,"r":1.055},{"speed":1.5,"q":0.471,"r":1.197},{"speed":1.6,"q":0.503,"r":1.348},{"speed":1.7,"q":0.534,"r":1.508},{"speed":1.8,"q":0.565,"r":1.676},{"speed":1.9,"q":0.597,"r":1.853},{"speed":2.0,"q":0.628,"r":2.038},{"speed":2.1,"q":0.66,"r":2.232},{"speed":2.2,"q":0.691,"r":2.434},{"speed":2.3,"q":0.723,"r":2.645},{"speed":2.4,"q":0.754,"r":2.864}],"26":[{"speed":0.1,"q":0.053,"r":0.007},{"speed":0.15,"q":0.08,"r":0.014},{"speed":0.2,"q":0.106,"r":0.024},{"speed":0.25,"q":0.133,"r":0.035},{"speed":0.3,"q":0.159,"r":0.048},{"speed":0.35,"q":0.186,"r":0.063},{"speed":0.4,"q":0.212,"r":0.08},{"speed":0.45,"q":0.239,"r":0.098},{"speed":0.5,"q":0.265,"r":0.118},{"speed":0.55,"q":0.292,"r":0.14},{"speed":0.6,"q":0.319,"r":0.164},{"speed":0.65,"q":0.345,"r":0.189},{"speed":0.7,"q":0.372,"r":0.216},{"speed":0.75,"q":0.398,"r":0.245},{"speed":0.8,"q":0.425,"r":0.275},{"speed":0.85,"q":0.451,"r":0.307},{"speed":0.9,"q":0.478,"r":0.341},{"speed":0.95,"q":0.504,"r":0.376},{"speed":1.0,"q":0.531,"r":0.412},{"speed":1.1,"q":0.584,"r":0.491},{"speed":1.2,"q":0.637,"r":0.575},{"speed":1.3,"q":0.69,"r":0.666},{"speed":1.4,"q":0.743,"r":0.763},{"speed":1.5,"q":0.796,"r":0.867},{"speed":1.6,"q":0.849,"r":0.976},{"speed":1.7,"q":0.903,"r":1.092},{"speed":1.8,"q":0.956,"r":1.214},{"speed":1.9,"q":1.009,"r":1.343},{"speed":2.0,"q":1.062,"r":1.477},{"speed":2.1,"q":1.115,"r":1.618},{"speed":2.2,"q":1.168,"r":1.764},{"speed":2.3,"q":1.221,"r":1.917},{"speed":2.4,"q":1.274,"r":2.076}],"32":[{"speed":0.1,"q":0.08,"r":0.006},{"speed":0.15,"q":0.121,"r":0.011},{"speed":0.2,"q":0.161,"r":0.018},{"speed":0.25,"q":0.201,"r":0.027},{"speed":0.3,"q":0.241,"r":0.037},{"speed":0.35,"q":0.281,"r":0.049},{"speed":0.4,"q":0.322,"r":0.062},{"speed":0.45,"q":0.362,"r":0.076},{"speed":0.5,"q":0.402,"r":0.091},{"speed":0.55,"q":0.442,"r":0.108},{"speed":0.6,"q":0.483,"r":0.127},{"speed":0.65,"q":0.523,"r":0.146},{"speed":0.7,"q":0.563,"r":0.167},{"speed":0.75,"q":0.603,"r":0.19},{"speed":0.8,"q":0.643,"r":0.213},{"speed":0.85,"q":0.684,"r":0.238},{"speed":0.9,"q":0.724,"r":0.264},{"speed":0.95,"q":0.764,"r":0.291},{"speed":1.0,"q":0.804,"r":0.319},{"speed":1.1,"q":0.885,"r":0.38},{"speed":1.2,"q":0.965,"r":0.446},{"speed":1.3,"q":1.046,"r":0.516},{"speed":1.4,"q":1.126,"r":0.592},{"speed":1.5,"q":1.206,"r":0.672},{"speed":1.6,"q":1.287,"r":0.757},{"speed":1.7,"q":1.367,"r":0.847},{"speed":1.8,"q":1.448,"r":0.942},{"speed":1.9,"q":1.528,"r":1.042},{"speed":2.0,"q":1.608,"r":1.146},{"speed":2.1,"q":1.689,"r":1.255},{"speed":2.2,"q":1.769,"r":1.369},{"speed":2.3,"q":1.85,"r":1.488},{"speed":2.4,"q":1.93,"r":1.611}],"40":[{"speed":0.1,"q":0.126,"r":0.004},{"speed":0.15,"q":0.188,"r":0.008},{"speed":0.2,"q":0.251,"r":0.014},{"speed":0.25,"q":0.314,"r":0.02},{"speed":0.3,"q":0.377,"r":0.028},{"speed":0.35,"q":0.44,"r":0.037},{"speed":0.4,"q":0.503,"r":0.047},{"speed":0.45,"q":0.565,"r":0.058},{"speed":0.5,"q":0.628,"r":0.069},{"speed":0.55,"q":0.691,"r":0.082},{"speed":0.6,"q":0.754,"r":0.096},{"speed":0.65,"q":0.817,"r":0.111},{"speed":0.7,"q":0.88,"r":0.127},{"speed":0.75,"q":0.942,"r":0.144},{"speed":0.8,"q":1.005,"r":0.162},{"speed":0.85,"q":1.068,"r":0.181},{"speed":0.9,"q":1.131,"r":0.201},{"speed":0.95,"q":1.194,"r":0.221},{"speed":1.0,"q":1.257,"r":0.243},{"speed":1.1,"q":1.382,"r":0.289},{"speed":1.2,"q":1.508,"r":0.339},{"speed":1.3,"q":1.634,"r":0.393},{"speed":1.4,"q":1.759,"r":0.451},{"speed":1.5,"q":1.885,"r":0.512},{"speed":1.6,"q":2.011,"r":0.577},{"speed":1.7,"q":2.136,"r":0.646},{"speed":1.8,"q":2.262,"r":0.718},{"speed":1.9,"q":2.388,"r":0.794},{"speed":2.0,"q":2.513,"r":0.874},{"speed":2.1,"q":2.639,"r":0.957},{"speed":2.2,"q":2.765,"r":1.044},{"speed":2.3,"q":2.89,"r":1.135},{"speed":2.4,"q":3.016,"r":1.229}],"50":[{"speed":0.1,"q":0.196,"r":0.003},{"speed":0.15,"q":0.295,"r":0.006},{"speed":0.2,"q":0.393,"r":0.01},{"speed":0.25,"q":0.491,"r":0.015},{"speed":0.3,"q":0.589,"r":0.021},{"speed":0.35,"q":0.687,"r":0.028},{"speed":0.4,"q":0.785,"r":0.035},{"speed":0.45,"q":0.884,"r":0.044},{"speed":0.5,"q":0.982,"r":0.053},{"speed":0.55,"q":1.08,"r":0.063},{"speed":0.6,"q":1.178,"r":0.073},{"speed":0.65,"q":1.276,"r":0.085},{"speed":0.7,"q":1.374,"r":0.097},{"speed":0.75,"q":1.473,"r":0.11},{"speed":0.8,"q":1.571,"r":0.123},{"speed":0.85,"q":1.669,"r":0.138},{"speed":0.9,"q":1.767,"r":0.153},{"speed":0.95,"q":1.865,"r":0.169},{"speed":1.0,"q":1.963,"r":0.185},{"speed":1.1,"q":2.16,"r":0.221},{"speed":1.2,"q":2.356,"r":0.259},{"speed":1.3,"q":2.553,"r":0.3},{"speed":1.4,"q":2.749,"r":0.344},{"speed":1.5,"q":2.945,"r":0.391},{"speed":1.6,"q":3.142,"r":0.44},{"speed":1.7,"q":3.338,"r":0.493},{"speed":1.8,"q":3.534,"r":0.548},{"speed":1.9,"q":3.731,"r":0.606},{"speed":2.0,"q":3.927,"r":0.667},{"speed":2.1,"q":4.123,"r":0.73},{"speed":2.2,"q":4.32,"r":0.797},{"speed":2.3,"q":4.516,"r":0.866},{"speed":2.4,"q":4.712,"r":0.938}],"63":[{"speed":0.1,"q":0.332,"r":0.002},{"speed":0.15,"q":0.498,"r":0.005},{"speed":0.2,"q":0.664,"r":0.007},{"speed":0.25,"q":0.83,"r":0.011},{"speed":0.3,"q":0.995,"r":0.015},{"speed":0.35,"q":1.161,"r":0.02},{"speed":0.4,"q":1.327,"r":0.026},{"speed":0.45,"q":1.493,"r":0.032},{"speed":0.5,"q":1.659,"r":0.038},{"speed":0.55,"q":1.825,"r":0.045},{"speed":0.6,"q":1.991,"r":0.053},{"speed":0.65,"q":2.157,"r":0.061},{"speed":0.7,"q":2.323,"r":0.07},{"speed":0.75,"q":2.489,"r":0.08},{"speed":0.8,"q":2.655,"r":0.09},{"speed":0.85,"q":2.821,"r":0.1},{"speed":0.9,"q":2.986,"r":0.111},{"speed":0.95,"q":3.152,"r":0.123},{"speed":1.0,"q":3.318,"r":0.135},{"speed":1.1,"q":3.65,"r":0.161},{"speed":1.2,"q":3.982,"r":0.188},{"speed":1.3,"q":4.314,"r":0.218},{"speed":1.4,"q":4.646,"r":0.25},{"speed":1.5,"q":4.977,"r":0.285},{"speed":1.6,"q":5.309,"r":0.321},{"speed":1.7,"q":5.641,"r":0.359},{"speed":1.8,"q":5.973,"r":0.399},{"speed":1.9,"q":6.305,"r":0.442},{"speed":2.0,"q":6.637,"r":0.486},{"speed":2.1,"q":6.968,"r":0.532},{"speed":2.2,"q":7.3,"r":0.581},{"speed":2.3,"q":7.632,"r":0.631},{"speed":2.4,"q":7.964,"r":0.684}]}};
+const VUILWATER_TABLE = {"4":{"0.3":44,"0.35":50,"0.4":50,"0.45":50,"0.5":50,"0.55":50,"0.6":57,"0.65":57,"0.7":69,"0.75":69,"0.8":69,"0.85":69,"0.9":69,"0.95":69,"1.0":69,"1.05":84,"1.1":84,"1.15":84,"1.2":84,"1.25":84,"1.3":84,"1.4":84,"1.5":84,"1.6":84,"1.7":84,"1.8":100,"1.9":100,"2.0":100,"2.1":100,"2.2":100,"2.3":100,"2.4":100,"2.5":100,"2.6":100,"2.7":100,"2.8":100,"2.9":100,"3.0":100,"3.25":117,"3.5":117,"3.75":117,"4.0":117,"4.25":117,"4.5":117,"4.75":150,"5.0":150,"5.25":150,"5.5":150,"5.75":150,"6.0":150,"6.5":150,"7.0":150,"7.5":150,"8.0":150,"8.4":150,"8.8":190,"9.0":190,"9.5":190,"10.0":190,"11.0":190,"12.0":190,"13.0":190,"14.0":190,"15.0":190,"16.0":190,"17.0":"nvt","18.0":"nvt","19.0":"nvt","20.0":"nvt","21.0":"nvt","22.0":"nvt","23.0":"nvt","24.0":"nvt","25.0":"nvt","26.0":"nvt","27.0":"nvt","28.0":"nvt","29.0":"nvt","30.0":"nvt","31.0":"nvt","32.0":"nvt","33.0":"nvt","34.0":"nvt","35.0":"nvt","36.0":"nvt"},"5":{"0.3":44,"0.35":44,"0.4":50,"0.45":50,"0.5":50,"0.55":50,"0.6":50,"0.65":57,"0.7":57,"0.75":69,"0.8":69,"0.85":69,"0.9":69,"0.95":69,"1.0":69,"1.05":69,"1.1":69,"1.15":69,"1.2":84,"1.25":84,"1.3":84,"1.4":84,"1.5":84,"1.6":84,"1.7":84,"1.8":84,"1.9":84,"2.0":100,"2.1":100,"2.2":100,"2.3":100,"2.4":100,"2.5":100,"2.6":100,"2.7":100,"2.8":100,"2.9":100,"3.0":100,"3.25":100,"3.5":100,"3.75":117,"4.0":117,"4.25":117,"4.5":117,"4.75":117,"5.0":117,"5.25":150,"5.5":150,"5.75":150,"6.0":150,"6.5":150,"7.0":150,"7.5":150,"8.0":150,"8.4":150,"8.8":150,"9.0":150,"9.5":150,"10.0":190,"11.0":190,"12.0":190,"13.0":190,"14.0":190,"15.0":190,"16.0":190,"17.0":190,"18.0":190,"19.0":"nvt","20.0":"nvt","21.0":"nvt","22.0":"nvt","23.0":"nvt","24.0":"nvt","25.0":"nvt","26.0":"nvt","27.0":"nvt","28.0":"nvt","29.0":"nvt","30.0":"nvt","31.0":"nvt","32.0":"nvt","33.0":"nvt","34.0":"nvt","35.0":"nvt","36.0":"nvt"},"10":{"0.3":44,"0.35":44,"0.4":44,"0.45":44,"0.5":50,"0.55":50,"0.6":50,"0.65":50,"0.7":50,"0.75":57,"0.8":57,"0.85":57,"0.9":57,"0.95":57,"1.0":69,"1.05":69,"1.1":69,"1.15":69,"1.2":69,"1.25":69,"1.3":69,"1.4":69,"1.5":69,"1.6":69,"1.7":84,"1.8":84,"1.9":84,"2.0":84,"2.1":84,"2.2":84,"2.3":84,"2.4":84,"2.5":84,"2.6":84,"2.7":84,"2.8":100,"2.9":100,"3.0":100,"3.25":100,"3.5":100,"3.75":100,"4.0":100,"4.25":100,"4.5":100,"4.75":100,"5.0":117,"5.25":117,"5.5":117,"5.75":117,"6.0":117,"6.5":117,"7.0":117,"7.5":150,"8.0":150,"8.4":150,"8.8":150,"9.0":150,"9.5":150,"10.0":150,"11.0":150,"12.0":150,"13.0":150,"14.0":190,"15.0":190,"16.0":190,"17.0":190,"18.0":190,"19.0":190,"20.0":190,"21.0":190,"22.0":190,"23.0":190,"24.0":190,"25.0":"nvt","26.0":"nvt","27.0":"nvt","28.0":"nvt","29.0":"nvt","30.0":"nvt","31.0":"nvt","32.0":"nvt","33.0":"nvt","34.0":"nvt","35.0":"nvt","36.0":"nvt"},"15":{"0.3":44,"0.35":44,"0.4":44,"0.45":44,"0.5":44,"0.55":44,"0.6":50,"0.65":50,"0.7":50,"0.75":50,"0.8":50,"0.85":50,"0.9":57,"0.95":57,"1.0":57,"1.05":57,"1.1":57,"1.15":57,"1.2":57,"1.25":69,"1.3":69,"1.4":69,"1.5":69,"1.6":69,"1.7":69,"1.8":69,"1.9":69,"2.0":84,"2.1":84,"2.2":84,"2.3":84,"2.4":84,"2.5":84,"2.6":84,"2.7":84,"2.8":84,"2.9":84,"3.0":84,"3.25":84,"3.5":100,"3.75":100,"4.0":100,"4.25":100,"4.5":100,"4.75":100,"5.0":100,"5.25":100,"5.5":100,"5.75":100,"6.0":100,"6.5":117,"7.0":117,"7.5":117,"8.0":117,"8.4":117,"8.8":117,"9.0":150,"9.5":150,"10.0":150,"11.0":150,"12.0":150,"13.0":150,"14.0":150,"15.0":150,"16.0":150,"17.0":190,"18.0":190,"19.0":190,"20.0":190,"21.0":190,"22.0":190,"23.0":190,"24.0":190,"25.0":190,"26.0":190,"27.0":190,"28.0":190,"29.0":190,"30.0":190,"31.0":"nvt","32.0":"nvt","33.0":"nvt","34.0":"nvt","35.0":"nvt","36.0":"nvt"},"20":{"0.3":44,"0.35":44,"0.4":44,"0.45":44,"0.5":44,"0.55":44,"0.6":44,"0.65":44,"0.7":50,"0.75":50,"0.8":50,"0.85":50,"0.9":50,"0.95":50,"1.0":50,"1.05":57,"1.1":57,"1.15":57,"1.2":57,"1.25":57,"1.3":57,"1.4":57,"1.5":69,"1.6":69,"1.7":69,"1.8":69,"1.9":69,"2.0":69,"2.1":69,"2.2":69,"2.3":84,"2.4":84,"2.5":84,"2.6":84,"2.7":84,"2.8":84,"2.9":84,"3.0":84,"3.25":84,"3.5":84,"3.75":84,"4.0":100,"4.25":100,"4.5":100,"4.75":100,"5.0":100,"5.25":100,"5.5":100,"5.75":100,"6.0":100,"6.5":100,"7.0":117,"7.5":117,"8.0":117,"8.4":117,"8.8":117,"9.0":117,"9.5":117,"10.0":150,"11.0":150,"12.0":150,"13.0":150,"14.0":150,"15.0":150,"16.0":150,"17.0":150,"18.0":150,"19.0":150,"20.0":190,"21.0":190,"22.0":190,"23.0":190,"24.0":190,"25.0":190,"26.0":190,"27.0":190,"28.0":190,"29.0":190,"30.0":190,"31.0":190,"32.0":190,"33.0":190,"34.0":190,"35.0":190,"36.0":"nvt"}};
+
+    const _num = (v) => {
+      if (v === null || v === undefined) return NaN;
+      const s = String(v).replace(",", ".");
+      const m = s.match(/[-+]?\d*\.?\d+/);
+      return m ? parseFloat(m[0]) : NaN;
+    };
+    const _fmt = (n, d=3) => Number.isFinite(n) ? Number(n).toFixed(d) : "";
+    const _fmt0 = (n) => Number.isFinite(n) ? String(Math.round(n)) : "";
+    const _setText = (el, text) => { if (el) el.textContent = text ?? ""; };
+
+    // ---- Tapwater (TE/SE/CV/BSH) ----
+    (function setupTapwater(){
+      const body = document.getElementById("twBody");
+      if(!body) return;
+      const btnAdd = document.getElementById("twAddRow");
+      const btnDel = document.getElementById("twDeleteRow");
+      const maxSpeedEl = document.getElementById("twMaxSpeed");
+      const typeEl = document.getElementById("twType");
+
+      const getColumns = (tableData) => Object.keys(tableData).map(k=>parseFloat(k)).sort((a,b)=>a-b);
+      const lookup_qv_r = (calculated_qv, max_speed, tableData) => {
+        const cols = getColumns(tableData);
+        let candidate = null;
+        for (const col of cols){
+          const entriesAll = tableData[String(col)] || tableData[col] || [];
+          const entries = entriesAll.filter(e => e.speed <= max_speed);
+          if (!entries.length) continue;
+          if (entries[0].q > calculated_qv) continue;
+          let last = null;
+          for (const e of entries){
+            if (e.q > calculated_qv){
+              if (last) return { uitw_middelijn: col, qv: last.q, V:last.speed, R:last.r };
+              break;
+            }
+            last = e;
+          }
+          if (last){
+            candidate = { uitw_middelijn: col, qv:last.q, V:last.speed, R:last.r };
+          }
+        }
+        return candidate;
+      };
+
+      const makeRow = () => {
+        const tr = document.createElement("tr");
+        const makeInput = (ph="") => {
+          const i=document.createElement("input");
+          i.type="text"; i.inputMode="decimal"; i.placeholder=ph;
+          return i;
+        };
+        const makeRO = () => {
+          const s=document.createElement("span"); s.className="readonly"; return s;
+        };
+        const bshSel = document.createElement("select");
+        ["", "0", "0,361", "0,722"].forEach(v=>{
+          const o=document.createElement("option"); o.value=v; o.textContent=v===""?"-":v; bshSel.appendChild(o);
+        });
+
+        const sect=makeInput("001");
+        const len=makeInput("10");
+        const hk=makeInput("auto");
+        const te=makeInput("0");
+        const se=makeInput("0");
+        const cv=makeInput("0");
+        const b1=makeRO();
+        const b2=makeRO();
+        const qv=makeRO();
+        const uitw=makeRO();
+        const v=makeRO();
+        const r=makeRO();
+        const dp=makeRO();
+
+        const tds = [
+          sect,len,hk,te,se,cv,bshSel,b1,b2,qv,uitw,v,r,dp
+        ].map(x=>{
+          const td=document.createElement("td");
+          td.appendChild(x);
+          return td;
+        });
+        tds.forEach(td=>tr.appendChild(td));
+
+        const recalc = () => {
+          const maxSpeed = _num(maxSpeedEl.value);
+          const tableData = TAPWATER_TABLES[typeEl.value] || {};
+          const L = _num(len.value);
+          const TE = _num(te.value) || 0;
+          const SE = _num(se.value) || 0;
+          const CV = _num(cv.value) || 0;
+          const BSH = _num(bshSel.value) || 0;
+
+          // H in kPa: auto = L*10 (like your tooltips); keep editable if user types a number
+          const hkVal = _num(hk.value);
+          if (!Number.isFinite(hkVal) && Number.isFinite(L)) hk.value = _fmt0(L*10);
+
+          const calc1 = 0.083*Math.sqrt(Math.max(0,TE)) + 0.417*Math.pow(Math.max(0,SE), 0.125) + CV;
+          const calc2 = BSH + CV;
+          _setText(b1, _fmt(calc1,3));
+          _setText(b2, _fmt(calc2,3));
+
+          if (!Number.isFinite(maxSpeed) || maxSpeed<=0){
+            [_setText(qv,""),_setText(uitw,""),_setText(v,""),_setText(r,""),_setText(dp,"")];
+            return;
+          }
+
+          const qv_calc = Math.max(calc1, calc2);
+          const res = lookup_qv_r(qv_calc, maxSpeed, tableData);
+          if (!res){
+            _setText(qv,""); _setText(uitw,""); _setText(v,""); _setText(r,""); _setText(dp,"");
+            return;
+          }
+          _setText(qv, _fmt(res.qv,3));
+          _setText(uitw, String(res.uitw_middelijn));
+          _setText(v, _fmt(res.V,3));
+          _setText(r, _fmt(res.R,3));
+          const dpVal = (Number.isFinite(L)?L:0) * res.R * 1.2;
+          _setText(dp, Number.isFinite(dpVal)?dpVal.toFixed(1):"");
+        };
+
+        [sect,len,hk,te,se,cv,bshSel].forEach(el=>{
+          el.addEventListener("input", recalc);
+          el.addEventListener("change", recalc);
+        });
+        maxSpeedEl.addEventListener("input", ()=>body.querySelectorAll("tr").forEach(()=>{}));
+        maxSpeedEl.addEventListener("input", ()=>Array.from(body.children).forEach(rw=>rw._recalc && rw._recalc()));
+        typeEl.addEventListener("change", ()=>Array.from(body.children).forEach(rw=>rw._recalc && rw._recalc()));
+        tr._recalc = recalc;
+        recalc();
+        return tr;
+      };
+
+      const reset = () => {
+        body.innerHTML="";
+        for(let i=0;i<5;i++) body.appendChild(makeRow());
+      };
+
+      btnAdd?.addEventListener("click", ()=>body.appendChild(makeRow()));
+      btnDel?.addEventListener("click", ()=>{
+        if(body.children.length>1) body.removeChild(body.lastElementChild);
+      });
+
+      reset();
+      window.calcResetters.tapwaterCalculator = reset;
+    })();
+
+    // ---- Wachttijd Water ----
+    (function setupWachttijd(){
+      const body = document.getElementById("wwBody");
+      if(!body) return;
+      const btnAdd = document.getElementById("wwAddRow");
+      const btnDel = document.getElementById("wwDeleteRow");
+
+      const dhwOptions = [
+        ["koper zonder isolatie",1.50],["PVC-C zonder isolatie",1.20],
+        ["PB zonder isolatie",1.25],["PE-X zonder isolatie",1.60],
+        ["PPR zonder isolatie",1.25],["PE-RT/AI zonder isolatie",1.55],
+        ["PE-X/AI zonder isolatie",1.55],["PE-X + EVOH zonder isolatie",1.40],
+        ["koper in mantelbuis of weggewerkt",1.55],["PVC-C in mantelbuis of weggewerkt",1.15],
+        ["PB in mantelbuis of weggewerkt",1.25],["PE-X in mantelbuis of weggewerkt",1.55],
+        ["PPR in mantelbuis of weggewerkt",1.30],["PE-RT/AI in mantelbuis of weggewerkt",1.50],
+        ["PE-X/AI in mantelbuis of weggewerkt",1.50],["PE-X + EVOH in mantelbuis of weggewerkt",1.45],
+      ];
+
+      const makeRow = () => {
+        const tr=document.createElement("tr");
+        const makeInput=(ph="")=>{const i=document.createElement("input"); i.type="text"; i.inputMode="decimal"; i.placeholder=ph; return i;};
+        const makeRO=()=>{const s=document.createElement("span"); s.className="readonly"; return s;};
+
+        const part=makeInput("Sectie 1");
+        const toestel=makeInput("Toestel");
+        const lh=makeInput("0");
+        const ls=makeInput("0");
+        const dinw=makeInput("12");
+        const L=makeInput("10");
+        const dhw=document.createElement("select");
+        dhwOptions.forEach(([t,v])=>{const o=document.createElement("option"); o.value=v; o.textContent=t; dhw.appendChild(o);});
+        const wacht=makeRO();
+        const tot=makeRO();
+
+        [part,toestel,lh,ls,dinw,L,dhw,wacht,tot].forEach(el=>{
+          const td=document.createElement("td"); td.appendChild(el); tr.appendChild(td);
+        });
+
+        let guard=false;
+        const recalc = (src=null) => {
+          if(guard) return;
+          guard=true;
+
+          let LH=_num(lh.value);
+          let LS=_num(ls.value);
+
+          if(src===lh && Number.isFinite(LH)){
+            LS = LH/3600;
+            ls.value = _fmt(LS,4);
+            lh.value = _fmt(LH,2);
+          } else if(src===ls && Number.isFinite(LS)){
+            LH = LS*3600;
+            lh.value = _fmt(LH,2);
+            ls.value = _fmt(LS,4);
+          } else if(Number.isFinite(LH)){
+            LS = LH/3600;
+            ls.value = _fmt(LS,4);
+            lh.value = _fmt(LH,2);
+          }
+
+          const Dinw=_num(dinw.value);
+          const Len=_num(L.value);
+          const DHW=_num(dhw.value);
+
+          if(Number.isFinite(LH) && LH>0 && Number.isFinite(Dinw) && Number.isFinite(Len) && Number.isFinite(DHW)){
+            const w = ((0.25*Math.PI)*(Dinw**2)*Len*DHW)/(1000*(LH/3600));
+            const t = w + 15;
+            _setText(wacht, w.toFixed(2)+" sec");
+            _setText(tot, t.toFixed(2)+" sec");
+          } else {
+            _setText(wacht,"");
+            _setText(tot,"");
+          }
+
+          guard=false;
+        };
+
+        lh.addEventListener("input", ()=>recalc(lh));
+        ls.addEventListener("input", ()=>recalc(ls));
+        [dinw,L,dhw].forEach(el=>{el.addEventListener("input", ()=>recalc()); el.addEventListener("change", ()=>recalc());});
+        tr._recalc = recalc;
+        recalc();
+        return tr;
+      };
+
+      const reset=()=>{
+        body.innerHTML="";
+        for(let i=0;i<5;i++) body.appendChild(makeRow());
+      };
+
+      btnAdd?.addEventListener("click", ()=>body.appendChild(makeRow()));
+      btnDel?.addEventListener("click", ()=>{ if(body.children.length>1) body.removeChild(body.lastElementChild); });
+
+      reset();
+      window.calcResetters.wachttijdCalculator = reset;
+    })();
+
+    // ---- Vuilwaterafvoer ----
+    (function setupVuilwater(){
+      const body = document.getElementById("vwBody");
+      const buildingSel = document.getElementById("vwBuilding");
+      if(!body || !buildingSel) return;
+      const btnAdd=document.getElementById("vwAddRow");
+      const btnDel=document.getElementById("vwDeleteRow");
+
+      const buildingTypes = [
+        ["Woning",0.5],["School",0.7],["Kantoor",0.7],["Hotel",0.7],["Restaurant",0.7],["Ziekenhuis",0.7],
+        ["Laboratorium",1.2],["Industrie langdurige lozing",1.2],["Bedrijfskeuken",1.4]
+      ];
+      const leidingTypes = [
+        ["Aansluitleiding",1],["Verzamelleiding",1],["Standleiding",1.4],["Grondleiding",1],["Ontspanningsleiding",1.4],["Vereveningsleiding",1.4]
+      ];
+      buildingTypes.forEach(([n,c])=>{const o=document.createElement("option"); o.value=c; o.textContent=`${n} (${String(c).replace(".",",")})`; buildingSel.appendChild(o);});
+
+      const lookupDiameter = (afschot, flow) => {
+        // mimic lookup_diameter_in_table with approximate match
+        let row = Math.floor(afschot);
+        const rows = Object.keys(VUILWATER_TABLE).map(k=>parseInt(k,10)).sort((a,b)=>a-b);
+        if(!VUILWATER_TABLE[row]){
+          row = Math.max(...rows.filter(k=>k<=row), rows[0]);
+        }
+        const flowDict = VUILWATER_TABLE[row];
+        const cols = Object.keys(flowDict).map(k=>parseFloat(k)).sort((a,b)=>a-b);
+        let best=null;
+        for(const ck of cols){
+          if(ck<=flow) best=ck; else break;
+        }
+        return best!==null ? flowDict[best] : null;
+      };
+
+      const makeRow=()=>{
+        const tr=document.createElement("tr");
+        const makeInput=(ph="")=>{const i=document.createElement("input"); i.type="text"; i.inputMode="decimal"; i.placeholder=ph; return i;};
+        const makeRO=()=>{const s=document.createElement("span"); s.className="readonly"; return s;};
+
+        const sect=makeInput("001");
+        const leidingSel=document.createElement("select");
+        leidingTypes.forEach(([t,v])=>{const o=document.createElement("option"); o.value=v; o.textContent=t; leidingSel.appendChild(o);});
+        const som=makeInput("0");
+        const formule=makeRO();
+        const grootste=makeInput("0");
+        const samengesteld=makeRO();
+        const afschot=makeInput("4");
+        const bochtSel=document.createElement("select");
+        [["1.0",1.0],["0.85",0.85]].forEach(([t,v])=>{const o=document.createElement("option"); o.value=v; o.textContent=t; bochtSel.appendChild(o);});
+        const materiaal=makeRO(); _setText(materiaal,"PVC");
+        const dinw=makeRO();
+        const uitw=makeRO();
+
+        [sect,leidingSel,som,formule,grootste,samengesteld,afschot,bochtSel,materiaal,dinw,uitw].forEach(el=>{
+          const td=document.createElement("td"); td.appendChild(el); tr.appendChild(td);
+        });
+
+        const recalc=()=>{
+          const bcoef=_num(buildingSel.value);
+          const sf=_num(som.value);
+          const fval = Number.isFinite(sf) ? bcoef*Math.sqrt(Math.max(0,sf)) : NaN;
+          _setText(formule, Number.isFinite(fval)?_fmt(fval,3):"");
+          const mf=_num(grootste.value);
+          const vals=[fval,mf].filter(Number.isFinite);
+          const sv=vals.length?Math.max(...vals):NaN;
+          _setText(samengesteld, Number.isFinite(sv)?_fmt(sv,3):"");
+          const av=_num(afschot.value);
+          const bf=_num(bochtSel.value);
+          const lf=_num(leidingSel.value);
+          if(Number.isFinite(sv) && Number.isFinite(av)){
+            let diam=lookupDiameter(av, sv*lf); // inwendig ontwerp
+            if(diam){
+              diam = diam*bf;
+              _setText(dinw, String(Math.round(diam)));
+              const mapping={44:50,50:56,57:63,69:75,84:90,100:110,117:125,150:160,190:200};
+              let out=mapping[190];
+              for(const k of Object.keys(mapping).map(x=>parseFloat(x)).sort((a,b)=>a-b)){
+                if(diam<=k){ out=mapping[k]; break; }
+              }
+              _setText(uitw, String(out));
+            } else { _setText(dinw,""); _setText(uitw,""); }
+          } else { _setText(dinw,""); _setText(uitw,""); }
+        };
+
+        [buildingSel,sect,leidingSel,som,grootste,afschot,bochtSel].forEach(el=>{
+          el.addEventListener("input", recalc);
+          el.addEventListener("change", recalc);
+        });
+        tr._recalc=recalc;
+        recalc();
+        return tr;
+      };
+
+      const reset=()=>{
+        body.innerHTML="";
+        for(let i=0;i<5;i++) body.appendChild(makeRow());
+      };
+      btnAdd?.addEventListener("click", ()=>body.appendChild(makeRow()));
+      btnDel?.addEventListener("click", ()=>{ if(body.children.length>1) body.removeChild(body.lastElementChild); });
+      buildingSel.addEventListener("change", ()=>Array.from(body.children).forEach(r=>r._recalc && r._recalc()));
+      reset();
+      window.calcResetters.vuilwaterCalculator = reset;
+    })();
+
+    // ---- Koelleiding ----
+    (function setupKoelleiding(){
+      const body=document.getElementById("klBody");
+      if(!body) return;
+      const btnAdd=document.getElementById("klAddRow");
+      const btnDel=document.getElementById("klDeleteRow");
+
+      const leidingTypes=["Precisiebuis","Draadbuis","Vlambuis"];
+
+      const diameterFromQv = (type, qv) => {
+        if(!Number.isFinite(qv)) return "";
+        const t=String(type||"").trim().toLowerCase();
+        const pick=(thresholds)=>{
+          let label="";
+          for(const [thr,lab] of thresholds) if(qv>=thr) label=lab;
+          return label;
+        };
+        if(t==="precisiebuis"){
+          return pick([[0.0001,"12"],[0.021,"15"],[0.056,"22"],[0.161,"28"],[0.281,"35"],[0.511,"Qv Te Groot"]]);
+        }
+        if(t==="draadbuis"){
+          return pick([[0.0001,"1/2''"],[0.081,"3/4''"],[0.181,"1''"],[0.312,"1 1/4''"],[0.601,"1 1/2''"],[0.859,"2''"],[1.451,"Qv Te Groot"]]);
+        }
+        if(t==="vlambuis"){
+          if(qv<0.655) return "Qv Te Klein";
+          return pick([[0.655,"DN40"],[0.970,"DN50"],[1.643,"DN65"],[3.226,"DN80"],[4.660,"DN100"],[8.140,"DN125"],[12.955,"DN150"],[17.308,"DN200"],[40.467,"DN250"],[80.345,"DN300"],[127.0,"DN350"],[190.0,"DN400"],[240.0,"Qv Te Groot"]]);
+        }
+        return "";
+      };
+
+      const vmaxFromType = (type, diameter) => {
+        const t=String(type||"").toLowerCase();
+        if(!diameter || diameter.includes("Qv")) return null;
+        if(t==="precisiebuis") return 1.80;
+        if(t==="draadbuis") return 2.00;
+        if(t==="vlambuis"){
+          // approximate based on DN ranges from widget (we'll mirror common rule)
+          if(diameter==="DN40"||diameter==="DN50"||diameter==="DN65") return 2.50;
+          if(diameter==="DN80"||diameter==="DN100") return 3.00;
+          return 3.50;
+        }
+        return null;
+      };
+
+      const rAndBounds = (type, diameter) => {
+        const t=String(type||"").toLowerCase();
+        if(!diameter || diameter.includes("Qv")) return [null,null,null];
+        // values from widget (simplified but consistent with typical output columns)
+        if(t==="precisiebuis"){
+          const map={"12":[250,0.000,0.021],"15":[200,0.021,0.056],"22":[150,0.056,0.161],"28":[120,0.161,0.281],"35":[100,0.281,0.511]};
+          return map[diameter]||[null,null,null];
+        }
+        if(t==="draadbuis"){
+          const map={"1/2''":[250,0.000,0.081],"3/4''":[200,0.081,0.181],"1''":[150,0.181,0.312],"1 1/4''":[120,0.312,0.601],"1 1/2''":[100,0.601,0.859],"2''":[80,0.859,1.451]};
+          return map[diameter]||[null,null,null];
+        }
+        if(t==="vlambuis"){
+          const map={"DN40":[120,0.655,0.970],"DN50":[110,0.970,1.643],"DN65":[100,1.643,3.226],"DN80":[90,3.226,4.660],"DN100":[80,4.660,8.140],"DN125":[70,8.140,12.955],"DN150":[60,12.955,17.308],"DN200":[50,17.308,40.467],"DN250":[40,40.467,80.345],"DN300":[35,80.345,127.0],"DN350":[30,127.0,190.0],"DN400":[25,190.0,240.0]};
+          return map[diameter]||[null,null,null];
+        }
+        return [null,null,null];
+      };
+
+      const makeRow=()=>{
+        const tr=document.createElement("tr");
+        const makeInput=(ph="")=>{const i=document.createElement("input"); i.type="text"; i.inputMode="decimal"; i.placeholder=ph; return i;};
+        const makeRO=()=>{const s=document.createElement("span"); s.className="readonly"; return s;};
+
+        const P=makeInput("5000");
+        const Ta=makeInput("7");
+        const Tr=makeInput("12");
+        const Qv=makeRO();
+        const typeSel=document.createElement("select");
+        leidingTypes.forEach(t=>{const o=document.createElement("option"); o.value=t; o.textContent=t; typeSel.appendChild(o);});
+        const dia=makeRO();
+        const vmax=makeRO();
+        const R=makeRO();
+        const qmin=makeRO();
+        const qmax=makeRO();
+
+        [P,Ta,Tr,Qv,typeSel,dia,vmax,R,qmin,qmax].forEach(el=>{
+          const td=document.createElement("td"); td.appendChild(el); tr.appendChild(td);
+        });
+
+        const recalc=()=>{
+          const p=_num(P.value);
+          const ta=_num(Ta.value);
+          const trt=_num(Tr.value);
+          let qv=null;
+          if(Number.isFinite(p) && Number.isFinite(ta) && Number.isFinite(trt)){
+            const dT=trt-ta;
+            if(dT>0) qv = p/(4200*dT);
+          }
+          _setText(Qv, qv!==null? _fmt(qv,3):"");
+          const diameter = qv!==null ? diameterFromQv(typeSel.value, qv) : "";
+          _setText(dia, diameter||"");
+          if(diameter && !diameter.includes("Qv")){
+            const vm=vmaxFromType(typeSel.value, diameter);
+            _setText(vmax, vm!==null?vm.toFixed(2):"");
+            const [rval, qmn, qmx] = rAndBounds(typeSel.value, diameter);
+            _setText(R, rval!==null?String(parseInt(rval,10)):"");
+            _setText(qmin, qmn!==null?_fmt(qmn,3):"");
+            _setText(qmax, qmx!==null?_fmt(qmx,3):"");
+          } else {
+            _setText(vmax,""); _setText(R,""); _setText(qmin,""); _setText(qmax,"");
+          }
+        };
+
+        [P,Ta,Tr,typeSel].forEach(el=>{el.addEventListener("input", recalc); el.addEventListener("change", recalc);});
+        tr._recalc=recalc; recalc();
+        return tr;
+      };
+
+      const reset=()=>{
+        body.innerHTML="";
+        for(let i=0;i<4;i++) body.appendChild(makeRow());
+      };
+      btnAdd?.addEventListener("click", ()=>body.appendChild(makeRow()));
+      btnDel?.addEventListener("click", ()=>{ if(body.children.length>1) body.removeChild(body.lastElementChild); });
+      reset();
+      window.calcResetters.koelleidingCalculator = reset;
+    })();
+
+    // ---- Expansievat CV ----
+    (function setupExpansie(){
+      const ids=["exCi","exT1","exT2","exPn","exPs"];
+      const els=Object.fromEntries(ids.map(id=>[id, document.getElementById(id)]));
+      if(!els.exCi) return;
+
+      const table={30:0.43,35:0.60,40:0.75,45:1.04,50:1.18,55:1.53,60:1.68,65:2.00,70:2.25,75:2.60,80:2.89,85:3.10,90:3.58,95:3.93,100:4.34,105:4.34,110:5.16,115:5.37,120:5.92};
+
+      const out={
+        avg:document.getElementById("exAvg"),
+        ce:document.getElementById("exCe"),
+        vep:document.getElementById("exVep"),
+        rt:document.getElementById("exRt"),
+        vn:document.getElementById("exVn"),
+        pg:document.getElementById("exPg"),
+        pf:document.getElementById("exPf"),
+        fp:document.getElementById("exFp"),
+        vtt:document.getElementById("exVtt"),
+        a1:document.getElementById("exA1"),
+        a2:document.getElementById("exA2"),
+      };
+
+      const calc=()=>{
+        const ci=_num(els.exCi.value);
+        const t1=_num(els.exT1.value);
+        const t2=_num(els.exT2.value);
+        const pn=_num(els.exPn.value);
+        const ps=_num(els.exPs.value);
+
+        let avg=null;
+        if(Number.isFinite(t1) && Number.isFinite(t2)) avg=(t1+t2)/2;
+        _setText(out.avg, avg!==null?avg.toFixed(1)+" °C":"");
+
+        let ce=null;
+        if(avg!==null){
+          const keys=Object.keys(table).map(k=>parseFloat(k)).filter(k=>k<=avg);
+          if(keys.length){
+            const k=Math.max(...keys);
+            ce=table[k];
+          }
+        }
+        _setText(out.ce, ce!==null?ce.toFixed(2):"");
+
+        let vep=null;
+        if(Number.isFinite(ci) && ce!==null) vep = (ci/100)*ce;
+        _setText(out.vep, vep!==null?vep.toFixed(2):"");
+
+        let rt=null;
+        if(Number.isFinite(ci)) rt = ci/100;
+        _setText(out.rt, rt!==null?rt.toFixed(2):"");
+
+        let vn=null;
+        if(vep!==null && rt!==null) vn = vep + rt;
+        _setText(out.vn, vn!==null?vn.toFixed(2):"");
+
+        let pg=null;
+        if(Number.isFinite(pn)){
+          pg = pn/10 + 0.3;
+          pg = Math.max(pg, 0.5);
+        }
+        _setText(out.pg, pg!==null?pg.toFixed(2):"");
+
+        let pf=null;
+        if(Number.isFinite(ps)) pf = ps - 0.5;
+        _setText(out.pf, pf!==null?pf.toFixed(2):"");
+
+        let fp=null;
+        if(pg!==null && pf!==null){
+          fp = ((pf+1)-(pg+1))/(pf+1);
+        }
+        _setText(out.fp, fp!==null?fp.toFixed(3):"");
+
+        let vtt=null;
+        if(vn!==null && fp){
+          vtt = vn/fp * 1.18;
+        }
+        _setText(out.vtt, vtt!==null?vtt.toFixed(2):"");
+
+        // A1
+        let a1=null;
+        if(pg!==null){
+          if(pg<0.6) a1=0.5;
+          else if(pg<1.1) a1=1;
+          else if(pg<1.6) a1=1.5;
+          else if(pg<2.1) a1=2;
+          else a1=2.5;
+        }
+        _setText(out.a1, a1!==null?String(a1):"");
+
+        // A2 thresholds
+        let a2=null;
+        if(vtt!==null){
+          const thresholds=[
+            [0.1,0],[2.4,2],[5.1,4],[9.1,8],[14.1,12],[20.1,18],[28.6,25],[40.1,35],[60.1,50],
+            [90.1,80],[120.1,110],[155.1,140],[230.1,200],[345.1,300],[500.1,425],[685.1,600],[890.1,800]
+          ];
+          a2=1000;
+          for(const [lim,val] of thresholds){ if(vtt<=lim){ a2=val; break; } }
+        }
+        _setText(out.a2, a2!==null?String(a2):"");
+      };
+
+      ids.forEach(id=>els[id].addEventListener("input", calc));
+      calc();
+      window.calcResetters.expansieCalculator = ()=>{ ids.forEach(id=>els[id].value=""); calc(); };
+    })();
+
+    // ---- Buffervat koeling ----
+    (function setupBuffervat(){
+      const el={
+        kw:document.getElementById("bfKw"),
+        taps:document.getElementById("bfTaps"),
+        vsys:document.getElementById("bfVsys"),
+        vunit:document.getElementById("bfVunit"),
+        c:document.getElementById("bfC"),
+        out:document.getElementById("bfOut"),
+      };
+      if(!el.kw) return;
+      const warmte={ "Water":4.2, "10% Glycol":3.92, "20% Glycol":3.87, "30% Glycol":3.59 };
+
+      const calc=()=>{
+        const kW=_num(el.kw.value);
+        const taps=_num(el.taps.value);
+        const Vsys=_num(el.vsys.value);
+        const Vunit=_num(el.vunit.value);
+        const c=warmte[el.c.value];
+        if([kW,taps,Vsys,Vunit,c].every(Number.isFinite) && taps!==0){
+          const res = (((3600/taps)*0.5*kW)/(2*2*c)) - (Vsys+Vunit);
+          _setText(el.out, Number.isFinite(res)? Math.round(res)+" L":"-");
+        } else {
+          _setText(el.out,"");
+        }
+      };
+      ["input","change"].forEach(evt=>{
+        el.kw.addEventListener(evt, calc);
+        el.taps.addEventListener(evt, calc);
+        el.vsys.addEventListener(evt, calc);
+        el.vunit.addEventListener(evt, calc);
+        el.c.addEventListener(evt, calc);
+      });
+      calc();
+      window.calcResetters.buffervatCalculator = ()=>{ ["kw","taps","vsys","vunit"].forEach(k=>el[k].value=""); calc(); };
+    })();
+
+    // ---- Deur sleuf ----
+    (function setupDeur(){
+      const qh=document.getElementById("drQh");
+      if(!qh) return;
+      const v=document.getElementById("drV");
+      const len=document.getElementById("drLen");
+      const out={
+        qs:document.getElementById("drQs"),
+        a:document.getElementById("drA"),
+        acm:document.getElementById("drAcm"),
+        lcm:document.getElementById("drLcm"),
+        minmm:document.getElementById("drMinMm"),
+        mincm:document.getElementById("drMinCm"),
+      };
+      const calc=()=>{
+        const Qh=_num(qh.value);
+        const Qs=Number.isFinite(Qh)?Qh/3600:null;
+        _setText(out.qs, Qs!==null?Qs.toFixed(4):"");
+        const V=_num(v.value);
+        if(Qs && Number.isFinite(V) && V>0){
+          const A=Qs/V;
+          _setText(out.a, A.toFixed(4));
+          _setText(out.acm, String(Math.round(A*1e4)));
+        } else { _setText(out.a,""); _setText(out.acm,""); }
+        const Lmm=_num(len.value);
+        _setText(out.lcm, Number.isFinite(Lmm)?String(Math.round(Lmm/10)):"");
+        const A=_num(out.a.textContent);
+        if(Number.isFinite(A) && Number.isFinite(Lmm) && Lmm>0){
+          const minH = A/(Lmm/1000)*1000; // mm
+          _setText(out.minmm, minH.toFixed(2));
+          _setText(out.mincm, (minH/10).toFixed(1));
+        } else { _setText(out.minmm,""); _setText(out.mincm,""); }
+      };
+      [qh,v,len].forEach(el=>el.addEventListener("input", calc));
+      calc();
+      window.calcResetters.deurCalculator = ()=>{ qh.value=""; v.value=""; len.value=""; calc(); };
+    })();
+
   </script>
 </body>
 </html>
