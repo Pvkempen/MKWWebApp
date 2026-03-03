@@ -1936,7 +1936,11 @@
   <footer></footer>
 
   <script>
-    const APP_VERSION = "v1.0.2";
+    // ===== MKW Tools Webapp Version =====
+    // Change this value when you publish a new version:
+    const APP_VERSION = "v1.0.3";
+    (function(){ const b=document.querySelector('.version-badge'); if(b) b.textContent = APP_VERSION; })();
+
     (function(){ const b=document.querySelector('.version-badge'); if(b) b.textContent = APP_VERSION; })();
 
     window.calcResetters = window.calcResetters || {};
