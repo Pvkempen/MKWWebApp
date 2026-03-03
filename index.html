@@ -25,6 +25,7 @@
       --radius-sm: 8px;
     }
     * { box-sizing: border-box; }
+    html, body { width:100%; max-width:100%; overflow-x:hidden; }
     body {
       margin: 0;
       min-height: 100vh;
@@ -33,7 +34,7 @@
                   linear-gradient(135deg, #0f172a 0%, #0b1021 50%, #0b1327 100%);
       font-family: "Space Grotesk", "Segoe UI", sans-serif;
       color: #f8fafc;
-      padding: 24px;
+      padding: 18px;
       -webkit-font-smoothing: antialiased;
     }
     .page {
@@ -48,55 +49,10 @@
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       box-shadow: var(--shadow);
-      padding: 20px;
+      padding: 18px;
       backdrop-filter: blur(8px);
     }
-    header.hero {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
-      align-items: center;
-    }
-    .hero-top {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .logo {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, rgba(56, 189, 248, 0.4), rgba(167, 139, 250, 0.4));
-      display: grid;
-      place-items: center;
-      font-weight: 700;
-      color: #0b1327;
-      box-shadow: 0 12px 30px rgba(56, 189, 248, 0.35);
-    }
-    h1 {
-      margin: 0;
-      font-size: 28px;
-      letter-spacing: -0.5px;
-    }
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: rgba(56, 189, 248, 0.08);
-      color: var(--primary);
-      font-weight: 600;
-      letter-spacing: 0.3px;
-      border: 1px solid rgba(56, 189, 248, 0.2);
-    }
+    /* Home header removed per request */
     .menu-card h2 {
       margin: 0 0 8px;
       font-size: 18px;
@@ -110,9 +66,10 @@
     }
     .menu-btn {
       width: 100%;
-      display: flex;
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: 1fr auto;
       align-items: center;
+      gap: 10px;
       padding: 14px 16px;
       border-radius: var(--radius-md);
       border: 1px solid var(--border);
@@ -122,10 +79,24 @@
       letter-spacing: 0.3px;
       cursor: pointer;
       box-shadow: 0 12px 24px rgba(56, 189, 248, 0.18);
-      transition: transform 0.18s ease, border 0.18s ease;
+      transition: transform 0.18s ease, border 0.18s ease, opacity 0.18s ease;
+      text-align: left;
     }
     .menu-btn:hover { transform: translateY(-1px); border-color: rgba(56, 189, 248, 0.5); }
-    .menu-btn .tags { display: flex; gap: 8px; }
+    .menu-btn .subtitle {
+      font-weight: 600;
+      color: rgba(226, 232, 240, 0.8);
+      letter-spacing: 0;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+    .menu-btn .right {
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+    }
     .tag {
       padding: 6px 10px;
       border-radius: var(--radius-sm);
@@ -134,6 +105,7 @@
       font-size: 12px;
       color: #cbd5e1;
       font-weight: 600;
+      white-space: nowrap;
     }
     .search-area {
       display: grid;
@@ -141,10 +113,7 @@
       gap: 10px;
       margin-top: 12px;
     }
-    .search {
-      position: relative;
-      width: 100%;
-    }
+    .search { position: relative; width: 100%; }
     .search input {
       width: 100%;
       padding: 13px 14px 13px 42px;
@@ -168,23 +137,7 @@
       transform: translateY(-50%);
       opacity: 0.6;
     }
-    .filter-chips {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .filter-chips .chip {
-      cursor: pointer;
-      border: 1px solid var(--border);
-      background: rgba(255, 255, 255, 0.05);
-      transition: all 0.18s ease;
-    }
-    .filter-chips .chip.active {
-      border-color: rgba(56, 189, 248, 0.6);
-      background: rgba(56, 189, 248, 0.15);
-      color: #e0f2fe;
-      box-shadow: 0 10px 25px rgba(56, 189, 248, 0.25);
-    }
+    .filter-chips { display:flex; gap:8px; flex-wrap:wrap; }
     .chip {
       display: inline-flex;
       align-items: center;
@@ -195,7 +148,17 @@
       background: rgba(255, 255, 255, 0.05);
       color: #e5e7eb;
       font-weight: 600;
+      cursor:pointer;
+      transition: all 0.18s ease;
+      user-select:none;
     }
+    .chip.active {
+      border-color: rgba(56, 189, 248, 0.6);
+      background: rgba(56, 189, 248, 0.15);
+      color: #e0f2fe;
+      box-shadow: 0 10px 25px rgba(56, 189, 248, 0.25);
+    }
+
     .btn {
       display: inline-flex;
       align-items: center;
@@ -218,29 +181,44 @@
     }
     .btn:active { transform: translateY(1px); }
     .hidden { display: none !important; }
-    .section-title {
-      margin: 0;
-      font-size: 16px;
-      letter-spacing: -0.2px;
+
+    /* Sticky top bar on calc pages */
+    .calc-topbar {
+      position: sticky;
+      top: 10px;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(11, 18, 36, 0.72);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.30);
     }
+    .calc-topbar h2 { margin:0; font-size: 16px; letter-spacing: -0.2px; }
+    .calc-topbar .sub { margin:2px 0 0; color: rgba(148,163,184,0.95); font-size: 12px; font-weight: 600; }
+    .calc-topbar .titlewrap { text-align: center; }
+    .calc-topbar .spacer { width: 44px; height: 1px; } /* keeps title centered */
+
     .details {
-      margin-top: 6px;
+      margin-top: 12px;
       border-radius: var(--radius-md);
       border: 1px solid rgba(255, 255, 255, 0.05);
       background: rgba(255, 255, 255, 0.02);
-      padding: 18px;
+      padding: 16px;
       display: grid;
       gap: 12px;
     }
     .calc-grid {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 16px;
+      gap: 14px;
     }
     @media (min-width: 1100px) {
-      .calc-grid {
-        grid-template-columns: repeat(2, minmax(320px, 1fr));
-      }
+      .calc-grid { grid-template-columns: repeat(2, minmax(320px, 1fr)); }
     }
     .input-group {
       display: flex;
@@ -251,12 +229,8 @@
       border: 1px solid var(--border);
       background: rgba(255, 255, 255, 0.03);
     }
-    .input-group label {
-      font-weight: 600;
-      color: #e5e7eb;
-      font-size: 14px;
-    }
-    .input-group input {
+    .input-group label { font-weight: 700; color: #e5e7eb; font-size: 14px; }
+    .input-group input, .input-group select {
       padding: 12px;
       border-radius: var(--radius-sm);
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -265,61 +239,26 @@
       font-size: 15px;
       transition: border 0.2s ease, box-shadow 0.2s ease;
     }
-    .input-group input:focus {
+    .input-group input:focus, .input-group select:focus {
       outline: none;
       border-color: rgba(56, 189, 248, 0.5);
       box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.08);
     }
-    .input-group .helper {
-      color: #94a3b8;
-      font-size: 12px;
-    }
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(52, 211, 153, 0.14);
-      color: #bbf7d0;
-      border: 1px solid rgba(52, 211, 153, 0.4);
-      padding: 6px 10px;
-      border-radius: var(--radius-sm);
-      font-weight: 700;
-      font-size: 12px;
-      text-transform: lowercase;
-    }
-    .computed {
-      border-color: rgba(52, 211, 153, 0.8) !important;
-      background: rgba(52, 211, 153, 0.08) !important;
-    }
-    .formula-block {
-      display: grid;
-      gap: 6px;
-      color: #e2e8f0;
-      font-size: 14px;
-      line-height: 1.4;
-    }
-    .formula-block strong {
-      color: #c7d2fe;
-    }
-    .note {
-      margin: 0;
-      color: #94a3b8;
-      font-size: 13px;
-    }
-    .desktop-only { display: block; }
-    .mobile-only { display: none; }
-    .menu-variant {
-      display: flex;
-      flex-direction: column;
+    .helper { color: #94a3b8; font-size: 12px; margin:0; }
+    .result {
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(52, 211, 153, 0.35);
+      background: rgba(52, 211, 153, 0.08);
+      padding: 12px;
+      display:flex;
+      justify-content: space-between;
       gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
     }
-    .compact-menu .menu-btn {
-      padding: 12px 14px;
-      font-size: 14px;
-      box-shadow: none;
-      background: linear-gradient(150deg, rgba(56, 189, 248, 0.14), rgba(11, 18, 36, 0.9));
-    }
-    .compact-menu .tag { display: none; }
+    .result strong { color: #bbf7d0; }
+    .mono { font-variant-numeric: tabular-nums; }
+
     .table-scroll {
       width: 100%;
       overflow-x: auto;
@@ -328,35 +267,7 @@
       border: 1px solid var(--border);
       background: rgba(255, 255, 255, 0.02);
     }
-    .form-table-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    table.input-table {
-      width: 100%;
-      min-width: 440px;
-      border-collapse: collapse;
-      color: #e5e7eb;
-    }
-    table.input-table th,
-    table.input-table td {
-      padding: 8px 10px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      text-align: left;
-    }
-    table.input-table th { font-size: 13px; color: #cbd5e1; font-weight: 600; }
-    table.input-table td .helper { margin: 0; color: #94a3b8; font-size: 12px; }
-    table.input-table input {
-      width: 100%;
-      padding: 10px;
-      border-radius: var(--radius-sm);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(0, 0, 0, 0.25);
-      color: #e5e7eb;
-      font-size: 14px;
-    }
-    table.input-table input:focus {
-      outline: none;
-      border-color: rgba(56, 189, 248, 0.5);
-      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.08);
-    }
+
     table.cv-table {
       width: 100%;
       min-width: 960px;
@@ -364,8 +275,7 @@
       color: #e5e7eb;
       font-size: 13px;
     }
-    table.cv-table th,
-    table.cv-table td {
+    table.cv-table th, table.cv-table td {
       padding: 10px 8px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.06);
       text-align: left;
@@ -373,11 +283,9 @@
     table.cv-table th {
       font-size: 12px;
       color: #cbd5e1;
-      letter-spacing: 0;
       white-space: nowrap;
     }
-    table.cv-table input,
-    table.cv-table select {
+    table.cv-table input, table.cv-table select {
       width: 100%;
       padding: 8px 10px;
       border-radius: var(--radius-sm);
@@ -386,62 +294,28 @@
       color: #e5e7eb;
       font-size: 13px;
     }
-    table.cv-table input:focus,
-    table.cv-table select:focus {
-      outline: none;
-      border-color: rgba(56, 189, 248, 0.6);
-      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.08);
-    }
-    table.cv-table .readonly {
-      color: #a5b4fc;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-    .table-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      margin-top: 10px;
-    }
+    table.cv-table .readonly { color: #a5b4fc; font-weight: 700; white-space: nowrap; }
+
+    .table-actions { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; margin-top: 10px; }
+
+    footer { color: var(--muted); text-align:center; font-size: 13px; margin: 10px 0 4px; }
+
     @media (max-width: 900px) {
-      .desktop-only { display: none; }
-      .mobile-only { display: block; }
-      .search-area { margin-top: 4px; }
-      .menu-grid { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+      body { padding: 14px; }
       table.cv-table { min-width: 760px; font-size: 12px; }
       table.cv-table th, table.cv-table td { padding: 8px 6px; }
-      table.input-table { min-width: 360px; font-size: 13px; }
-    }
-    footer {
-      color: var(--muted);
-      text-align: center;
-      font-size: 13px;
-      margin-top: 8px;
-    }
-    @media (max-width: 720px) {
-      body { padding: 16px; }
-      h1 { font-size: 24px; }
+      .calc-topbar { top: 8px; }
+      .calc-topbar h2 { font-size: 15px; }
     }
   </style>
 </head>
 <body>
   <main class="page">
-    <header class="card hero">
-      <div class="hero-top">
-        <div class="brand">
-          <div class="logo">M</div>
-          <div>
-            <div class="pill">MKW Tools</div>
-            <h1>Kies een berekening</h1>
-          </div>
-        </div>
-      </div>
-    </header>
-
+    <!-- HOME -->
     <section id="homeScreen" class="card menu-card">
       <h2>Berekeningen</h2>
-      <p style="margin:0;color:var(--muted);">Klik op een berekening om te starten. Werkt op desktop en mobiel.</p>
+      <p style="margin:0;color:var(--muted);">Zoek of filter en start direct. (Nieuwe tools toegevoegd uit je berekeningen-zip.)</p>
+
       <div class="search-area">
         <div class="search">
           <span class="icon">&#128269;</span>
@@ -450,180 +324,98 @@
         <div class="filter-chips" id="categoryChips">
           <span class="chip active" data-category="all">Alle</span>
           <span class="chip" data-category="hvac">HVAC</span>
-          <span class="chip" data-category="elektra">Elektra</span>
+          <span class="chip" data-category="water">Water</span>
+          <span class="chip" data-category="util">Tools</span>
           <span class="chip" data-category="planning">Planning</span>
         </div>
       </div>
-      <div class="menu-variant desktop-only">
-        <div class="menu-grid">
-          <button class="menu-btn" type="button" data-open-calc="duct" data-category="hvac" data-search="luchtkanaal ventilatie hvac kanaal rond rechthoek">
-            <span>Luchtkanaal Calculator</span>
-            <span class="tags">
-              <span class="tag">HVAC</span>
-              <span class="tag">Ventilatie</span>
-            </span>
-          </button>
-          <button class="menu-btn" type="button" data-open-calc="cvdiameter" data-category="hvac" data-search="cv diameter leiding pa kW delta t water">
-            <span>CV Diameter Berekening</span>
-            <span class="tags">
-              <span class="tag">HVAC</span>
-              <span class="tag">Leidingen</span>
-            </span>
-          </button>
-          <button class="menu-btn" type="button" data-open-calc="elektra" data-category="elektra" data-search="elektra vermogen kabel belasting">
-            <span>Vermogenscheck (binnenkort)</span>
-            <span class="tag">Elektra</span>
-          </button>
-          <button class="menu-btn" type="button" data-open-calc="planning" data-category="planning" data-search="planning checklist project">
-            <span>Project checklist (binnenkort)</span>
-            <span class="tag">Planning</span>
-          </button>
-        </div>
-      </div>
-      <div class="menu-variant mobile-only">
-        <div class="menu-grid compact-menu">
-          <button class="menu-btn" type="button" data-open-calc="duct" data-category="hvac" data-search="lucht kanaal rond rechthoek hvac">
-            <span>Kanaal (lucht)</span>
-          </button>
-          <button class="menu-btn" type="button" data-open-calc="cvdiameter" data-category="hvac" data-search="cv diameter leiding pa kw">
-            <span>CV diameter</span>
-          </button>
-          <button class="menu-btn" type="button" data-open-calc="elektra" data-category="elektra" data-search="elektra">
-            <span>Vermogen (binnenkort)</span>
-          </button>
-          <button class="menu-btn" type="button" data-open-calc="planning" data-category="planning" data-search="planning checklist">
-            <span>Checklist (binnenkort)</span>
-          </button>
-        </div>
+
+      <div class="menu-grid" id="menuGrid">
+        <!-- Filled by JS for better oversight -->
       </div>
     </section>
 
-    <section id="calcScreen" class="card hidden">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-        <div>
-          <p class="chip" id="calcSubtitle">Berekening</p>
-          <h2 id="calcTitle" style="margin:6px 0 0;">Luchtkanaal Calculator</h2>
+    <!-- CALC -->
+    <section id="calcScreen" class="hidden">
+      <div class="calc-topbar">
+        <button id="backBtn" class="btn secondary" type="button">&#8592; Terug</button>
+        <div class="titlewrap">
+          <h2 id="calcTitle">Berekening</h2>
+          <div class="sub" id="calcSubtitle">Omschrijving</div>
         </div>
-        <button id="backBtn" class="btn secondary" type="button">Terug naar overzicht</button>
+        <div class="spacer" aria-hidden="true"></div>
       </div>
 
-      <div id="ductCalculator" class="details calc-panel" style="margin-top:12px;">
-        <div class="desktop-only" style="display:grid;gap:10px;">
-          <div class="formula-block">
-            <strong>Ronde kanalen</strong>
-            <span>Q (m3/h) = v (m/s) * [pi * (d / 2)^2] * 3600</span>
-            <span>v (m/s) = (Q / 3600) / [pi * (d / 2)^2]</span>
-            <span>d (mm) = 1000 * [2 * sqrt((Q / 3600) / (pi * v))]</span>
-          </div>
-          <div class="formula-block">
-            <strong>Rechthoekige kanalen</strong>
-            <span>Q (m3/h) = v (m/s) * [(w / 1000) * (h / 1000)] * 3600</span>
-            <span>v (m/s) = (Q / 3600) / [(w / 1000) * (h / 1000)]</span>
-            <span>w (mm) = [(Q / (3600 * v)) * 1e6] / h   |   h (mm) = [(Q / (3600 * v)) * 1e6] / w</span>
-          </div>
-        </div>
-        <p class="note mobile-only">Formules en extra uitleg zijn zichtbaar op desktop.</p>
+      <!-- EXISTING: Duct -->
+      <div id="ductCalculator" class="card details calc-panel hidden">
         <div class="calc-grid">
           <div class="card" style="padding:14px;">
-            <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-              <span>Rond kanaal</span>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+              <div style="font-weight:800;">Rond kanaal</div>
+              <span class="tag">Q / v / d</span>
             </div>
-            <div class="form-table-scroll">
-              <table class="input-table">
-                <thead>
-                  <tr><th>Grootheid</th><th>Waarde</th><th>Opmerking</th></tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Diameter (mm)</td>
-                    <td><input id="roundDiameter" type="text" inputmode="decimal" placeholder="Bijv. 315" /></td>
-                    <td><p class="helper">Laat leeg om automatisch te berekenen</p></td>
-                  </tr>
-                  <tr>
-                    <td>Luchtsnelheid (m/s)</td>
-                    <td><input id="roundVelocity" type="text" inputmode="decimal" placeholder="Bijv. 6.5" /></td>
-                    <td></td>
-                  </tr>
-                  <tr>
-                    <td>Luchthoeveelheid (m3/h)</td>
-                    <td><input id="roundFlow" type="text" inputmode="decimal" placeholder="Bijv. 2200" /></td>
-                    <td></td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="input-group">
+              <label>Diameter (mm)</label>
+              <input id="roundDiameter" type="text" inputmode="decimal" placeholder="Bijv. 315 (leeg = auto)" />
+              <p class="helper">Laat 1 veld leeg: dat veld wordt berekend en tijdelijk “vastgezet”.</p>
+            </div>
+            <div class="input-group">
+              <label>Luchtsnelheid (m/s)</label>
+              <input id="roundVelocity" type="text" inputmode="decimal" placeholder="Bijv. 6.5" />
+            </div>
+            <div class="input-group">
+              <label>Luchthoeveelheid (m³/h)</label>
+              <input id="roundFlow" type="text" inputmode="decimal" placeholder="Bijv. 2200" />
             </div>
           </div>
+
           <div class="card" style="padding:14px;">
-            <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-              <span>Rechthoekig kanaal</span>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+              <div style="font-weight:800;">Rechthoekig kanaal</div>
+              <span class="tag">Q / v / w / h</span>
             </div>
-            <div class="form-table-scroll">
-              <table class="input-table">
-                <thead>
-                  <tr><th>Grootheid</th><th>Waarde</th><th>Opmerking</th></tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Breedte (mm)</td>
-                    <td><input id="rectWidth" type="text" inputmode="decimal" placeholder="Bijv. 400" /></td>
-                    <td><p class="helper">Laat leeg om automatisch te berekenen</p></td>
-                  </tr>
-                  <tr>
-                    <td>Hoogte (mm)</td>
-                    <td><input id="rectHeight" type="text" inputmode="decimal" placeholder="Bijv. 200" /></td>
-                    <td></td>
-                  </tr>
-                  <tr>
-                    <td>Luchtsnelheid (m/s)</td>
-                    <td><input id="rectVelocity" type="text" inputmode="decimal" placeholder="Bijv. 5.5" /></td>
-                    <td></td>
-                  </tr>
-                  <tr>
-                    <td>Luchthoeveelheid (m3/h)</td>
-                    <td><input id="rectFlow" type="text" inputmode="decimal" placeholder="Bijv. 1600" /></td>
-                    <td></td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="input-group">
+              <label>Breedte (mm)</label>
+              <input id="rectWidth" type="text" inputmode="decimal" placeholder="Bijv. 400 (leeg = auto)" />
+              <p class="helper">Laat 1 veld leeg: dat veld wordt berekend en tijdelijk “vastgezet”.</p>
+            </div>
+            <div class="input-group">
+              <label>Hoogte (mm)</label>
+              <input id="rectHeight" type="text" inputmode="decimal" placeholder="Bijv. 200" />
+            </div>
+            <div class="input-group">
+              <label>Luchtsnelheid (m/s)</label>
+              <input id="rectVelocity" type="text" inputmode="decimal" placeholder="Bijv. 5.5" />
+            </div>
+            <div class="input-group">
+              <label>Luchthoeveelheid (m³/h)</label>
+              <input id="rectFlow" type="text" inputmode="decimal" placeholder="Bijv. 1600" />
             </div>
           </div>
         </div>
       </div>
 
-      <div id="cvCalculator" class="details calc-panel hidden" style="margin-top:12px;">
-        <div class="desktop-only" style="display:grid;gap:10px;">
-          <div class="formula-block">
-            <strong>Watergegevens</strong>
-            <span>Delta T = T_aanvoer - T_retour</span>
-            <span>nu (m2/s) en rho (kg/m3) bepaald op gemiddelde temperatuur.</span>
-          </div>
-          <div class="formula-block">
-            <strong>Dimensioneren</strong>
-            <span>Controleer per diameter of kW voldoet bij gekozen Pa per meter.</span>
-            <span>Qm (m3/h) = v_massa * 3600 | kW = Qm * c_p * Delta T</span>
-          </div>
-        </div>
-        <p class="note mobile-only">Tabel scrollt horizontaal op mobiel. Formule-detail alleen op desktop.</p>
-
+      <!-- EXISTING: CV Diameter -->
+      <div id="cvCalculator" class="card details calc-panel hidden">
         <div class="card" style="padding:14px;">
-          <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-            <span>CV Diameter Berekening</span>
-            <span class="badge">kW -> diameter</span>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+            <div style="font-weight:900;">CV Diameter Berekening</div>
+            <span class="tag">kW → diameter</span>
           </div>
-          <p class="note" style="margin-top:6px;">Vul minimaal aanvoer, retour, benodigd kW en kies Pa/m + materiaal. Kolommen rechts vullen automatisch.</p>
+          <p class="helper" style="margin-top:8px;">Vul minimaal aanvoer, retour, benodigd kW en kies Pa/m + materiaal. Kolommen rechts vullen automatisch.</p>
           <div class="table-scroll" style="margin-top:12px;">
             <table class="cv-table">
               <thead>
                 <tr>
                   <th>Sectie</th>
-                  <th>Aanvoer C</th>
-                  <th>Retour C</th>
+                  <th>Aanvoer °C</th>
+                  <th>Retour °C</th>
                   <th>Benodigd kW</th>
-                  <th>Max Pa</th>
+                  <th>Max Pa/m</th>
                   <th>Materiaal</th>
-                  <th>nu (10^-6 m2/s)</th>
-                  <th>rho (kg/m3)</th>
-                  <th>Qm (m3/h)</th>
+                  <th>ν (10^-6 m²/s)</th>
+                  <th>ρ (kg/m³)</th>
+                  <th>Qm (m³/h)</th>
                   <th>kW gehaald</th>
                   <th>Diameter</th>
                   <th>Pa</th>
@@ -638,18 +430,182 @@
           </div>
         </div>
       </div>
-      <div id="comingSoon" class="details hidden" style="margin-top:12px;">
-        <p id="comingSoonTitle" style="margin:0;font-weight:700;">Nieuw gereedschap</p>
-        <p style="margin:0;color:var(--muted);">Deze berekening is onderweg. Laat weten wat je nodig hebt via de feedback-knop.</p>
+
+      <!-- NEW: Leidinginhoud -->
+      <div id="leidingInhoud" class="card details calc-panel hidden">
+        <div class="calc-grid">
+          <div class="card" style="padding:14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+              <div style="font-weight:900;">Leidinginhoud</div>
+              <span class="tag">liter per meter</span>
+            </div>
+            <div class="input-group">
+              <label>Lengte (m)</label>
+              <input id="liLength" type="text" inputmode="decimal" placeholder="Bijv. 35" />
+            </div>
+            <div class="input-group">
+              <label>Binnendiameter (mm)</label>
+              <input id="liInner" type="text" inputmode="decimal" placeholder="Bijv. 26.0" />
+              <p class="helper">Formule uit je zip: L/m = π/4 · d² · 1000 (d in meter).</p>
+            </div>
+            <div class="result">
+              <div><strong>Inhoud per meter</strong></div>
+              <div class="mono" id="liPerM">—</div>
+            </div>
+            <div class="result">
+              <div><strong>Totaal leidingvolume</strong></div>
+              <div class="mono" id="liTotal">—</div>
+            </div>
+          </div>
+
+          <div class="card" style="padding:14px;">
+            <div style="font-weight:900;">Snelkeuze binnendiameter (optioneel)</div>
+            <p class="helper">Kies materiaal + maat en laat de webapp de binnendiameter invullen.</p>
+            <div class="input-group">
+              <label>Materiaal</label>
+              <select id="liMaterial">
+                <option value="">— handmatig —</option>
+                <option value="koper">Koper (indicatief)</option>
+                <option value="staal">Staal (indicatief)</option>
+                <option value="kunststof">Kunststof (indicatief)</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Maat</label>
+              <select id="liSize">
+                <option value="">—</option>
+              </select>
+            </div>
+            <button id="liApply" class="btn" type="button">Vul binnendiameter</button>
+            <p class="helper">Let op: tabellen kunnen per fabrikant verschillen. Als je exacte tabellen wilt, kan ik je mapping 1-op-1 uit je Python widgets overnemen.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEW: Dakafvoer -->
+      <div id="dakafvoer" class="card details calc-panel hidden">
+        <div class="calc-grid">
+          <div class="card" style="padding:14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+              <div style="font-weight:900;">Dakafvoer</div>
+              <span class="tag">l/s</span>
+            </div>
+            <div class="input-group">
+              <label>Lengte dakvlak (m)</label>
+              <input id="daLength" type="text" inputmode="decimal" placeholder="Bijv. 20" />
+            </div>
+            <div class="input-group">
+              <label>Breedte dakvlak (m)</label>
+              <input id="daWidth" type="text" inputmode="decimal" placeholder="Bijv. 12" />
+            </div>
+            <div class="input-group">
+              <label>Reductiefactor</label>
+              <select id="daRF">
+                <option value="1">1.00 (standaard)</option>
+                <option value="0.75">0.75 (overige platte daken)</option>
+                <option value="0.60">0.60 (plat dak met grind)</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Hellingsreductie</label>
+              <select id="daHR">
+                <option value="1">1.0 (0°–45°)</option>
+                <option value="0.8">0.8 (45°–60°)</option>
+                <option value="0.6">0.6 (&gt;60°)</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Max regenintensiteit (l/s per m²)</label>
+              <input id="daRI" type="text" inputmode="decimal" placeholder="0.03" value="0.03" />
+              <p class="helper">Uit je zip: debiet = opp · reductiefactor · regenintensiteit · hellingsfactor.</p>
+            </div>
+            <div class="input-group">
+              <label>Aantal afvoeren</label>
+              <input id="daCount" type="text" inputmode="numeric" placeholder="Bijv. 2" value="1" />
+            </div>
+
+            <div class="result">
+              <div><strong>Oppervlakte (m²)</strong></div>
+              <div class="mono" id="daArea">—</div>
+            </div>
+            <div class="result">
+              <div><strong>Debiet totaal (l/s)</strong></div>
+              <div class="mono" id="daFlow">—</div>
+            </div>
+            <div class="result">
+              <div><strong>Debiet per afvoer (l/s)</strong></div>
+              <div class="mono" id="daPer">—</div>
+            </div>
+          </div>
+
+          <div class="card" style="padding:14px;">
+            <div style="font-weight:900;">Diameter (placeholder)</div>
+            <p class="helper">Je Python widget gebruikt een diameter-lookup op basis van type afvoer + debiet. In je zip zitten die lookup-tabellen niet eenduidig per afvoer-type (in webvorm). Als je wil, kan ik ze exact overzetten zodra je aangeeft welke tabel/bron je gebruikt (of als je de Excel/CSV van de lookup meestuurt).</p>
+            <div class="result">
+              <div><strong>Advies</strong></div>
+              <div class="mono">Gebruik debiet/afvoer als input voor je standaard tabel.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEW: Uitzetting buisleiding -->
+      <div id="uitzetting" class="card details calc-panel hidden">
+        <div class="calc-grid">
+          <div class="card" style="padding:14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+              <div style="font-weight:900;">Uitzetting buisleiding</div>
+              <span class="tag">ΔL</span>
+            </div>
+            <div class="input-group">
+              <label>Lengte leiding (m)</label>
+              <input id="uzLength" type="text" inputmode="decimal" placeholder="Bijv. 25" />
+            </div>
+            <div class="input-group">
+              <label>Temperatuurverschil ΔT (°C)</label>
+              <input id="uzDT" type="text" inputmode="decimal" placeholder="Bijv. 50" />
+            </div>
+            <div class="input-group">
+              <label>Materiaal</label>
+              <select id="uzMat">
+                <option value="12">Staal (12·10⁻⁶ /K)</option>
+                <option value="17">RVS (17·10⁻⁶ /K)</option>
+                <option value="16.5">Koper (16.5·10⁻⁶ /K)</option>
+                <option value="70">Kunststof (70·10⁻⁶ /K) (indicatief)</option>
+                <option value="0">Handmatig</option>
+              </select>
+              <p class="helper">ΔL = L · α · ΔT. α in 10⁻⁶/K.</p>
+            </div>
+            <div class="input-group" id="uzAlphaWrap" style="display:none;">
+              <label>α (10⁻⁶ /K)</label>
+              <input id="uzAlpha" type="text" inputmode="decimal" placeholder="Bijv. 20" />
+            </div>
+            <div class="result">
+              <div><strong>Uitzetting ΔL</strong></div>
+              <div class="mono" id="uzOut">—</div>
+            </div>
+          </div>
+
+          <div class="card" style="padding:14px;">
+            <div style="font-weight:900;">Tip</div>
+            <p class="helper">Als je exact dezelfde α-tabellen/keuzes als in je desktop-app wilt, kan ik ze 1:1 overnemen uit <code>UitzettingBuisleidingWidget.py</code> zodra je aangeeft welke waardes je gebruikt (in de zip zie ik meerdere UI-keuzes, maar niet één vaste tabel).</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="comingSoon" class="card details hidden">
+        <p id="comingSoonTitle" style="margin:0;font-weight:800;">Nieuw gereedschap</p>
+        <p style="margin:0;color:var(--muted);">Deze berekening is nog niet overgezet naar web. (Wel toegevoegd aan het overzicht.)</p>
       </div>
     </section>
   </main>
 
-  <footer>Past zich automatisch aan schermgrootte aan. Voeg meer berekeningen toe via het overzicht.</footer>
+  <footer>Tip: op mobiel scrollen tabellen horizontaal. Geen witte “out-of-bounds” meer door overflow-fix.</footer>
 
   <script>
     window.calcResetters = window.calcResetters || {};
-    (function setupNavigation() {
+
+    (function setupNavigationAndMenu() {
       const homeScreen = document.getElementById("homeScreen");
       const calcScreen = document.getElementById("calcScreen");
       const calcTitle = document.getElementById("calcTitle");
@@ -660,46 +616,100 @@
       const backBtn = document.getElementById("backBtn");
       const searchInput = document.getElementById("commandSearch");
       const chips = Array.from(document.querySelectorAll("#categoryChips .chip"));
-      const menuButtons = Array.from(document.querySelectorAll(".menu-btn"));
+      const menuGrid = document.getElementById("menuGrid");
+
       let activeCategory = "all";
 
+      // Added tools based on berekeningen.zip (Python widgets)
       const calculators = {
-        duct: { name: "Luchtkanaal Calculator", subtitle: "Kanaaldiameter, snelheid of debiet", implemented: true, panelId: "ductCalculator" },
-        cvdiameter: { name: "CV Diameter Berekening", subtitle: "Leidingdiameter op basis van kW en Delta T", implemented: true, panelId: "cvCalculator" },
-        elektra: { name: "Vermogenscheck", subtitle: "Kabeldiktes en belasting", implemented: false, panelId: null },
-        planning: { name: "Project checklist", subtitle: "Gestandaardiseerde stappen", implemented: false, panelId: null }
+        duct:        { name: "Luchtkanaal Calculator", subtitle: "Kanaaldiameter, snelheid of debiet", category: "hvac", tags:["HVAC","Ventilatie"], implemented: true, panelId: "ductCalculator", search:"luchtkanaal ventilatie hvac kanaal rond rechthoek q v d" },
+        cvdiameter:  { name: "CV Diameter Berekening", subtitle: "Leidingdiameter op basis van kW en ΔT", category: "hvac", tags:["HVAC","Leidingen"], implemented: true, panelId: "cvCalculator", search:"cv diameter leiding pa kw delta t water" },
+
+        leidinginhoud:{ name: "Leidinginhoud", subtitle: "Volume per meter & totaalvolume", category: "util", tags:["Tools","Volume"], implemented: true, panelId: "leidingInhoud", search:"leidinginhoud liter per meter inhoud volume binnendiameter" },
+        dakafvoer:   { name: "Dakafvoer Berekening", subtitle: "Dakvlak → debiet (l/s) per afvoer", category: "water", tags:["Water","Hemelwater"], implemented: true, panelId: "dakafvoer", search:"dakafvoer hemelwater debiet regenintensiteit dakvlak l/s" },
+        uitzetting:  { name: "Uitzetting Buisleiding", subtitle: "Thermische uitzetting ΔL", category: "hvac", tags:["HVAC","Uitzetting"], implemented: true, panelId: "uitzetting", search:"uitzetting buisleiding thermisch delta l alpha" },
+
+        // From zip - added to menu (not yet ported to web)
+        luchtkanalen_py: { name:"Luchtkanalen (uit desktop)", subtitle:"(Nog overzetten) - uitgebreide luchtkanalen tool", category:"hvac", tags:["HVAC","(soon)"], implemented:false, panelId:null, search:"luchtkanalen widget kanaalberekening" },
+        wachttijd:  { name:"Wachttijd Water", subtitle:"(Nog overzetten)", category:"water", tags:["Water","(soon)"], implemented:false, panelId:null, search:"wachttijd water legionella" },
+        tapwater:   { name:"Tapwater Dimensioneren", subtitle:"(Nog overzetten)", category:"water", tags:["Water","(soon)"], implemented:false, panelId:null, search:"tapwater dimensioneren qv r leiding diameters" },
+        vuilwater:  { name:"Vuilwaterafvoer", subtitle:"(Nog overzetten)", category:"water", tags:["Water","(soon)"], implemented:false, panelId:null, search:"vuilwater afvoerberekening afschot diameter" },
+        koelleiding:{ name:"Koelleiding Berekening", subtitle:"(Nog overzetten)", category:"hvac", tags:["HVAC","(soon)"], implemented:false, panelId:null, search:"koelleiding berekening koelvermogen" },
+        expansie:   { name:"Expansievat CV", subtitle:"(Nog overzetten)", category:"hvac", tags:["HVAC","(soon)"], implemented:false, panelId:null, search:"expansievat cv berekening" },
+        buffervat:  { name:"Buffervat Koeling", subtitle:"(Nog overzetten)", category:"hvac", tags:["HVAC","(soon)"], implemented:false, panelId:null, search:"inhoud buffervat koeling" },
+        deur_sleuf: { name:"Deur Sleuf Berekening", subtitle:"(Nog overzetten)", category:"hvac", tags:["HVAC","(soon)"], implemented:false, panelId:null, search:"deur sleuf berekening" },
+        dak_hwa:    { name:"Hemelwaterafvoer", subtitle:"(Nog overzetten)", category:"water", tags:["Water","(soon)"], implemented:false, panelId:null, search:"hemelwaterafvoer berekening" },
+        batch:      { name:"Batch Renamer", subtitle:"(Nog overzetten)", category:"util", tags:["Tools","(soon)"], implemented:false, panelId:null, search:"batch renamer" },
+        planning:   { name:"Project checklist", subtitle:"(Binnenkort)", category:"planning", tags:["Planning","(soon)"], implemented:false, panelId:null, search:"planning checklist project" }
+      };
+
+      const createMenuButton = (key, cfg) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "menu-btn";
+        btn.dataset.openCalc = key;
+        btn.dataset.category = cfg.category || "all";
+        btn.dataset.search = (cfg.search || cfg.name || "").toLowerCase();
+
+        const left = document.createElement("div");
+        left.innerHTML = `<div>${cfg.name}</div><div class="subtitle">${cfg.subtitle || ""}</div>`;
+
+        const right = document.createElement("div");
+        right.className = "right";
+        (cfg.tags || []).slice(0,3).forEach(t => {
+          const tag = document.createElement("span");
+          tag.className = "tag";
+          tag.textContent = t;
+          right.appendChild(tag);
+        });
+
+        btn.append(left, right);
+        btn.addEventListener("click", () => openCalc(key));
+        return btn;
+      };
+
+      const renderMenu = () => {
+        menuGrid.innerHTML = "";
+        Object.entries(calculators).forEach(([key,cfg]) => menuGrid.appendChild(createMenuButton(key,cfg)));
+        applyFilters();
       };
 
       const openCalc = (key) => {
         const cfg = calculators[key];
         if (!cfg) return;
+
         calcTitle.textContent = cfg.name;
-        calcSubtitle.textContent = cfg.subtitle;
+        calcSubtitle.textContent = cfg.subtitle || "";
+
         homeScreen.classList.add("hidden");
         calcScreen.classList.remove("hidden");
+
         if (cfg.implemented) {
-          panels.forEach(panel => {
-            panel.classList.toggle("hidden", panel.id !== cfg.panelId);
-          });
+          panels.forEach(panel => panel.classList.toggle("hidden", panel.id !== cfg.panelId));
           comingSoon.classList.add("hidden");
-          const resetters = window.calcResetters || {};
-          const reset = resetters[cfg.panelId];
+
+          const reset = (window.calcResetters || {})[cfg.panelId];
           if (typeof reset === "function") reset();
+
+          // Ensure we always start at top when opening a calc
+          window.scrollTo({ top: 0, behavior: "instant" });
         } else {
           panels.forEach(panel => panel.classList.add("hidden"));
           comingSoon.classList.remove("hidden");
-          comingTitle.textContent = cfg.name + " (binnenkort)";
+          comingTitle.textContent = cfg.name + " (nog niet overgezet)";
+          window.scrollTo({ top: 0, behavior: "instant" });
         }
       };
 
       const goHome = () => {
         calcScreen.classList.add("hidden");
         homeScreen.classList.remove("hidden");
+        window.scrollTo({ top: 0, behavior: "smooth" });
       };
 
       const applyFilters = () => {
-        const query = searchInput.value.trim().toLowerCase();
-        menuButtons.forEach(btn => {
+        const query = (searchInput.value || "").trim().toLowerCase();
+        Array.from(menuGrid.children).forEach(btn => {
           const cat = btn.dataset.category || "all";
           const haystack = (btn.dataset.search || "").toLowerCase();
           const matchesCategory = activeCategory === "all" || activeCategory === cat;
@@ -708,12 +718,7 @@
         });
       };
 
-      document.querySelectorAll("[data-open-calc]").forEach(btn => {
-        btn.addEventListener("click", () => openCalc(btn.dataset.openCalc));
-      });
-
       backBtn.addEventListener("click", goHome);
-
       chips.forEach(chip => {
         chip.addEventListener("click", () => {
           chips.forEach(c => c.classList.remove("active"));
@@ -723,9 +728,11 @@
         });
       });
       searchInput.addEventListener("input", applyFilters);
+
+      renderMenu();
     })();
 
-    (function setupCalculators() {
+    (function setupDuctCalculator() {
       const roundDiameter = document.getElementById("roundDiameter");
       const roundVelocity = document.getElementById("roundVelocity");
       const roundFlow = document.getElementById("roundFlow");
@@ -733,6 +740,7 @@
       const rectHeight = document.getElementById("rectHeight");
       const rectVelocity = document.getElementById("rectVelocity");
       const rectFlow = document.getElementById("rectFlow");
+
       let roundComputedField = null;
       let rectComputedField = null;
 
@@ -742,20 +750,21 @@
         return match ? parseFloat(match[0]) : NaN;
       };
       const valueOf = (el, computedRef) => (computedRef && el === computedRef ? NaN : clean(el.value));
+      const format = (num) => Number.isFinite(num) ? Number(num).toFixed(2) : "";
 
       const markComputed = (target, group) => {
         group.forEach(el => {
           if (target && el === target) {
-            el.classList.add("computed");
+            el.style.borderColor = "rgba(52, 211, 153, 0.8)";
+            el.style.background = "rgba(52, 211, 153, 0.08)";
             el.readOnly = true;
           } else {
-            el.classList.remove("computed");
+            el.style.borderColor = "";
+            el.style.background = "";
             if (el.readOnly) el.readOnly = false;
           }
         });
       };
-
-      const format = (num) => Number.isFinite(num) ? Number(num).toFixed(2) : "";
 
       const updateRound = () => {
         const d = valueOf(roundDiameter, roundComputedField);
@@ -784,7 +793,6 @@
           roundComputedField = computed;
         } else if (roundComputedField && ![d, v, q].every(Number.isFinite)) {
           roundComputedField.value = "";
-          roundComputedField.classList.remove("computed");
           roundComputedField.readOnly = false;
           roundComputedField = null;
         }
@@ -822,7 +830,6 @@
           rectComputedField = computed;
         } else if (rectComputedField && ![w, h, v, q].every(Number.isFinite)) {
           rectComputedField.value = "";
-          rectComputedField.classList.remove("computed");
           rectComputedField.readOnly = false;
           rectComputedField = null;
         }
@@ -847,14 +854,199 @@
         ids.forEach(id => {
           const el = document.getElementById(id);
           el.value = "";
-          el.classList.remove("computed");
           el.readOnly = false;
+          el.style.borderColor = "";
+          el.style.background = "";
         });
         roundComputedField = null;
         rectComputedField = null;
       };
-
       window.calcResetters.ductCalculator = resetDuct;
+    })();
+
+    (function setupLeidingInhoud() {
+      const len = document.getElementById("liLength");
+      const inner = document.getElementById("liInner");
+      const outPerM = document.getElementById("liPerM");
+      const outTotal = document.getElementById("liTotal");
+
+      const mat = document.getElementById("liMaterial");
+      const size = document.getElementById("liSize");
+      const apply = document.getElementById("liApply");
+
+      // Indicative (NOT manufacturer-specific) quick picks
+      const quick = {
+        koper: {
+          "Ø15": 13.0, "Ø22": 19.8, "Ø28": 25.6, "Ø35": 32.4, "Ø42": 39.0, "Ø54": 51.0
+        },
+        staal: {
+          "DN15": 17.3, "DN20": 22.3, "DN25": 28.5, "DN32": 37.2, "DN40": 43.1, "DN50": 54.5
+        },
+        kunststof: {
+          "Ø20": 18.0, "Ø25": 22.6, "Ø32": 28.8, "Ø40": 36.2, "Ø50": 45.2, "Ø63": 58.2
+        }
+      };
+
+      const parseNum = (v) => {
+        if (typeof v !== "string") return NaN;
+        const m = v.replace(",", ".").match(/[-+]?\d*\.?\d+/);
+        return m ? parseFloat(m[0]) : NaN;
+      };
+
+      const calc = () => {
+        const L = parseNum(len.value);
+        const dmm = parseNum(inner.value);
+        if (!Number.isFinite(dmm) || dmm <= 0) { outPerM.textContent = "—"; outTotal.textContent="—"; return; }
+
+        const dm = dmm / 1000.0;
+        const perM = Math.PI/4 * dm * dm * 1000; // L/m
+        outPerM.textContent = perM.toFixed(3) + " L/m";
+
+        if (Number.isFinite(L) && L >= 0) {
+          outTotal.textContent = (perM * L).toFixed(3) + " L";
+        } else {
+          outTotal.textContent = "—";
+        }
+      };
+
+      const fillSizes = () => {
+        size.innerHTML = `<option value="">—</option>`;
+        const m = mat.value;
+        if (!quick[m]) return;
+        Object.keys(quick[m]).forEach(k => {
+          const o = document.createElement("option");
+          o.value = k;
+          o.textContent = k;
+          size.appendChild(o);
+        });
+      };
+
+      mat.addEventListener("change", fillSizes);
+      apply.addEventListener("click", () => {
+        const m = mat.value;
+        const s = size.value;
+        if (m && s && quick[m] && quick[m][s]) {
+          inner.value = String(quick[m][s]);
+          calc();
+        }
+      });
+
+      [len, inner].forEach(el => el.addEventListener("input", calc));
+
+      const reset = () => {
+        len.value = "";
+        inner.value = "";
+        mat.value = "";
+        fillSizes();
+        outPerM.textContent = "—";
+        outTotal.textContent = "—";
+      };
+      window.calcResetters.leidingInhoud = reset;
+      reset();
+    })();
+
+    (function setupDakafvoer() {
+      const L = document.getElementById("daLength");
+      const W = document.getElementById("daWidth");
+      const RF = document.getElementById("daRF");
+      const HR = document.getElementById("daHR");
+      const RI = document.getElementById("daRI");
+      const N = document.getElementById("daCount");
+
+      const outA = document.getElementById("daArea");
+      const outF = document.getElementById("daFlow");
+      const outP = document.getElementById("daPer");
+
+      const parseNum = (v) => {
+        if (typeof v !== "string") return NaN;
+        const m = v.replace(",", ".").match(/[-+]?\d*\.?\d+/);
+        return m ? parseFloat(m[0]) : NaN;
+      };
+
+      const calc = () => {
+        const l = parseNum(L.value);
+        const w = parseNum(W.value);
+        const rf = parseNum(RF.value);
+        const hr = parseNum(HR.value);
+        const ri = parseNum(RI.value);
+        const n = parseNum(N.value);
+
+        if (Number.isFinite(l) && Number.isFinite(w) && l >= 0 && w >= 0) {
+          const area = l * w;
+          outA.textContent = area.toFixed(2) + " m²";
+
+          if (Number.isFinite(rf) && Number.isFinite(hr) && Number.isFinite(ri)) {
+            const flow = area * rf * ri * hr;
+            outF.textContent = flow.toFixed(3) + " l/s";
+            if (Number.isFinite(n) && n > 0) outP.textContent = (flow / n).toFixed(3) + " l/s";
+            else outP.textContent = "—";
+          } else {
+            outF.textContent = "—";
+            outP.textContent = "—";
+          }
+        } else {
+          outA.textContent = "—";
+          outF.textContent = "—";
+          outP.textContent = "—";
+        }
+      };
+
+      [L,W,RF,HR,RI,N].forEach(el => el.addEventListener("input", calc));
+      [RF,HR].forEach(el => el.addEventListener("change", calc));
+
+      const reset = () => {
+        L.value=""; W.value="";
+        RF.value="1"; HR.value="1";
+        RI.value="0.03"; N.value="1";
+        outA.textContent="—"; outF.textContent="—"; outP.textContent="—";
+      };
+      window.calcResetters.dakafvoer = reset;
+      reset();
+    })();
+
+    (function setupUitzetting() {
+      const L = document.getElementById("uzLength");
+      const DT = document.getElementById("uzDT");
+      const MAT = document.getElementById("uzMat");
+      const alphaWrap = document.getElementById("uzAlphaWrap");
+      const alphaIn = document.getElementById("uzAlpha");
+      const out = document.getElementById("uzOut");
+
+      const parseNum = (v) => {
+        if (typeof v !== "string") return NaN;
+        const m = v.replace(",", ".").match(/[-+]?\d*\.?\d+/);
+        return m ? parseFloat(m[0]) : NaN;
+      };
+
+      const calc = () => {
+        const l = parseNum(L.value);
+        const dt = parseNum(DT.value);
+        let alpha = parseNum(MAT.value); // in 10^-6/K
+        if (alpha === 0) alpha = parseNum(alphaIn.value);
+
+        if (Number.isFinite(l) && Number.isFinite(dt) && Number.isFinite(alpha)) {
+          const dl_m = l * (alpha * 1e-6) * dt;
+          out.textContent = (dl_m*1000).toFixed(2) + " mm";
+        } else {
+          out.textContent = "—";
+        }
+      };
+
+      MAT.addEventListener("change", () => {
+        alphaWrap.style.display = (MAT.value === "0") ? "block" : "none";
+        calc();
+      });
+      [L,DT,alphaIn].forEach(el => el.addEventListener("input", calc));
+
+      const reset = () => {
+        L.value=""; DT.value="";
+        MAT.value="12";
+        alphaIn.value="";
+        alphaWrap.style.display="none";
+        out.textContent="—";
+      };
+      window.calcResetters.uitzetting = reset;
+      reset();
     })();
 
     (function setupCvCalculator() {
@@ -924,7 +1116,6 @@
         input.type = "text";
         input.inputMode = "decimal";
         input.placeholder = placeholder;
-        input.className = "cv-input";
         return input;
       };
 
@@ -944,41 +1135,38 @@
 
       const makeCell = (content) => {
         const td = document.createElement("td");
-        if (content instanceof HTMLElement) {
-          td.appendChild(content);
-        } else {
-          td.textContent = content;
-        }
+        if (content instanceof HTMLElement) td.appendChild(content);
+        else td.textContent = content;
         return td;
       };
 
       const createRow = (idx) => {
         const tr = document.createElement("tr");
-        tr.dataset.row = idx;
-
         const section = makeInput(`Sectie ${idx + 1}`);
         const tSupply = makeInput("75");
         const tReturn = makeInput("60");
         const kwNeed = makeInput("20");
 
         const paSelect = makeSelect(paOptions, 150);
+
+        // Fix: ensure select values match material keys
         const materialSelect = makeSelect(
-          Object.values(materials).filter(m => m !== materials.fallback).map(m => ({ value: m.label.toLowerCase(), label: m.label })),
+          [
+            { value:"vlampijp", label:"Vlampijp" },
+            { value:"draadbuis", label:"Draadbuis" },
+            { value:"dunwandig", label:"Dunwandig" },
+            { value:"koper", label:"Koper" },
+            { value:"pvc", label:"PVC" }
+          ],
           "vlampijp"
         );
 
-        const viscosityCell = document.createElement("span");
-        viscosityCell.className = "readonly";
-        const densityCell = document.createElement("span");
-        densityCell.className = "readonly";
-        const qmCell = document.createElement("span");
-        qmCell.className = "readonly";
-        const kwCell = document.createElement("span");
-        kwCell.className = "readonly";
-        const dnCell = document.createElement("span");
-        dnCell.className = "readonly";
-        const paCell = document.createElement("span");
-        paCell.className = "readonly";
+        const viscosityCell = document.createElement("span"); viscosityCell.className = "readonly";
+        const densityCell = document.createElement("span"); densityCell.className = "readonly";
+        const qmCell = document.createElement("span"); qmCell.className = "readonly";
+        const kwCell = document.createElement("span"); kwCell.className = "readonly";
+        const dnCell = document.createElement("span"); dnCell.className = "readonly";
+        const paCell = document.createElement("span"); paCell.className = "readonly";
 
         tr.append(
           makeCell(section),
@@ -995,11 +1183,8 @@
           makeCell(paCell)
         );
 
-        const inputs = [section, tSupply, tReturn, kwNeed, paSelect, materialSelect];
-        inputs.forEach(el => {
-          el.addEventListener("input", () => updateRow(tr));
-          el.addEventListener("change", () => updateRow(tr));
-        });
+        [section, tSupply, tReturn, kwNeed].forEach(el => el.addEventListener("input", () => updateRow(tr)));
+        [paSelect, materialSelect].forEach(el => el.addEventListener("change", () => updateRow(tr)));
 
         updateRow(tr);
         return tr;
@@ -1011,7 +1196,7 @@
         const tReturn = parseNum(cells[2].querySelector("input").value);
         const kwNeed = parseNum(cells[3].querySelector("input").value);
         const maxPa = parseNum(cells[4].querySelector("select").value);
-        const materialKey = cells[5].querySelector("select").value || "vlampijp";
+        const materialKey = (cells[5].querySelector("select").value || "vlampijp");
         const material = materials[materialKey] || materials.fallback;
         const deltaT = tSupply - tReturn;
 
@@ -1022,23 +1207,18 @@
         const dnCell = cells[10].querySelector(".readonly");
         const paCell = cells[11].querySelector(".readonly");
 
-        const clear = () => {
-          [visCell, rhoCell, qmCell, kwCell, dnCell, paCell].forEach(c => c.textContent = "");
-        };
+        const clear = () => { [visCell, rhoCell, qmCell, kwCell, dnCell, paCell].forEach(c => c.textContent = ""); };
 
-        if (!Number.isFinite(deltaT) || deltaT <= 0 || !Number.isFinite(kwNeed)) {
-          clear();
-          return;
-        }
+        if (!Number.isFinite(deltaT) || deltaT <= 0 || !Number.isFinite(kwNeed) || kwNeed <= 0) { clear(); return; }
 
         const avg = (tSupply + tReturn) / 2;
         const key = avgKey(avg);
-        const vVal = viscosityTable[key] ?? viscosityTable[120];
-        const cVal = densityTable[key] ?? densityTable[120];
-        const rho = cVal * 1000;
+        const nu = viscosityTable[key] ?? viscosityTable[120];
+        const rhoRel = densityTable[key] ?? densityTable[120];
+        const rho = rhoRel * 1000;
         const cp = 4.18;
 
-        visCell.textContent = (vVal * 1e6).toFixed(3);
+        visCell.textContent = (nu * 1e6).toFixed(3);
         rhoCell.textContent = rho.toFixed(1);
 
         const deltaPMax = maxPa / 1000;
@@ -1047,11 +1227,13 @@
         Object.entries(material.diameters).some(([dnLabel, dMm]) => {
           const D = dMm / 1000;
           if (D === 0 || deltaPMax <= 0) return false;
+
           const sqrtTermMax = Math.sqrt(2 * D * deltaPMax);
-          const logInput = (material.k / 1000) / (3.7 * D) + (2.51 * vVal) / (D * sqrtTermMax);
+          const logInput = (material.k / 1000) / (3.7 * D) + (2.51 * nu) / (D * sqrtTermMax);
           if (logInput <= 0) return false;
+
           const logTerm = Math.log10(logInput);
-          const areaTerm = Math.PI * 0.25 * cVal * (D ** 2);
+          const areaTerm = Math.PI * 0.25 * rhoRel * (D ** 2);
           const qmAtMax = -2 * sqrtTermMax * logTerm * areaTerm * 1000;
           const kwAtMax = qmAtMax * cp * deltaT;
           if (kwAtMax < kwNeed) return false;
@@ -1060,17 +1242,14 @@
             if (pa > maxPa) break;
             const deltaP = pa / 1000;
             const sqrtTerm = Math.sqrt(2 * D * deltaP);
-            if (D * sqrtTerm === 0) continue;
-            const logInputPa = (material.k / 1000) / (3.7 * D) + (2.51 * vVal) / (D * sqrtTerm);
+            const logInputPa = (material.k / 1000) / (3.7 * D) + (2.51 * nu) / (D * sqrtTerm);
             if (logInputPa <= 0) continue;
+
             const logTermPa = Math.log10(logInputPa);
-            const areaTermPa = Math.PI * 0.25 * cVal * (D ** 2);
+            const areaTermPa = Math.PI * 0.25 * rhoRel * (D ** 2);
             const qm = -2 * sqrtTerm * logTermPa * areaTermPa * 1000;
             const kwCalc = qm * cp * deltaT;
-            if (kwCalc >= kwNeed) {
-              result = { dnLabel, pa, qm, kwCalc };
-              return true;
-            }
+            if (kwCalc >= kwNeed) { result = { dnLabel, pa, qm, kwCalc }; return true; }
           }
           return false;
         });
@@ -1087,26 +1266,13 @@
 
       const resetTable = () => {
         body.innerHTML = "";
-        for (let i = 0; i < 3; i++) {
-          body.appendChild(createRow(i));
-        }
+        for (let i = 0; i < 3; i++) body.appendChild(createRow(i));
       };
 
-      btnAdd.addEventListener("click", () => {
-        body.appendChild(createRow(body.children.length));
-      });
-
+      btnAdd.addEventListener("click", () => body.appendChild(createRow(body.children.length)));
       btnDelete.addEventListener("click", () => {
-        if (body.children.length > 1) {
-          body.removeChild(body.lastElementChild);
-        } else {
-          const inputs = body.querySelectorAll("input");
-          inputs.forEach(input => input.value = "");
-          body.querySelectorAll("select").forEach(sel => {
-            if (sel.options.length) sel.selectedIndex = 0;
-          });
-          body.querySelectorAll(".readonly").forEach(span => span.textContent = "");
-        }
+        if (body.children.length > 1) body.removeChild(body.lastElementChild);
+        else resetTable();
       });
 
       resetTable();
@@ -1115,11 +1281,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
