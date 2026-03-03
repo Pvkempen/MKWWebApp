@@ -492,469 +492,298 @@
       }
     }
 
+  
+    /* Table header alignment + wrapping */
+    table th{
+      text-align: center !important;
+      vertical-align: middle !important;
+      white-space: normal !important;
+      line-height: 1.15;
+      word-break: break-word;
+      hyphens: auto;
+    }
+    table td{ vertical-align: middle; }
+
+    /* Remove combined outer outline on calc panels (keep inner cards) */
+    #calcScreen .card.details.calc-panel{
+      border: none !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+    }
+
+    /* Uniform result styling */
+    .result, .computed-box, .blue-result, .result-box{
+      border: 1px solid rgba(167, 139, 250, 0.28) !important;
+      background: rgba(167, 139, 250, 0.06) !important;
+      box-shadow: 0 10px 24px rgba(167, 139, 250, 0.10) !important;
+      border-radius: 14px;
+    }
+
+    /* Visually group consecutive result cells into one block */
+    .result{ margin-top: 10px; }
+    .result + .result{
+      margin-top: 0 !important;
+      border-top: none !important;
+      border-top-left-radius: 0 !important;
+      border-top-right-radius: 0 !important;
+    }
+    .result:first-of-type{
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    /* Inline-field fixes (tapwater max snelheid / type tabel) */
+    .inline-field .v input{ min-width: 120px; }
+    .inline-field .v select{ min-width: 220px; }
+
   </style>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js">
+    
+  
+    (function formatTableHeaders(){
+      document.querySelectorAll("table th").forEach(th=>{
+        const raw = (th.textContent||"").trim();
+        // Replace patterns like "v (m/s)" or "Basisafvoer (l/s)" -> "Basisafvoer<br>(l/s)"
+        const m = raw.match(/^(.+?)\s*\(([^)]+)\)$/);
+        if(m){
+          const left = m[1].trim();
+          const unit = m[2].trim();
+          // avoid double formatting
+          if(!th.dataset.formatted){
+            th.innerHTML = `${left}<br><span style="opacity:.85;font-weight:600">(${unit})</span>`;
+            th.dataset.formatted = "1";
+          }
+        }
+      });
+    })();
+
+  
+    (function setupTableHeaderTooltips(){
+      const tip = document.getElementById("thTip");
+      if(!tip) return;
+
+      const help = {
+        // You can expand these later per column if you want.
+        "Sectie":"Naam/nummer van het deeltraject.",
+        "L/meter":"Lengte van de leiding in meters.",
+        "H in KPA":"Vul handmatig in als je dit gebruikt (horizontale component).",
+        "Aanvoer":"Aanvoertemperatuur.",
+        "Retour":"Retourtemperatuur."
+      };
+
+      let activeTh = null;
+      const isTouch = () => window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+
+      const show = (th) => {
+        const name = (th.textContent || "").trim().replace(/\s+/g," ");
+        const msg = th.dataset.help || help[name] || ("Kolom: " + name);
+        const rect = th.getBoundingClientRect();
+        tip.textContent = msg;
+        tip.style.display = "block";
+        const pad = 10;
+        const r = tip.getBoundingClientRect();
+        const left = Math.min(window.innerWidth - r.width - pad, Math.max(pad, rect.left));
+        const top  = Math.min(window.innerHeight - r.height - pad, Math.max(pad, rect.bottom + 8));
+        tip.style.left = left + "px";
+        tip.style.top  = top + "px";
+      };
+
+      const hide = () => { tip.style.display = "none"; activeTh = null; };
+
+      document.querySelectorAll("table th").forEach(th => {
+        th.addEventListener("mouseenter", () => { if(!isTouch()) show(th); });
+        th.addEventListener("mouseleave", () => { if(!isTouch()) hide(); });
+        th.addEventListener("click", (e) => {
+          if(!isTouch()) return;
+          e.stopPropagation();
+          if(activeTh === th && tip.style.display === "block"){ hide(); return; }
+          activeTh = th;
+          show(th);
+        });
+      });
+
+      window.addEventListener("scroll", () => { if(isTouch()) hide(); }, { passive:true });
+      document.addEventListener("click", () => { if(isTouch()) hide(); });
+    })();
+
+  
+    (function checklistInstantPatch(){
+      // If checklist exists, ensure change updates UI + storage immediately.
+      const root = document.getElementById("checklistRoot") || document.querySelector("#planningCalculator") || document;
+      if(!root) return;
+
+      root.addEventListener("change", (e) => {
+        const cb = e.target;
+        if(!(cb instanceof HTMLInputElement)) return;
+        if(cb.type !== "checkbox") return;
+        const rowEl = cb.closest(".check-row") || cb.closest(".checklist-item") || cb.closest("li") || cb.parentElement;
+        if(rowEl) rowEl.classList.toggle("checked", cb.checked);
+
+        // If app has a save function on window, call it.
+        if(typeof window.saveChecklist === "function"){
+          window.saveChecklist();
+        }
+      }, true);
+    })();
+
+  
     (function setupPdfEditor(){
       const fileInput = document.getElementById("pdfFile");
-      const pdfCanvas = document.getElementById("pdfCanvas");
-      const annCanvasEl = document.getElementById("annCanvas");
-      const stage = document.getElementById("pdfStage");
+      const frame = document.getElementById("pdfFrame");
       const lbl = document.getElementById("pdfPageLabel");
-      const prev = document.getElementById("pdfPrev");
-      const next = document.getElementById("pdfNext");
+      if(!fileInput || !frame) return;
 
-      if(!fileInput || !pdfCanvas || !annCanvasEl || !window.pdfjsLib || !window.fabric) return;
+      let currentUrl = null;
 
-      // PDF.js worker
-      try{
-        pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-      }catch(e){}
+      const setLabel = (t) => { if(lbl) lbl.textContent = t; };
 
-      let pdfDoc = null;
-      let pageNum = 1;
-      let viewportScale = 1.2;
-
-      // Fabric overlay
-      const fabricCanvas = new fabric.Canvas("annCanvas", { selection: true });
-      fabricCanvas.setBackgroundColor(null, fabricCanvas.renderAll.bind(fabricCanvas));
-
-      const history = [];
-      const pushState = () => {
-        history.push(JSON.stringify(fabricCanvas.toJSON()));
-        if(history.length > 50) history.shift();
-      };
-
-      const setToolActive = (id) => {
-        ["toolSelect","toolPen","toolLine","toolArrow","toolText"].forEach(x=>{
-          const b=document.getElementById(x);
-          if(b) b.style.borderColor = (x===id) ? "rgba(56,189,248,0.55)" : "rgba(255,255,255,0.08)";
-        });
-      };
-
-      let currentTool = "select";
-      let drawingLine = null;
-      let drawingArrow = null;
-
-      const enableSelect = () => {
-        currentTool = "select";
-        fabricCanvas.isDrawingMode = false;
-        fabricCanvas.selection = true;
-        fabricCanvas.forEachObject(o => o.selectable = true);
-        setToolActive("toolSelect");
-      };
-
-      const enablePen = () => {
-        currentTool = "pen";
-        fabricCanvas.isDrawingMode = true;
-        fabricCanvas.freeDrawingBrush.width = 2;
-        setToolActive("toolPen");
-      };
-
-      const enableLine = () => {
-        currentTool = "line";
-        fabricCanvas.isDrawingMode = false;
-        fabricCanvas.selection = false;
-        fabricCanvas.forEachObject(o => o.selectable = false);
-        setToolActive("toolLine");
-      };
-
-      const enableArrow = () => {
-        currentTool = "arrow";
-        fabricCanvas.isDrawingMode = false;
-        fabricCanvas.selection = false;
-        fabricCanvas.forEachObject(o => o.selectable = false);
-        setToolActive("toolArrow");
-      };
-
-      const enableText = () => {
-        currentTool = "text";
-        fabricCanvas.isDrawingMode = false;
-        fabricCanvas.selection = false;
-        fabricCanvas.forEachObject(o => o.selectable = false);
-        setToolActive("toolText");
-      };
-
-      const resizeOverlayToPdf = (w,h) => {
-        pdfCanvas.width = w; pdfCanvas.height = h;
-        annCanvasEl.width = w; annCanvasEl.height = h;
-        annCanvasEl.style.width = w + "px";
-        annCanvasEl.style.height = h + "px";
-        pdfCanvas.style.width = w + "px";
-        pdfCanvas.style.height = h + "px";
-
-        fabricCanvas.setWidth(w);
-        fabricCanvas.setHeight(h);
-        fabricCanvas.calcOffset();
-        fabricCanvas.renderAll();
-      };
-
-      const renderPage = async (num) => {
-        if(!pdfDoc) return;
-        const page = await pdfDoc.getPage(num);
-
-        // Fit width to container
-        const containerWidth = stage.clientWidth ? stage.clientWidth : 900;
-        const unscaled = page.getViewport({ scale: 1.0 });
-        const scale = Math.max(0.6, Math.min(2.5, containerWidth / unscaled.width));
-        viewportScale = scale;
-
-        const viewport = page.getViewport({ scale });
-        resizeOverlayToPdf(Math.floor(viewport.width), Math.floor(viewport.height));
-
-        const ctx = pdfCanvas.getContext("2d");
-        await page.render({ canvasContext: ctx, viewport }).promise;
-
-        // Clear annotations on page change (simple version)
-        fabricCanvas.clear();
-        pushState();
-
-        lbl.textContent = `Pagina ${num} / ${pdfDoc.numPages}`;
-      };
-
-      const loadPdf = async (file) => {
-        const buf = await file.arrayBuffer();
-        pdfDoc = await pdfjsLib.getDocument({ data: buf }).promise;
-        pageNum = 1;
-        await renderPage(pageNum);
-      };
-
-      fileInput.addEventListener("change", async (e) => {
+      fileInput.addEventListener("change", (e) => {
         const f = e.target.files && e.target.files[0];
         if(!f) return;
-        await loadPdf(f);
+        if(currentUrl) URL.revokeObjectURL(currentUrl);
+        currentUrl = URL.createObjectURL(f);
+        frame.src = currentUrl;
+        setLabel("PDF geladen");
       });
 
-      prev && prev.addEventListener("click", async () => {
-        if(!pdfDoc) return;
-        pageNum = Math.max(1, pageNum - 1);
-        await renderPage(pageNum);
-      });
-      next && next.addEventListener("click", async () => {
-        if(!pdfDoc) return;
-        pageNum = Math.min(pdfDoc.numPages, pageNum + 1);
-        await renderPage(pageNum);
-      });
-
-      // Drawing tools
-      fabricCanvas.on("mouse:down", (opt) => {
-        const p = fabricCanvas.getPointer(opt.e);
-        if(currentTool === "line"){
-          drawingLine = new fabric.Line([p.x,p.y,p.x,p.y], { stroke: "#e2e8f0", strokeWidth: 2, selectable:false });
-          fabricCanvas.add(drawingLine);
-        } else if(currentTool === "arrow"){
-          drawingArrow = { x1:p.x, y1:p.y, x2:p.x, y2:p.y };
-          const line = new fabric.Line([p.x,p.y,p.x,p.y], { stroke:"#e2e8f0", strokeWidth:2, selectable:false });
-          line._isArrow = true;
-          fabricCanvas.add(line);
-          drawingLine = line;
-        } else if(currentTool === "text"){
-          const tb = new fabric.Textbox("Tekst", { left:p.x, top:p.y, fill:"#e2e8f0", fontSize:16, width: 220 });
-          tb.selectable = true;
-          fabricCanvas.add(tb);
-          enableSelect();
-          fabricCanvas.setActiveObject(tb);
-          fabricCanvas.renderAll();
-          pushState();
+      // Buttons (prev/next/zoom) not supported for native iframe viewer; keep UI but disable gracefully
+      ["pdfPrev","pdfNext","pdfZoomIn","pdfZoomOut","pdfFit"].forEach(id=>{
+        const b = document.getElementById(id);
+        if(b){
+          b.addEventListener("click", ()=>{});
+          b.style.opacity = "0.55";
+          b.title = "Bediening gebeurt via de ingebouwde PDF viewer (pinch/zoom/pan).";
         }
       });
 
-      fabricCanvas.on("mouse:move", (opt) => {
-        if(!drawingLine) return;
-        const p = fabricCanvas.getPointer(opt.e);
-        drawingLine.set({ x2:p.x, y2:p.y });
-        fabricCanvas.renderAll();
-      });
-
-      fabricCanvas.on("mouse:up", () => {
-        if(drawingLine){
-          if(drawingLine._isArrow){
-            // add arrow head (simple triangle)
-            const { x1,y1,x2,y2 } = drawingLine;
-            const angle = Math.atan2(y2 - y1, x2 - x1);
-            const headLen = 12;
-            const hx = x2 - headLen * Math.cos(angle);
-            const hy = y2 - headLen * Math.sin(angle);
-            const tri = new fabric.Triangle({
-              left: x2, top: y2, originX:"center", originY:"center",
-              angle: angle * 180/Math.PI + 90,
-              width: 14, height: 14,
-              fill: "#e2e8f0",
-              selectable:false
-            });
-            fabricCanvas.add(tri);
-          }
-          drawingLine.selectable = false;
-          drawingLine = null;
-          pushState();
-        }
-      });
-
-      // Buttons
-      document.getElementById("toolSelect")?.addEventListener("click", enableSelect);
-      document.getElementById("toolPen")?.addEventListener("click", enablePen);
-      document.getElementById("toolLine")?.addEventListener("click", enableLine);
-      document.getElementById("toolArrow")?.addEventListener("click", enableArrow);
-      document.getElementById("toolText")?.addEventListener("click", enableText);
-
-      document.getElementById("toolUndo")?.addEventListener("click", () => {
-        if(history.length <= 1) return;
-        history.pop();
-        const prevState = history[history.length - 1];
-        fabricCanvas.loadFromJSON(prevState, () => fabricCanvas.renderAll());
-      });
-
-      fabricCanvas.on("path:created", pushState);
-      fabricCanvas.on("object:modified", pushState);
-      fabricCanvas.on("object:added", () => { /* handled in places */ });
-
-      document.getElementById("toolExport")?.addEventListener("click", () => {
-        // merge pdfCanvas + fabric overlay into one PNG
-        const out = document.createElement("canvas");
-        out.width = pdfCanvas.width; out.height = pdfCanvas.height;
-        const ctx = out.getContext("2d");
-        ctx.drawImage(pdfCanvas,0,0);
-        ctx.drawImage(annCanvasEl,0,0);
-        const a = document.createElement("a");
-        a.download = `pdf-annotatie-p${pageNum}.png`;
-        a.href = out.toDataURL("image/png");
-        a.click();
-      });
-
-      enableSelect();
-      pushState();
+      window.calcResetters = window.calcResetters || {};
+      window.calcResetters.pdfEditor = () => {};
     })();
 
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js">
+    
+  
+    (function formatTableHeaders(){
+      document.querySelectorAll("table th").forEach(th=>{
+        const raw = (th.textContent||"").trim();
+        // Replace patterns like "v (m/s)" or "Basisafvoer (l/s)" -> "Basisafvoer<br>(l/s)"
+        const m = raw.match(/^(.+?)\s*\(([^)]+)\)$/);
+        if(m){
+          const left = m[1].trim();
+          const unit = m[2].trim();
+          // avoid double formatting
+          if(!th.dataset.formatted){
+            th.innerHTML = `${left}<br><span style="opacity:.85;font-weight:600">(${unit})</span>`;
+            th.dataset.formatted = "1";
+          }
+        }
+      });
+    })();
+
+  
+    (function setupTableHeaderTooltips(){
+      const tip = document.getElementById("thTip");
+      if(!tip) return;
+
+      const help = {
+        // You can expand these later per column if you want.
+        "Sectie":"Naam/nummer van het deeltraject.",
+        "L/meter":"Lengte van de leiding in meters.",
+        "H in KPA":"Vul handmatig in als je dit gebruikt (horizontale component).",
+        "Aanvoer":"Aanvoertemperatuur.",
+        "Retour":"Retourtemperatuur."
+      };
+
+      let activeTh = null;
+      const isTouch = () => window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+
+      const show = (th) => {
+        const name = (th.textContent || "").trim().replace(/\s+/g," ");
+        const msg = th.dataset.help || help[name] || ("Kolom: " + name);
+        const rect = th.getBoundingClientRect();
+        tip.textContent = msg;
+        tip.style.display = "block";
+        const pad = 10;
+        const r = tip.getBoundingClientRect();
+        const left = Math.min(window.innerWidth - r.width - pad, Math.max(pad, rect.left));
+        const top  = Math.min(window.innerHeight - r.height - pad, Math.max(pad, rect.bottom + 8));
+        tip.style.left = left + "px";
+        tip.style.top  = top + "px";
+      };
+
+      const hide = () => { tip.style.display = "none"; activeTh = null; };
+
+      document.querySelectorAll("table th").forEach(th => {
+        th.addEventListener("mouseenter", () => { if(!isTouch()) show(th); });
+        th.addEventListener("mouseleave", () => { if(!isTouch()) hide(); });
+        th.addEventListener("click", (e) => {
+          if(!isTouch()) return;
+          e.stopPropagation();
+          if(activeTh === th && tip.style.display === "block"){ hide(); return; }
+          activeTh = th;
+          show(th);
+        });
+      });
+
+      window.addEventListener("scroll", () => { if(isTouch()) hide(); }, { passive:true });
+      document.addEventListener("click", () => { if(isTouch()) hide(); });
+    })();
+
+  
+    (function checklistInstantPatch(){
+      // If checklist exists, ensure change updates UI + storage immediately.
+      const root = document.getElementById("checklistRoot") || document.querySelector("#planningCalculator") || document;
+      if(!root) return;
+
+      root.addEventListener("change", (e) => {
+        const cb = e.target;
+        if(!(cb instanceof HTMLInputElement)) return;
+        if(cb.type !== "checkbox") return;
+        const rowEl = cb.closest(".check-row") || cb.closest(".checklist-item") || cb.closest("li") || cb.parentElement;
+        if(rowEl) rowEl.classList.toggle("checked", cb.checked);
+
+        // If app has a save function on window, call it.
+        if(typeof window.saveChecklist === "function"){
+          window.saveChecklist();
+        }
+      }, true);
+    })();
+
+  
     (function setupPdfEditor(){
       const fileInput = document.getElementById("pdfFile");
-      const pdfCanvas = document.getElementById("pdfCanvas");
-      const annCanvasEl = document.getElementById("annCanvas");
-      const stage = document.getElementById("pdfStage");
+      const frame = document.getElementById("pdfFrame");
       const lbl = document.getElementById("pdfPageLabel");
-      const prev = document.getElementById("pdfPrev");
-      const next = document.getElementById("pdfNext");
+      if(!fileInput || !frame) return;
 
-      if(!fileInput || !pdfCanvas || !annCanvasEl || !window.pdfjsLib || !window.fabric) return;
+      let currentUrl = null;
 
-      // PDF.js worker
-      try{
-        pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-      }catch(e){}
+      const setLabel = (t) => { if(lbl) lbl.textContent = t; };
 
-      let pdfDoc = null;
-      let pageNum = 1;
-      let viewportScale = 1.2;
-
-      // Fabric overlay
-      const fabricCanvas = new fabric.Canvas("annCanvas", { selection: true });
-      fabricCanvas.setBackgroundColor(null, fabricCanvas.renderAll.bind(fabricCanvas));
-
-      const history = [];
-      const pushState = () => {
-        history.push(JSON.stringify(fabricCanvas.toJSON()));
-        if(history.length > 50) history.shift();
-      };
-
-      const setToolActive = (id) => {
-        ["toolSelect","toolPen","toolLine","toolArrow","toolText"].forEach(x=>{
-          const b=document.getElementById(x);
-          if(b) b.style.borderColor = (x===id) ? "rgba(56,189,248,0.55)" : "rgba(255,255,255,0.08)";
-        });
-      };
-
-      let currentTool = "select";
-      let drawingLine = null;
-      let drawingArrow = null;
-
-      const enableSelect = () => {
-        currentTool = "select";
-        fabricCanvas.isDrawingMode = false;
-        fabricCanvas.selection = true;
-        fabricCanvas.forEachObject(o => o.selectable = true);
-        setToolActive("toolSelect");
-      };
-
-      const enablePen = () => {
-        currentTool = "pen";
-        fabricCanvas.isDrawingMode = true;
-        fabricCanvas.freeDrawingBrush.width = 2;
-        setToolActive("toolPen");
-      };
-
-      const enableLine = () => {
-        currentTool = "line";
-        fabricCanvas.isDrawingMode = false;
-        fabricCanvas.selection = false;
-        fabricCanvas.forEachObject(o => o.selectable = false);
-        setToolActive("toolLine");
-      };
-
-      const enableArrow = () => {
-        currentTool = "arrow";
-        fabricCanvas.isDrawingMode = false;
-        fabricCanvas.selection = false;
-        fabricCanvas.forEachObject(o => o.selectable = false);
-        setToolActive("toolArrow");
-      };
-
-      const enableText = () => {
-        currentTool = "text";
-        fabricCanvas.isDrawingMode = false;
-        fabricCanvas.selection = false;
-        fabricCanvas.forEachObject(o => o.selectable = false);
-        setToolActive("toolText");
-      };
-
-      const resizeOverlayToPdf = (w,h) => {
-        pdfCanvas.width = w; pdfCanvas.height = h;
-        annCanvasEl.width = w; annCanvasEl.height = h;
-        annCanvasEl.style.width = w + "px";
-        annCanvasEl.style.height = h + "px";
-        pdfCanvas.style.width = w + "px";
-        pdfCanvas.style.height = h + "px";
-
-        fabricCanvas.setWidth(w);
-        fabricCanvas.setHeight(h);
-        fabricCanvas.calcOffset();
-        fabricCanvas.renderAll();
-      };
-
-      const renderPage = async (num) => {
-        if(!pdfDoc) return;
-        const page = await pdfDoc.getPage(num);
-
-        // Fit width to container
-        const containerWidth = stage.clientWidth ? stage.clientWidth : 900;
-        const unscaled = page.getViewport({ scale: 1.0 });
-        const scale = Math.max(0.6, Math.min(2.5, containerWidth / unscaled.width));
-        viewportScale = scale;
-
-        const viewport = page.getViewport({ scale });
-        resizeOverlayToPdf(Math.floor(viewport.width), Math.floor(viewport.height));
-
-        const ctx = pdfCanvas.getContext("2d");
-        await page.render({ canvasContext: ctx, viewport }).promise;
-
-        // Clear annotations on page change (simple version)
-        fabricCanvas.clear();
-        pushState();
-
-        lbl.textContent = `Pagina ${num} / ${pdfDoc.numPages}`;
-      };
-
-      const loadPdf = async (file) => {
-        const buf = await file.arrayBuffer();
-        pdfDoc = await pdfjsLib.getDocument({ data: buf }).promise;
-        pageNum = 1;
-        await renderPage(pageNum);
-      };
-
-      fileInput.addEventListener("change", async (e) => {
+      fileInput.addEventListener("change", (e) => {
         const f = e.target.files && e.target.files[0];
         if(!f) return;
-        await loadPdf(f);
+        if(currentUrl) URL.revokeObjectURL(currentUrl);
+        currentUrl = URL.createObjectURL(f);
+        frame.src = currentUrl;
+        setLabel("PDF geladen");
       });
 
-      prev && prev.addEventListener("click", async () => {
-        if(!pdfDoc) return;
-        pageNum = Math.max(1, pageNum - 1);
-        await renderPage(pageNum);
-      });
-      next && next.addEventListener("click", async () => {
-        if(!pdfDoc) return;
-        pageNum = Math.min(pdfDoc.numPages, pageNum + 1);
-        await renderPage(pageNum);
-      });
-
-      // Drawing tools
-      fabricCanvas.on("mouse:down", (opt) => {
-        const p = fabricCanvas.getPointer(opt.e);
-        if(currentTool === "line"){
-          drawingLine = new fabric.Line([p.x,p.y,p.x,p.y], { stroke: "#e2e8f0", strokeWidth: 2, selectable:false });
-          fabricCanvas.add(drawingLine);
-        } else if(currentTool === "arrow"){
-          drawingArrow = { x1:p.x, y1:p.y, x2:p.x, y2:p.y };
-          const line = new fabric.Line([p.x,p.y,p.x,p.y], { stroke:"#e2e8f0", strokeWidth:2, selectable:false });
-          line._isArrow = true;
-          fabricCanvas.add(line);
-          drawingLine = line;
-        } else if(currentTool === "text"){
-          const tb = new fabric.Textbox("Tekst", { left:p.x, top:p.y, fill:"#e2e8f0", fontSize:16, width: 220 });
-          tb.selectable = true;
-          fabricCanvas.add(tb);
-          enableSelect();
-          fabricCanvas.setActiveObject(tb);
-          fabricCanvas.renderAll();
-          pushState();
+      // Buttons (prev/next/zoom) not supported for native iframe viewer; keep UI but disable gracefully
+      ["pdfPrev","pdfNext","pdfZoomIn","pdfZoomOut","pdfFit"].forEach(id=>{
+        const b = document.getElementById(id);
+        if(b){
+          b.addEventListener("click", ()=>{});
+          b.style.opacity = "0.55";
+          b.title = "Bediening gebeurt via de ingebouwde PDF viewer (pinch/zoom/pan).";
         }
       });
 
-      fabricCanvas.on("mouse:move", (opt) => {
-        if(!drawingLine) return;
-        const p = fabricCanvas.getPointer(opt.e);
-        drawingLine.set({ x2:p.x, y2:p.y });
-        fabricCanvas.renderAll();
-      });
-
-      fabricCanvas.on("mouse:up", () => {
-        if(drawingLine){
-          if(drawingLine._isArrow){
-            // add arrow head (simple triangle)
-            const { x1,y1,x2,y2 } = drawingLine;
-            const angle = Math.atan2(y2 - y1, x2 - x1);
-            const headLen = 12;
-            const hx = x2 - headLen * Math.cos(angle);
-            const hy = y2 - headLen * Math.sin(angle);
-            const tri = new fabric.Triangle({
-              left: x2, top: y2, originX:"center", originY:"center",
-              angle: angle * 180/Math.PI + 90,
-              width: 14, height: 14,
-              fill: "#e2e8f0",
-              selectable:false
-            });
-            fabricCanvas.add(tri);
-          }
-          drawingLine.selectable = false;
-          drawingLine = null;
-          pushState();
-        }
-      });
-
-      // Buttons
-      document.getElementById("toolSelect")?.addEventListener("click", enableSelect);
-      document.getElementById("toolPen")?.addEventListener("click", enablePen);
-      document.getElementById("toolLine")?.addEventListener("click", enableLine);
-      document.getElementById("toolArrow")?.addEventListener("click", enableArrow);
-      document.getElementById("toolText")?.addEventListener("click", enableText);
-
-      document.getElementById("toolUndo")?.addEventListener("click", () => {
-        if(history.length <= 1) return;
-        history.pop();
-        const prevState = history[history.length - 1];
-        fabricCanvas.loadFromJSON(prevState, () => fabricCanvas.renderAll());
-      });
-
-      fabricCanvas.on("path:created", pushState);
-      fabricCanvas.on("object:modified", pushState);
-      fabricCanvas.on("object:added", () => { /* handled in places */ });
-
-      document.getElementById("toolExport")?.addEventListener("click", () => {
-        // merge pdfCanvas + fabric overlay into one PNG
-        const out = document.createElement("canvas");
-        out.width = pdfCanvas.width; out.height = pdfCanvas.height;
-        const ctx = out.getContext("2d");
-        ctx.drawImage(pdfCanvas,0,0);
-        ctx.drawImage(annCanvasEl,0,0);
-        const a = document.createElement("a");
-        a.download = `pdf-annotatie-p${pageNum}.png`;
-        a.href = out.toDataURL("image/png");
-        a.click();
-      });
-
-      enableSelect();
-      pushState();
+      window.calcResetters = window.calcResetters || {};
+      window.calcResetters.pdfEditor = () => {};
     })();
 
   </script>
@@ -1753,12 +1582,10 @@
             </div>
 
             <div style="margin-top:12px;border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden;background:rgba(0,0,0,0.18);">
-              <div id="pdfStage" style="position:relative;width:100%;overflow:auto;">
-                <canvas id="pdfCanvas"></canvas>
-                <canvas id="annCanvas" style="position:absolute;left:0;top:0;"></canvas>
-              </div>
-            </div>
-            <p class="helper" style="margin-top:10px;">Tip: gebruik ‘Select’ om objecten te verplaatsen/verwijderen. Export is per pagina (PNG) met je annotaties.</p>
+              <div style="margin-top:12px;border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden;background:rgba(0,0,0,0.18);">
+  <iframe id="pdfFrame" title="PDF Viewer" style="width:100%;height:70vh;border:0;background:#0b1224;"></iframe>
+</div>
+<p class="helper" style="margin-top:10px;">PDF viewer werkt als een embedded venster (pan/zoom via ingebouwde viewer). Voor echte annotaties/export kan ik een stabiele “render-to-canvas” annotatie-laag toevoegen als je wilt.</p>
           </div>
 
           <div class="card" style="padding:14px;">
@@ -3619,306 +3446,128 @@ const VUILWATER_TABLE = {"4":{"0.3":44,"0.35":50,"0.4":50,"0.45":50,"0.5":50,"0.
       reset();
     })();
 
+    
+  
+    
+  
+    (function formatTableHeaders(){
+      document.querySelectorAll("table th").forEach(th=>{
+        const raw = (th.textContent||"").trim();
+        // Replace patterns like "v (m/s)" or "Basisafvoer (l/s)" -> "Basisafvoer<br>(l/s)"
+        const m = raw.match(/^(.+?)\s*\(([^)]+)\)$/);
+        if(m){
+          const left = m[1].trim();
+          const unit = m[2].trim();
+          // avoid double formatting
+          if(!th.dataset.formatted){
+            th.innerHTML = `${left}<br><span style="opacity:.85;font-weight:600">(${unit})</span>`;
+            th.dataset.formatted = "1";
+          }
+        }
+      });
+    })();
+
+  
     (function setupTableHeaderTooltips(){
       const tip = document.getElementById("thTip");
       if(!tip) return;
 
       const help = {
-        "Sectie":"Vrije tekst/naam voor jouw deeltraject.",
-        "Aanvoer °C":"Temperatuur aanvoerwater (bijv. 75).",
-        "Retour °C":"Temperatuur retourwater (bijv. 60).",
-        "Benodigd kW":"Warmte-/koelvraag voor deze sectie.",
-        "Max Pa/m":"Maximaal toegestane drukval per meter.",
-        "Materiaal":"Kies leidingtype. Lookup gebruikt bijbehorende binnendiameters/ruwheid.",
-        "ν (10^-6 m²/s)":"Kinematische viscositeit bij gemiddelde temperatuur (lookup).",
-        "ρ (kg/m³)":"Dichtheid bij gemiddelde temperatuur (lookup).",
-        "Qm (m³/h)":"Berekend debiet dat nodig is (resultaat).",
-        "kW gehaald":"Berekend vermogen bij gekozen diameter/Pa.",
-        "Diameter":"Gekozen diameter uit lookup die voldoet.",
-        "Pa":"Pa/m waarbij het benodigde kW net gehaald wordt.",
-        "H in KPA":"Horizontale lengte → drukverliescomponent (vul zelf in als je dat gebruikt)."
+        // You can expand these later per column if you want.
+        "Sectie":"Naam/nummer van het deeltraject.",
+        "L/meter":"Lengte van de leiding in meters.",
+        "H in KPA":"Vul handmatig in als je dit gebruikt (horizontale component).",
+        "Aanvoer":"Aanvoertemperatuur.",
+        "Retour":"Retourtemperatuur."
       };
 
       let activeTh = null;
+      const isTouch = () => window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
 
-      const show = (th, x, y) => {
-        const t = (th.textContent || "").trim();
-        const msg = th.dataset.help || help[t];
-        if(!msg) return;
+      const show = (th) => {
+        const name = (th.textContent || "").trim().replace(/\s+/g," ");
+        const msg = th.dataset.help || help[name] || ("Kolom: " + name);
+        const rect = th.getBoundingClientRect();
         tip.textContent = msg;
         tip.style.display = "block";
         const pad = 10;
         const r = tip.getBoundingClientRect();
-        const left = Math.min(window.innerWidth - r.width - pad, Math.max(pad, x));
-        const top  = Math.min(window.innerHeight - r.height - pad, Math.max(pad, y));
+        const left = Math.min(window.innerWidth - r.width - pad, Math.max(pad, rect.left));
+        const top  = Math.min(window.innerHeight - r.height - pad, Math.max(pad, rect.bottom + 8));
         tip.style.left = left + "px";
         tip.style.top  = top + "px";
       };
 
-      const hide = () => {
-        tip.style.display = "none";
-        activeTh = null;
-      };
-
-      const isTouch = () => window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+      const hide = () => { tip.style.display = "none"; activeTh = null; };
 
       document.querySelectorAll("table th").forEach(th => {
-        const t = (th.textContent || "").trim();
-        if(help[t]) th.dataset.help = help[t];
-
-        th.addEventListener("mouseenter", (e) => {
-          if(isTouch()) return;
-          const rect = th.getBoundingClientRect();
-          show(th, rect.left, rect.bottom + 8);
-        });
-        th.addEventListener("mouseleave", (e) => {
-          if(isTouch()) return;
-          hide();
-        });
-
+        th.addEventListener("mouseenter", () => { if(!isTouch()) show(th); });
+        th.addEventListener("mouseleave", () => { if(!isTouch()) hide(); });
         th.addEventListener("click", (e) => {
           if(!isTouch()) return;
           e.stopPropagation();
-          const rect = th.getBoundingClientRect();
-          if(activeTh === th && tip.style.display === "block") { hide(); return; }
+          if(activeTh === th && tip.style.display === "block"){ hide(); return; }
           activeTh = th;
-          show(th, rect.left, rect.bottom + 8);
+          show(th);
         });
       });
 
       window.addEventListener("scroll", () => { if(isTouch()) hide(); }, { passive:true });
-      document.addEventListener("click", (e) => { if(isTouch()) hide(); });
+      document.addEventListener("click", () => { if(isTouch()) hide(); });
+    })();
+
+  
+    (function checklistInstantPatch(){
+      // If checklist exists, ensure change updates UI + storage immediately.
+      const root = document.getElementById("checklistRoot") || document.querySelector("#planningCalculator") || document;
+      if(!root) return;
+
+      root.addEventListener("change", (e) => {
+        const cb = e.target;
+        if(!(cb instanceof HTMLInputElement)) return;
+        if(cb.type !== "checkbox") return;
+        const rowEl = cb.closest(".check-row") || cb.closest(".checklist-item") || cb.closest("li") || cb.parentElement;
+        if(rowEl) rowEl.classList.toggle("checked", cb.checked);
+
+        // If app has a save function on window, call it.
+        if(typeof window.saveChecklist === "function"){
+          window.saveChecklist();
+        }
+      }, true);
     })();
 
   
     (function setupPdfEditor(){
       const fileInput = document.getElementById("pdfFile");
-      const pdfCanvas = document.getElementById("pdfCanvas");
-      const annCanvasEl = document.getElementById("annCanvas");
-      const stage = document.getElementById("pdfStage");
+      const frame = document.getElementById("pdfFrame");
       const lbl = document.getElementById("pdfPageLabel");
-      const prev = document.getElementById("pdfPrev");
-      const next = document.getElementById("pdfNext");
+      if(!fileInput || !frame) return;
 
-      if(!fileInput || !pdfCanvas || !annCanvasEl || !window.pdfjsLib || !window.fabric) return;
+      let currentUrl = null;
 
-      // PDF.js worker
-      try{
-        pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-      }catch(e){}
+      const setLabel = (t) => { if(lbl) lbl.textContent = t; };
 
-      let pdfDoc = null;
-      let pageNum = 1;
-      let viewportScale = 1.2;
-
-      // Fabric overlay
-      const fabricCanvas = new fabric.Canvas("annCanvas", { selection: true });
-      fabricCanvas.setBackgroundColor(null, fabricCanvas.renderAll.bind(fabricCanvas));
-
-      const history = [];
-      const pushState = () => {
-        history.push(JSON.stringify(fabricCanvas.toJSON()));
-        if(history.length > 50) history.shift();
-      };
-
-      const setToolActive = (id) => {
-        ["toolSelect","toolPen","toolLine","toolArrow","toolText"].forEach(x=>{
-          const b=document.getElementById(x);
-          if(b) b.style.borderColor = (x===id) ? "rgba(56,189,248,0.55)" : "rgba(255,255,255,0.08)";
-        });
-      };
-
-      let currentTool = "select";
-      let drawingLine = null;
-      let drawingArrow = null;
-
-      const enableSelect = () => {
-        currentTool = "select";
-        fabricCanvas.isDrawingMode = false;
-        fabricCanvas.selection = true;
-        fabricCanvas.forEachObject(o => o.selectable = true);
-        setToolActive("toolSelect");
-      };
-
-      const enablePen = () => {
-        currentTool = "pen";
-        fabricCanvas.isDrawingMode = true;
-        fabricCanvas.freeDrawingBrush.width = 2;
-        setToolActive("toolPen");
-      };
-
-      const enableLine = () => {
-        currentTool = "line";
-        fabricCanvas.isDrawingMode = false;
-        fabricCanvas.selection = false;
-        fabricCanvas.forEachObject(o => o.selectable = false);
-        setToolActive("toolLine");
-      };
-
-      const enableArrow = () => {
-        currentTool = "arrow";
-        fabricCanvas.isDrawingMode = false;
-        fabricCanvas.selection = false;
-        fabricCanvas.forEachObject(o => o.selectable = false);
-        setToolActive("toolArrow");
-      };
-
-      const enableText = () => {
-        currentTool = "text";
-        fabricCanvas.isDrawingMode = false;
-        fabricCanvas.selection = false;
-        fabricCanvas.forEachObject(o => o.selectable = false);
-        setToolActive("toolText");
-      };
-
-      const resizeOverlayToPdf = (w,h) => {
-        pdfCanvas.width = w; pdfCanvas.height = h;
-        annCanvasEl.width = w; annCanvasEl.height = h;
-        annCanvasEl.style.width = w + "px";
-        annCanvasEl.style.height = h + "px";
-        pdfCanvas.style.width = w + "px";
-        pdfCanvas.style.height = h + "px";
-
-        fabricCanvas.setWidth(w);
-        fabricCanvas.setHeight(h);
-        fabricCanvas.calcOffset();
-        fabricCanvas.renderAll();
-      };
-
-      const renderPage = async (num) => {
-        if(!pdfDoc) return;
-        const page = await pdfDoc.getPage(num);
-
-        // Fit width to container
-        const containerWidth = stage.clientWidth ? stage.clientWidth : 900;
-        const unscaled = page.getViewport({ scale: 1.0 });
-        const scale = Math.max(0.6, Math.min(2.5, containerWidth / unscaled.width));
-        viewportScale = scale;
-
-        const viewport = page.getViewport({ scale });
-        resizeOverlayToPdf(Math.floor(viewport.width), Math.floor(viewport.height));
-
-        const ctx = pdfCanvas.getContext("2d");
-        await page.render({ canvasContext: ctx, viewport }).promise;
-
-        // Clear annotations on page change (simple version)
-        fabricCanvas.clear();
-        pushState();
-
-        lbl.textContent = `Pagina ${num} / ${pdfDoc.numPages}`;
-      };
-
-      const loadPdf = async (file) => {
-        const buf = await file.arrayBuffer();
-        pdfDoc = await pdfjsLib.getDocument({ data: buf }).promise;
-        pageNum = 1;
-        await renderPage(pageNum);
-      };
-
-      fileInput.addEventListener("change", async (e) => {
+      fileInput.addEventListener("change", (e) => {
         const f = e.target.files && e.target.files[0];
         if(!f) return;
-        await loadPdf(f);
+        if(currentUrl) URL.revokeObjectURL(currentUrl);
+        currentUrl = URL.createObjectURL(f);
+        frame.src = currentUrl;
+        setLabel("PDF geladen");
       });
 
-      prev && prev.addEventListener("click", async () => {
-        if(!pdfDoc) return;
-        pageNum = Math.max(1, pageNum - 1);
-        await renderPage(pageNum);
-      });
-      next && next.addEventListener("click", async () => {
-        if(!pdfDoc) return;
-        pageNum = Math.min(pdfDoc.numPages, pageNum + 1);
-        await renderPage(pageNum);
-      });
-
-      // Drawing tools
-      fabricCanvas.on("mouse:down", (opt) => {
-        const p = fabricCanvas.getPointer(opt.e);
-        if(currentTool === "line"){
-          drawingLine = new fabric.Line([p.x,p.y,p.x,p.y], { stroke: "#e2e8f0", strokeWidth: 2, selectable:false });
-          fabricCanvas.add(drawingLine);
-        } else if(currentTool === "arrow"){
-          drawingArrow = { x1:p.x, y1:p.y, x2:p.x, y2:p.y };
-          const line = new fabric.Line([p.x,p.y,p.x,p.y], { stroke:"#e2e8f0", strokeWidth:2, selectable:false });
-          line._isArrow = true;
-          fabricCanvas.add(line);
-          drawingLine = line;
-        } else if(currentTool === "text"){
-          const tb = new fabric.Textbox("Tekst", { left:p.x, top:p.y, fill:"#e2e8f0", fontSize:16, width: 220 });
-          tb.selectable = true;
-          fabricCanvas.add(tb);
-          enableSelect();
-          fabricCanvas.setActiveObject(tb);
-          fabricCanvas.renderAll();
-          pushState();
+      // Buttons (prev/next/zoom) not supported for native iframe viewer; keep UI but disable gracefully
+      ["pdfPrev","pdfNext","pdfZoomIn","pdfZoomOut","pdfFit"].forEach(id=>{
+        const b = document.getElementById(id);
+        if(b){
+          b.addEventListener("click", ()=>{});
+          b.style.opacity = "0.55";
+          b.title = "Bediening gebeurt via de ingebouwde PDF viewer (pinch/zoom/pan).";
         }
       });
 
-      fabricCanvas.on("mouse:move", (opt) => {
-        if(!drawingLine) return;
-        const p = fabricCanvas.getPointer(opt.e);
-        drawingLine.set({ x2:p.x, y2:p.y });
-        fabricCanvas.renderAll();
-      });
-
-      fabricCanvas.on("mouse:up", () => {
-        if(drawingLine){
-          if(drawingLine._isArrow){
-            // add arrow head (simple triangle)
-            const { x1,y1,x2,y2 } = drawingLine;
-            const angle = Math.atan2(y2 - y1, x2 - x1);
-            const headLen = 12;
-            const hx = x2 - headLen * Math.cos(angle);
-            const hy = y2 - headLen * Math.sin(angle);
-            const tri = new fabric.Triangle({
-              left: x2, top: y2, originX:"center", originY:"center",
-              angle: angle * 180/Math.PI + 90,
-              width: 14, height: 14,
-              fill: "#e2e8f0",
-              selectable:false
-            });
-            fabricCanvas.add(tri);
-          }
-          drawingLine.selectable = false;
-          drawingLine = null;
-          pushState();
-        }
-      });
-
-      // Buttons
-      document.getElementById("toolSelect")?.addEventListener("click", enableSelect);
-      document.getElementById("toolPen")?.addEventListener("click", enablePen);
-      document.getElementById("toolLine")?.addEventListener("click", enableLine);
-      document.getElementById("toolArrow")?.addEventListener("click", enableArrow);
-      document.getElementById("toolText")?.addEventListener("click", enableText);
-
-      document.getElementById("toolUndo")?.addEventListener("click", () => {
-        if(history.length <= 1) return;
-        history.pop();
-        const prevState = history[history.length - 1];
-        fabricCanvas.loadFromJSON(prevState, () => fabricCanvas.renderAll());
-      });
-
-      fabricCanvas.on("path:created", pushState);
-      fabricCanvas.on("object:modified", pushState);
-      fabricCanvas.on("object:added", () => { /* handled in places */ });
-
-      document.getElementById("toolExport")?.addEventListener("click", () => {
-        // merge pdfCanvas + fabric overlay into one PNG
-        const out = document.createElement("canvas");
-        out.width = pdfCanvas.width; out.height = pdfCanvas.height;
-        const ctx = out.getContext("2d");
-        ctx.drawImage(pdfCanvas,0,0);
-        ctx.drawImage(annCanvasEl,0,0);
-        const a = document.createElement("a");
-        a.download = `pdf-annotatie-p${pageNum}.png`;
-        a.href = out.toDataURL("image/png");
-        a.click();
-      });
-
-      enableSelect();
-      pushState();
+      window.calcResetters = window.calcResetters || {};
+      window.calcResetters.pdfEditor = () => {};
     })();
 
   </script>
